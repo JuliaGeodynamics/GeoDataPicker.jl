@@ -1,6 +1,7 @@
 # First example of how to pick data on a plot 
-using GLMakie
+using WGLMakie
 
+Makie.inline!(true)
 
 function plot_data(data)
     fig = Figure(resolution = (1920,1080));
@@ -14,7 +15,8 @@ function plot_data(data)
 
     # update location of point
     on(events(ax.scene).mouseposition, priority = 2) do _
-        if ispressed(ax.scene, Mouse.left)
+        if ispressed(ax.scene, Mouse.left) & Keyboard.m in events(fig).keyboardstate
+            # In case we push "m" the keyboard 
             positions[][i_loc[]] = mouseposition(ax.scene)
             notify(positions)
             return Consume(true)    # this would block rectangle zoom
@@ -26,28 +28,33 @@ function plot_data(data)
     on(events(fig).mousebutton, priority = 2) do event
         if event.button == Mouse.left && event.action == Mouse.press
             if Keyboard.d in events(fig).keyboardstate
+                # we push "d" on keyboard and click on plot
+                
                 # Delete marker
-                plt, i = pick(fig)
-                if plt == p
-                    deleteat!(positions[], i)
-                    notify(positions)
-                    return Consume(true)
-                end
+                i = pick_index(fig, ax, positions)
+
+                deleteat!(positions[], i)
+                notify(positions)
+                return Consume(true)
             elseif Keyboard.a in events(fig).keyboardstate
-                # Add new point @ end of list
+                # 1) Check if we are close to the existing curve
+                
+                # 2) Otherwise add new point @ end of list
                 push!(positions[], mouseposition(ax))
                 i_loc[] = length(positions[])
                 notify(positions)
+
+
                 return Consume(true)
-            else 
+
+            elseif Keyboard.m in events(fig).keyboardstate
                 # pushed 
-                plt, i = pick(fig)
-                if plt == p
-                    i_loc[] = i 
-                   # positions[][i_loc[]] = mouseposition(ax)
-                    notify(positions)
-                    return Consume(true)
-                end
+                i = pick_index(fig, ax, positions)
+                i_loc[] = i 
+
+                notify(positions)
+                return Consume(true)
+                #end
             end
         end
         return Consume(false)
@@ -59,6 +66,27 @@ function plot_data(data)
 
     display(fig);
 end
+
+
+# distance of point xy to the points listed in "positions"
+compute_dist_points(positions, xy) = [sqrt(sum(positions[][i] .- xy).^2) for i=1:length(positions[])]
+
+function pick_index(fig, ax, positions)
+    # This picks the closest index within "positions" to the point pushed
+
+    # Note: ideally we should also determine whether we are clicking on a plot.
+    # That is what "pick" does; yet it does not work in combination with WGLMakie (required for buttons and so on)
+
+    xy = mouseposition(ax)
+    dist = compute_dist_points(positions, xy)
+    min_dist_points = minimum(dist)
+
+    @show min_dist_pointsm
+    ind = argmin(dist)
+
+    return ind
+end
+
 
 
 data = rand(10,2);
