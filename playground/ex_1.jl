@@ -80,8 +80,6 @@ function pick_index(fig, ax, positions)
     xy = mouseposition(ax)
     dist = compute_dist_points(positions, xy)
     min_dist_points = minimum(dist)
-
-    @show min_dist_pointsm
     ind = argmin(dist)
 
     return ind
