@@ -6,34 +6,45 @@ function plot_data(data)
     fig = Figure(resolution = (1920,1080));
     ax = fig[1,1] = Axis(fig);
 
-    data = Point2f.(data[:,1],data[:,2])
-    positions = Observable(data)
 
+    # define the data & the index of the point currently modified to be an observable
+    data_1 = Point2.(data[:,1],data[:,2])
+    positions = Observable(data_1)
+    i_loc = Observable(1);
+
+    # update location of point
+    on(events(ax.scene).mouseposition, priority = 2) do _
+        if ispressed(ax.scene, Mouse.left)
+            positions[][i_loc[]] = mouseposition(ax.scene)
+            notify(positions)
+            return Consume(true)    # this would block rectangle zoom
+        end
+        return Consume(false)
+    end
+
+    
     on(events(fig).mousebutton, priority = 2) do event
         if event.button == Mouse.left && event.action == Mouse.press
             if Keyboard.d in events(fig).keyboardstate
                 # Delete marker
                 plt, i = pick(fig)
-                #@show p  p[1]  plt
                 if plt == p
                     deleteat!(positions[], i)
                     notify(positions)
                     return Consume(true)
                 end
             elseif Keyboard.a in events(fig).keyboardstate
-                # Add marker
+                # Add new point @ end of list
                 push!(positions[], mouseposition(ax))
+                i_loc[] = length(positions[])
                 notify(positions)
                 return Consume(true)
-            elseif Keyboard.m in events(fig).keyboardstate
-                # Move marker
-                # NOT YET WORKING
+            else 
+                # pushed 
                 plt, i = pick(fig)
-                #@show i positions
                 if plt == p
-                    positions[i] = Point2f(mouseposition(ax))
-
-                    #push!(positions[], mouseposition(ax))
+                    i_loc[] = i 
+                   # positions[][i_loc[]] = mouseposition(ax)
                     notify(positions)
                     return Consume(true)
                 end
@@ -41,10 +52,11 @@ function plot_data(data)
         end
         return Consume(false)
     end
-
+    
+    # plot as line & with markers
     l = lines!(ax,positions)
     p = scatter!(ax,positions)
-   
+
     display(fig);
 end
 
@@ -52,21 +64,3 @@ end
 data = rand(10,2);
 data[:,1] = 1:10
 plot_data(data)
-
-#=
-t = text!(ax, " ", position = first(p[1][]), visible = false, halign = :left)
-
-on(events(fig.scene).mouseposition) do mp
-    plt, idx = mouse_selection(fig.scene)
-    if plt == p && idx != nothing
-        t.position = p[1][][idx]
-        t[1] = string(p[1][][idx])
-        t.visible = true
-    else
-        t.visible = false
-    end
-end
-=#
-
-#fig
-
