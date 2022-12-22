@@ -1,23 +1,34 @@
-# First example of how to pick data on a plot 
+# First example of how to pick data on a plot and create a polygon.
+# Keyboard shortcuts:
+#   a - add new points (at the end or inbetween, depending where you click)
+#   d - delete points
+#   m - merge points (aka: put them on top of each other)
+#   b - breakup points
+
 using WGLMakie
 
 Makie.inline!(true)
 
-function plot_data(data)
-    fig = Figure(resolution = (1920,1080));
+function plot_data(data; res=(1920,1080))
+    fig = Figure(resolution = res);
     ax = fig[1,1] = Axis(fig);
 
 
     # define the data & the index of the point currently modified to be an observable
     data_1 = Point2.(data[:,1],data[:,2])
     positions = Observable(data_1)
-    i_loc = Observable(1);
+    pos_selected = Observable(data_1[1])
+    i_loc   = Observable(1);
+    i_merge = Observable(0);
 
     # update location of point
     on(events(ax.scene).mouseposition, priority = 2) do _
         if ispressed(ax.scene, Mouse.left) #& Keyboard.m in events(fig).keyboardstate
-            # In case we push "m" the keyboard 
+          
             positions[][i_loc[]] = mouseposition(ax.scene)
+            
+            pos_selected[] = positions[][i_loc[]]
+            notify(pos_selected)
             notify(positions)
             return Consume(true)    # this would block rectangle zoom
         end
@@ -28,15 +39,22 @@ function plot_data(data)
     on(events(fig).mousebutton, priority = 2) do event
         if event.button == Mouse.left && event.action == Mouse.press
             if Keyboard.d in events(fig).keyboardstate
+                # Delete marker
                 # we push "d" on keyboard and click on plot
                 
-                # Delete marker
                 i = pick_index(fig, ax, positions)
 
                 deleteat!(positions[], i)
+                i_loc[] = i-1
+                
+                pos_selected[] = positions[][i_loc[]]
                 notify(positions)
+                notify(pos_selected)
                 return Consume(true)
             elseif Keyboard.a in events(fig).keyboardstate
+                # Add a new marker 
+                # push "a" on the keyboard
+
                 # 1) Check if we are close to the existing curve
 
                 on_bound, ind_bound = compute_on_polygon(positions, mouseposition(ax)) 
@@ -47,21 +65,66 @@ function plot_data(data)
 
                     positions[][insert+1:end] =  positions[][insert:end-1] # move existing positions
                     positions[][insert] =  mouseposition(ax) # add new point
-
+                    i_loc[] = insert-1
                 else
                     # 2) Otherwise add new point @ end of list
                     push!(positions[], mouseposition(ax))
                     i_loc[] = length(positions[])
                 end
+                
+                pos_selected[] = positions[][i_loc[]]
 
+                notify(positions)
+                notify(pos_selected)
+                return Consume(true)
+
+            elseif Keyboard.m in events(fig).keyboardstate
+                # merge markers to close a polygon.
+                # push "m" and click first point; next click second point
+
+                i = pick_index(fig, ax, positions)
+                i_loc[] = i
+                if i_merge[] == 0
+                    # we are clicking for the 1th time
+                    i_merge[] = i
+                else
+                    # click 2nd time, so we merge now
+                    positions[][i_merge[]] =  positions[][i_loc[]]
+                    i_merge[] = 0
+
+                    # NOTE: at a later stage, we probably have to add a way here to make this a true, closed, polygon
+                end
+                pos_selected[] = positions[][i_loc[]]
+
+                notify(pos_selected)
                 notify(positions)
                 return Consume(true)
 
-            else #if Keyboard.m in events(fig).keyboardstate
+            elseif Keyboard.b in events(fig).keyboardstate
+                # breakup point
+
+                # Note this is not really broken up, as it remains connected. I suppose we have 
+                # to introduce a polygon  and a curve struct that includes connectivity info to deal with this
+                
+                i = pick_index(fig, ax, positions)
+                
+                push!(positions[], positions[][end])    # add end point
+                positions[][i+1:end] =  positions[][i:end-1] # move existing positions
+                positions[][i] =  positions[][i+1] # add new point
+
+               
+                pos_selected[] = positions[][i]
+                notify(pos_selected)
+                notify(positions)
+                return Consume(true)
+
+            else 
                 # pushed 
                 i = pick_index(fig, ax, positions)
                 i_loc[] = i 
-
+                
+                pos_selected[] = positions[][i_loc[]]
+                notify(pos_selected)
                 notify(positions)
                 return Consume(true)
                 #end
@@ -73,6 +136,7 @@ function plot_data(data)
     # plot as line & with markers
     l = lines!(ax,positions)
     p = scatter!(ax,positions)
+    pt = scatter!(ax, pos_selected, color=:red, markersize=20, marker = '□')
 
     display(fig);
 end
