@@ -4,18 +4,21 @@
 using GLMakie, StaticArrays
 #Makie.inline!(true)
 
-# This is a polygon that can consist of one or several bezier points & corresponding slopes
-# Note: we always define Bezier segments, consistong of 2 points & corresponding tangents
-mutable struct BezierPoly{N, Nt}
-    Name::String                        # Name of polygon
-    Number::Int64                       # Number 
-    Closed::Bool                        # Closed polygon?
-    Color::Any                          # color of polygon 
-    x::MMatrix{N,2,Float64,Nt}         # x-coords of Bezier ctrl points
-    y::MMatrix{N,2,Float64,Nt}         # y-coords of Bezier ctrl points
-    tx::MMatrix{N,2,Float64,Nt}        # x-direction of tangential vector @ ctrl points
-    ty::MMatrix{N,2,Float64,Nt}        # y-direction of tangential vector @ ctrl points
-    continuous::MMatrix{N,2,Bool,Nt}   # continuous derivative @ ctrl pts?
+"""
+
+Bezier polygon with multiple control points
+"""
+mutable struct BezierPoly{N,M}
+    Name::String                            # Name of polygon
+    Number::Int64                           # Number 
+    Closed::Bool                            # Closed polygon?
+    visible::Bool
+    line_props::Any                         # color of polygon 
+    fill_props::Any                         # properties of filled polygon (color etc,)
+    x::SizedMatrix{N,2,Point2, M, Matrix{Point2}}         # coords of Bezier ctrl points
+    t::SizedMatrix{N,2, Vec2, M, Matrix{Vec2}}         # x-direction of tangential vector @ ctrl points
+    continuous::SizedMatrix{N,2}            # continuous derivative @ ctrl pts?
+    x_poly::Vector{Point2}
 end
 
 """
@@ -23,43 +26,47 @@ end
 
 Constructs a simple Bezier polygon from 2 points 
 """
-function BezierPoly(x::NTuple{N,Vector{T}},t::NTuple{N,Vector{T}}; Name="", Number=1, Closed=false, continuous=missing, Color=:black) where {N,T}
+function BezierPoly(x_in::NTuple{N,Point2},t_in::NTuple{N,Vec2}; Name="", Number=1, Closed=false, continuous=missing, line_props=(color=:black,), fill_props=missing) where {N}
 
     Nseg = N-1;
-    xv = zeros(Nseg,2)
-    yv = zeros(Nseg,2)
-    tx = zeros(Nseg,2)
-    ty = zeros(Nseg,2)
+    x = zeros(Point2,Nseg,2)
+    t = zeros(Vec2,Nseg,2)
     for i=1:Nseg
-        xv[i,1], xv[i,2] = x[i][1], x[i+1][1]
-        yv[i,1], yv[i,2] = x[i][2], x[i+1][2]
-        tx[i,1], tx[i,2] = t[i][1], t[i+1][1]
-        ty[i,1], ty[i,2] = t[i][2], t[i+1][2]
+        x[i,1], x[i,2] = x_in[i], x_in[i+1]
+        t[i,1], t[i,2] = t_in[i], t_in[i+1]
     end
 
     if ismissing(continuous)
-        continuous = zeros(Bool, size(xv))
+        continuous = zeros(Bool, size(x))
     end
+    
+    # Create Bezier Polygon points
+    X = SizedMatrix{Nseg,2}(x)
+    T = SizedMatrix{Nseg,2}(t)
 
-    return BezierPoly(Name, Number, Closed, Color,  MMatrix{Nseg,2}(xv), MMatrix{Nseg,2}(yv), MMatrix{Nseg,2}(tx), MMatrix{Nseg,2}(ty), MMatrix{Nseg,2}(continuous))
+    Npts    = 100
+    x_poly  = zeros(Point2,Npts*Nseg)
+
+    # Compute the coords of the Bezier polygon (for plotting)
+    compute_curve!(X, T, x_poly)
+
+    return BezierPoly(Name, Number, Closed, true, line_props, fill_props,  X, T, SizedMatrix{Nseg,2}{Bool}(continuous),x_poly)
 end
 
 """
 This returns x,y coordinates of a BezierPoly
 """
-function compute_curve!(x_vec::Vector{_T}, y_vec::Vector{_T}, poly::BezierPoly{Nseg,Nt}) where {Nseg,Nt, _T}
-    N = 100;
-    nseg = size(poly.x,1)
+function compute_curve!(Xpts::SizedMatrix{Nseg,2,Point2,M, Matrix{Point2}} , Tpts::SizedMatrix{Nseg,2,Vec2,M, Matrix{Vec2}} , x_poly::Vector{Point2}; N=100) where {Nseg,M}
     t = range(0, 1 ; length=N)
     
-    for i=1:nseg
+    for i=1:Nseg
 
-        X = bezier_coefs(poly.x[i,1], poly.x[i,2], poly.tx[i,1], poly.tx[i,2])
-        Y = bezier_coefs(poly.y[i,1], poly.y[i,2], poly.ty[i,1], poly.ty[i,2])
+        X = bezier_coefs(Xpts[i,1][1], Xpts[i,2][1], Tpts[i,1][1], Tpts[i,2][1])
+        Y = bezier_coefs(Xpts[i,1][2], Xpts[i,2][2], Tpts[i,1][2], Tpts[i,2][2])
 
         for j=1:N
             id = (i-1)*N + j
-            x_vec[ id], y_vec[id] = curve(X,Y,t[j])
+            x_poly[ id] = Point2(curve(X,Y,t[j]))
         end
 
     end
@@ -68,13 +75,13 @@ function compute_curve!(x_vec::Vector{_T}, y_vec::Vector{_T}, poly::BezierPoly{N
 end
 
 
-function compute_curve(poly::BezierPoly{Nseg,Nt}) where {Nseg,Nt}
+function compute_curve(poly::BezierPoly{Nseg}; N=100) where {Nseg}
     N = 100
-    x_vec = zeros(N*Nseg)
-    y_vec = zeros(N*Nseg)
+    x_poly = zeros(Point2,N*Nseg)
 
-    compute_curve!(x_vec, y_vec,poly)
-    return x_vec, y_vec
+    compute_curve!(poly.x, poly.t, x_poly)
+
+    return x_poly
 end
 
 # This computes a pount on the bezier curve
@@ -99,29 +106,83 @@ function bezier_coefs(x0::T, x1::T, t0::T, t1::T) where {T}
     return (a,b,c,d)
 end
 
-# example
-x0 = [0.0, 0.0] # start point
-x1 = [2.0, 0.0] # end point
-x2 = [3.0, 0.2] # end point
+"""
+Plots a Bezier polygon with control points
+"""
+function plot_poly(poly::Observable{BezierPoly{Nseg}}, ax) where {Nseg}
 
-t0 = [0.1, 0.1] # starting tangent vector
-t1 = [0.0, 0.1] # end tangent vector
-t2 = [0.1, 0.1] # end tangent vector
+    pts = compute_curve(poly_o[])
+    l_bezier = lines!(ax,pts[1], pts[2])
+    p_bezier = scatter!(ax, Vector(poly[].x[:]), Vector(poly[].y[:]))
+    
+    return l_bezier, p_bezier
+end
+
+
+# example
+x0 = Point2(0.0, 0.0) # start point
+x1 = Point2(2.0, 0.0) # end point
+x2 = Point2(3.0, 0.2) # end point
+
+t0 = Vec2(0.1, 0.1) # starting tangent vector
+t1 = Vec2(0.0, 0.1) # end tangent vector
+t2 = Vec2(0.1, 0.1) # end tangent vector
+
+
+function plot_data(x,t; res=(1920,1080))
+    fig = Figure(resolution = res);
+    ax = fig[1,1] = Axis(fig);
+
+     # define the data & the index of the point currently modified to be an observable
+   #  data_1 = Point2.(data[:,1],data[:,2])
+   #  positions = Observable(data_1)
+   #  pos_selected = Observable(data_1[1])
+   #  i_loc   = Observable(1);
+   #  i_merge = Observable(0);
+
+
+
+end
 
 # Create bezier polygon
-poly = BezierPoly( (x0, x1, x2), (t0, t1, t2) )
+#poly = plot_data( (x0, x1, x2), (t0, t1, t2) )
+poly = Node(BezierPoly((x0, x1, x2), (t0, t1, t2) ))
 
+x_pts = @lift(:poly.x)
 
-pts = compute_curve(poly)
+# Update a point:
+poly[].x[1,1]=Point(2.0,1.2)
+
 
 
 
 fig = Figure();
+ax = fig[1,1] = Axis(fig);
 
 
-lines(fig[1,1],pts[1], pts[2])
 
-scatter!(fig[1,1], Vector(poly.x[:]), Vector(poly.y[:]))
+function  update_x_poly(poly) 
+    # this is executed every time poly changes
+    pts = compute_curve(poly)
+
+    return pts
+end
+x1_poly = lift(update_x_poly, poly)
+
+
+#lines!(ax, x1_poly[])
+scatter!(ax, Vector(poly.x[:]))
+
+
+#l_bezier, p_bezier = plot_poly(poly_o,ax)
+
+
+
+
+
+
+
+#=
 for i=1:size(poly.x,1)
     for j=1:2
         if j==1
@@ -135,6 +196,15 @@ for i=1:size(poly.x,1)
         lines!(fig[1,1],xv, yv, color=:red)
         scatter!(fig[1,1],xv, yv, color=:red)
     end
+end
+=#
+
+
+
+
+function plot_bezier_tangent(poly::BezierPoly, ax)
+
+
 end
 
 
