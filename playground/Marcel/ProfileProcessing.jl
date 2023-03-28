@@ -70,22 +70,17 @@ function CreateProfileVolume!(Profile,DataSetName,DataSetFile,DimsVolCross)
             lat_vol = cross_tmp.lat.val
             depth_vol = cross_tmp.depth.val # this will be in km
             
-            # convert to UTM and compute the distance from the starting point for later plotting
-            # right now, this is done via a brute force approach which loops over all points
-            lla_start = LLA(Profile.start_point[2],Profile.start_point[1],0.0) # start point 
-
-            distp = zeros(size(lon_vol));
-            for ipt = 1:length(lon_vol)
-                distp[ipt] = euclidean_distance(LLA(lat_vol[ipt],lon_vol[ipt],0.0),lla_start)
-            end
-
-            fields_vol = NamedTuple{(:prof_dist,)}((distp,))
-
             # extract fields
             tmp_fields  = cross_tmp.fields;
             tmp_key     = keys(cross_tmp.fields) # get the key of all the fields
-            for ifield = 1:length(tmp_fields) 
-                fieldname   = DataSetName[1]*"_"*String(tmp_key[1])
+
+            # create a named tuple to store the fields with changed field name
+            fieldname   = DataSetName[idata]*"_"*String(tmp_key[1])
+            fielddata   = cross_tmp.fields[1]
+            fields_vol = NamedTuple{(Symbol(fieldname),)}((fielddata,))
+
+            for ifield = 2:length(tmp_fields) 
+                fieldname   = DataSetName[idata]*"_"*String(tmp_key[ifield])
                 fielddata   = cross_tmp.fields[ifield]
                 new_field   = NamedTuple{(Symbol(fieldname),)}((fielddata,))
                 fields_vol = merge(fields_vol,new_field) # add to the existing NamedTuple
@@ -94,7 +89,7 @@ function CreateProfileVolume!(Profile,DataSetName,DataSetFile,DimsVolCross)
             tmp_fields  = cross_tmp.fields;
             tmp_key     = keys(cross_tmp.fields) # get the key of all the fields
             for ifield = 1:length(tmp_fields) 
-                fieldname   = DataSetName[idata]*"_"*String(tmp_key[1])
+                fieldname   = DataSetName[idata]*"_"*String(tmp_key[ifield])
                 fielddata   = cross_tmp.fields[ifield]
                 new_field   = NamedTuple{(Symbol(fieldname),)}((fielddata,))
                 fields_vol = merge(fields_vol,new_field) # add to the existing NamedTuple
@@ -104,7 +99,10 @@ function CreateProfileVolume!(Profile,DataSetName,DataSetFile,DimsVolCross)
     end
 
     tmp = GeoData(lon_vol,lat_vol,depth_vol,fields_vol)
-    #tmp.atts.["datasets"] = DataSetName
+    # flatten cross section and add this data to the structure
+    x_profile = FlattenCrossSection(tmp,Start=Profile.start_point)
+    tmp = AddField(tmp,"x_profile",x_profile)
+
     Profile.VolData = tmp # assign to Profile data structure
     return
 end
@@ -119,22 +117,15 @@ function CreateProfileSurface!(Profile,DataSetName,DataSetFile,DimsSurfCross)
         tmp_load = load(DataSetFile[idata])  # this gives us a dict with a key that is the name if the data set and the values as the GeoData structure
         tmp_load = collect(values(tmp_load))      # this gives us a vector with a single GeoData entry
         data_tmp = tmp_load[1]               # and now we extract that entry...
-        tmp2 = CrossSection(data_tmp, dims=DimsSurfCross,Start=Profile.start_point,End=Profile.end_point)        # create the cross section
-        # add a field that provides the distance along the profile 
-        lla_start = LLA(Profile.start_point[2],Profile.start_point[1],0.0) # start point 
-
-        distp = zeros(size(tmp2.lon.val));
-        for ipt = 1:size(tmp2.lon.val,1)
-            distp[ipt] = euclidean_distance(LLA(tmp2.lat.val[ipt],tmp2.lon.val[ipt],0.0),lla_start)
-        end
-
-        dist_field  = NamedTuple{(:prof_dist,)}((distp,))
-        tmp2        = GeoData(tmp2.lon.val,tmp2.lat.val,tmp2.depth.val,merge(tmp2.fields,dist_field),tmp2.atts)
-        tmp[idata]  = tmp2;
+        tmp[idata] = CrossSection(data_tmp, dims=DimsSurfCross,Start=Profile.start_point,End=Profile.end_point)        # create the cross section
+        # flatten cross section and add this data to the structure
+        x_profile = FlattenCrossSection(tmp[idata],Start=Profile.start_point)
+        tmp[idata]      = AddField(tmp[idata],"x_profile",x_profile)
         # add the data set name as an attribute (not required if there is proper metadata, but odds are that there is not)
         tmp[idata].atts["dataset"] = DataSetName[idata]
         
     end
+
 
     Profile.SurfData = tmp # assign to profile data structure
     return 
@@ -151,6 +142,9 @@ function CreateProfilePoint!(Profile,DataSetName,DataSetFile,WidthPointProfile)
         tmp_load = collect(values(tmp_load))      # this gives us a vector with a single GeoData entry
         data_tmp = tmp_load[1]               # and now we extract that entry...
         tmp[idata] = CrossSection(data_tmp,Start=Profile.start_point,End=Profile.end_point,section_width = WidthPointProfile)        # create the cross section
+        # flatten cross section and add this data to the structure
+        x_profile = FlattenCrossSection(tmp[idata],Start=Profile.start_point)
+        tmp[idata]       = AddField(tmp[idata],"x_profile",x_profile)
         # add the data set name as an attribute (not required if there is proper metadata, but odds are that there is not)
         tmp[idata].atts["dataset"] = DataSetName[idata]
     end

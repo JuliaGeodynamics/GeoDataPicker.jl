@@ -2,26 +2,29 @@
 # WORKAROUND FOR NOW: USE THE PROVIDED MATLAB APP
 
 # define the data sets that are to be used
-ProfileCoordFile = "./PickTest/PickedProfiles.txt"
-ProfileNumber    = 1;
+ProfileCoordFile = "/Users/mthiel/PROJECTS/CURRENT/SPP2017/TomographyProcessing/TestSave.txt"
+ProfileNumber    = 3;
 
 DataSetName = [ "TomoPaffrath2021"
                 "TomoPiromallo2003"
                 "MohoAD_Mrokzek2022"
                 "MohoEU_Mrokzek2022"
+                "MohoPA_Mrokzek2022"
                 "ISC_Seismicity"
                 ]
 
-DataSetFile = [ "./Paffrath2021/Paffrath2021.jld2"
-                "./Piromallo2003/Piromallo2003.jld2"
-                ".//Moho_models/Mrozek2022/Mrozek_Moho_Grid_EU.jld2"
-                ".//Moho_models/Mrozek2022/Mrozek_Moho_Grid_AD.jld2"
-                "./ISC/isc_seis_alps.jld2"
+DataSetFile = [ "/Users/mthiel/PROJECTS/CURRENT/SPP2017/TomographyProcessing/Paffrath2021/Paffrath2021.jld2"
+                "/Users/mthiel/PROJECTS/CURRENT/SPP2017/TomographyProcessing/Piromallo2003/Piromallo2003.jld2"
+                "/Users/mthiel/PROJECTS/CURRENT/SPP2017/TomographyProcessing//Moho_models/Mrozek2022/Mrozek_Moho_Grid_EU.jld2"
+                "/Users/mthiel/PROJECTS/CURRENT/SPP2017/TomographyProcessing//Moho_models/Mrozek2022/Mrozek_Moho_Grid_AD.jld2"
+                "/Users/mthiel/PROJECTS/CURRENT/SPP2017/TomographyProcessing//Moho_models/Mrozek2022/Mrozek_Moho_Grid_PA.jld2"
+                "/Users/mthiel/PROJECTS/CURRENT/SPP2017/TomographyProcessing/ISC/isc_seis_alps.jld2"
                 ]
 
 
 DataSetType = [ "Vol"
                 "Vol"
+                "Surf"
                 "Surf"
                 "Surf"
                 "Point"
