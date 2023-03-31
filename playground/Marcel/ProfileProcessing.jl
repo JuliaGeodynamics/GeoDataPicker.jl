@@ -158,14 +158,13 @@ end
 function ExtractProfileData(ProfileCoordFile,ProfileNumber,DataSetName,DataSetFile,DataSetType,DimsVolCross,DimsSurfCross,WidthPointProfile)
 
     # start and end points are saved in a text file
-    profile_coords = readdlm(ProfileCoordFile,skipstart=1)
-    profile_coords = split(profile_coords[ProfileNumber],",")
+    profile_data = readdlm(ProfileCoordFile,skipstart=1,',')
 
-    NUM = parse(Int,string(profile_coords[1]))
-    LON_START = parse(Float64,string(profile_coords[2]))
-    LAT_START = parse(Float64,string(profile_coords[3]))
-    LON_END   = parse(Float64,string(profile_coords[4]))
-    LAT_END   = parse(Float64,string(profile_coords[5]))
+    NUM = profile_data[ProfileNumber,1]
+    LON_START = profile_data[ProfileNumber,2]
+    LAT_START = profile_data[ProfileNumber,3]
+    LON_END   = profile_data[ProfileNumber,4]
+    LAT_END   = profile_data[ProfileNumber,5]
 
     # create the cross section data set with the given lat and lon data (rest will be added later)
     Profile = ProfileData(start_point=(LON_START,LAT_START),end_point=(LON_END,LAT_END))
