@@ -1,8 +1,8 @@
 # This reads an Inkscape (or Affinity Design) file and returns the curves 
-using LightXML
+using LightXML, WriteVTK
 
 
-export parse_SVG
+export parse_SVG, create_surfaces, Write_Paraview
 
 
 """
@@ -54,7 +54,7 @@ end
 
 Retrieves the reference of the current *.SVG file, which is a struct that contains the lower left coordinates and spacing in pixels and real units
 """
-function get_reference(xmlroot::XMLElement, height::Int64; is_inkscape=true)
+function get_reference(xmlroot::XMLElement; is_inkscape=true)
     Ref = []
     for c in LightXML.child_nodes(xmlroot) 
         if is_elementnode(c)
@@ -81,7 +81,9 @@ function get_reference(xmlroot::XMLElement, height::Int64; is_inkscape=true)
 
                             # create the reference structure that is used to transfer pixels -> real coordinates
                             xrefPaper = (coord[1,1], coord[2,1])
-                            yrefPaper = (height - coord[1,2], height - coord[2,2])
+                            #yrefPaper = (height - coord[1,2], height - coord[2,2])
+                            yrefPaper = (coord[1,2], coord[2,2])
+                            
                             xref      = (CoordRef_values[1],CoordRef_values[3])
                             yref      = (CoordRef_values[2],CoordRef_values[4])
                          
@@ -176,7 +178,7 @@ function parse_SVG(fname::String; is_inkscape=true, verbose=true)
     end
 
     # get the reference frame of the image (needs to be a layer called "Reference")
-    CoordRef = get_reference(xmlroot, height);      
+    CoordRef = get_reference(xmlroot);      
 
     # go through all the layers in the file & extract curves
     Curves = NamedTuple()
@@ -232,4 +234,63 @@ function parse_SVG(fname::String; is_inkscape=true, verbose=true)
 
     return Curves
 end
+
+
+"""
+    Surfaces = create_surfaces(Curves::NamedTuple)
+
+This creates surfaces/matrixes from 3D lines that are read from the `*.svg` files.
+The lines all need to have the same number of points
+"""
+function create_surfaces(Curves::NamedTuple)
+
+    Surfaces = NamedTuple()
+    labels = keys(Curves)
+    for (i, curve) in enumerate(Curves)
+        np = size(curve[1],1)
+        if all(size.(curve,1) .== np)
+            n = length(curve)
+            X,Y,Z = zeros(np,n),  zeros(np,n),  zeros(np,n)
+            for j=1:n
+                X[:,j] = curve[j][:,1]
+                Y[:,j] = curve[j][:,2]
+                Z[:,j] = curve[j][:,3]
+            end
+            NT_local = NamedTuple{(labels[i],)}(((X,Y,Z),))
+            Surfaces = merge(Surfaces, NT_local)
+        else
+            println("Cannot create a surface from $(labels[i]) as not all curves have the same length")
+        end
+    end
+
+    return Surfaces
+end
+
+
+add_dim(x::Array) = reshape(x, (size(x)...,1))
+
+"""
+    Write_Paraview(Surfaces::NamedTuple; verbose=true)
+
+Writes paraview files from the surfaces
+"""
+function Write_Paraview(Surfaces::NamedTuple; verbose=true)
+    
+    labels = keys(Surfaces)
+
+    for (i,surf) in enumerate(Surfaces)
+
+        x,y,z = Surfaces[i][1],Surfaces[i][2],Surfaces[i][3]
+        vtk_grid(String(labels[i]), add_dim(x),add_dim(y),add_dim(z) ) do vtk
+            vtk["z"]=add_dim(z) 
+        end
+        if verbose
+            println("Wrote file $(labels[i]).vts")
+        end
+
+    end
+    
+    return nothing
+end
+
 
