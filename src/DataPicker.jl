@@ -1,5 +1,5 @@
 module DataPicker
 
-greet() = print("Hello World!")
+include("ReadSVG_geomIO.jl")
 
 end # module DataPicker
