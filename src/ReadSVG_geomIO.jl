@@ -1,8 +1,8 @@
 # This reads an Inkscape (or Affinity Design) file and returns the curves 
-using LightXML, WriteVTK
+using LightXML, WriteVTK, GeometryBasics, FileIO
 
 
-export parse_SVG, create_surfaces, Write_Paraview
+export parse_SVG, create_surfaces, Write_STL, Write_Paraview
 
 
 """
@@ -237,17 +237,18 @@ end
 
 
 """
-    Surfaces = create_surfaces(Curves::NamedTuple)
+    Surfaces = create_surfaces(Curves::NamedTuple; STL=true)
 
 This creates surfaces/matrixes from 3D lines that are read from the `*.svg` files.
-The lines all need to have the same number of points
+The lines all need to have the same number of points.
+By default, it will create triangulated surfaces which can be saved as `*.stl` files. Optionally, it can generate matrixes (`STL==false`).
 """
-function create_surfaces(Curves::NamedTuple)
+function create_surfaces(Curves::NamedTuple; STL=true)
 
     Surfaces = NamedTuple()
     labels = keys(Curves)
     for (i, curve) in enumerate(Curves)
-        NT_local = create_surfaces(curve, labels[i])
+        NT_local = create_surfaces(curve, labels[i]; STL=STL)
 
         if !isempty(NT_local)
             Surfaces = merge(Surfaces, NT_local)
@@ -258,11 +259,11 @@ function create_surfaces(Curves::NamedTuple)
 end
 
 """
-    create_surfaces(curve::NTuple{Matrix}, label)
+    create_surfaces(curve::NTuple{Matrix}, label; STL=true)
 
-Creates a 3D mesh from a tuple of lines (with 3D coordinates)
+Creates a 3D mesh from a tuple of lines (with 3D coordinates) as a triangulated surfaces (`STL=true`) or as a matrix (`STL=false`).
 """
-function create_surfaces(curve::NTuple{N,Matrix}, label) where N
+function create_surfaces(curve::NTuple{N,Matrix}, label; STL=true) where N
 
     np = size(curve[1],1)
     if all(size.(curve,1) .== np)
@@ -273,7 +274,16 @@ function create_surfaces(curve::NTuple{N,Matrix}, label) where N
             Y[:,j] = curve[j][:,2]
             Z[:,j] = curve[j][:,3]
         end
-        NT_local = NamedTuple{(label,)}(((X,Y,Z),))
+
+        # Transfer to matrix of points
+        if STL
+            Pts = Point{3}.(X,Y,Z);             # using GeometryBasics
+            Tr  = convert_to_triangles(Pts)             # create triangular surface
+            NT_local = NamedTuple{(label,)}((Tr,))
+        else
+            NT_local = NamedTuple{(label,)}(((X,Y,Z),))
+        end
+
     else
         println("Cannot create a surface from $(label) as not all curves have the same length")
     end
@@ -282,9 +292,41 @@ function create_surfaces(curve::NTuple{N,Matrix}, label) where N
 end
 
 
+# helper function that converts a matrix of Points to a triangular mesh
+function convert_to_triangles(Pts::Matrix{Point3{T}}) where T
+
+    # Number
+    Number = zeros(Int64,size(Pts))
+    k = 1;
+    for i in eachindex(Number)
+        Number[i] = k
+        k += 1
+    end
+
+    # get triangle numbering
+    tr = [];
+    for i=1:size(Number,1)-1
+        for j=1:size(Number,2)-1
+            tr1 = TriangleFace(Number[i  ,j  ], Number[i+1,j  ], Number[i  ,j+1])
+            tr2 = TriangleFace(Number[i+1,j  ], Number[i+1,j+1], Number[i  ,j+1])
+            
+            if i==1 & j==1
+                tr = [tr1];
+            else
+                tr = push!(tr,tr1)
+            end
+            tr = push!(tr,tr2)
+        end
+    end
+
+    msh = Mesh(Pts[:], tr)
+
+    return  msh   # create triangular mesh
+end
 
 
 add_dim(x::Array) = reshape(x, (size(x)...,1))
+
 
 """
     Write_Paraview(Surfaces::NamedTuple; verbose=true)
@@ -311,3 +353,20 @@ function Write_Paraview(Surfaces::NamedTuple; verbose=true)
 end
 
 
+"""
+    Write_STL(Surfaces::NamedTuple; verbose=true)
+
+Writes *.stl files to disk, which can directly be opened in Paraview 
+"""
+function Write_STL(Surfaces; verbose=true)
+    
+    labels = keys(Surfaces)
+    for (i,surf) in enumerate(Surfaces)
+        save(File{format"STL_ASCII"}("$(labels[i]).stl"), Surfaces[i])
+        if verbose
+            println("Wrote file $(labels[i]).stl")
+        end
+    end
+    
+    return nothing
+end
