@@ -4,7 +4,7 @@ using GLMakie, GeophysicalModelGenerator,JLD2, ColorSchemes, Unitful
 include("ProfileProcessing.jl")
 
 # define global variables, otherwise we don't have them handy when needed
-global pdata, vol1_field, vol2_field
+global pdata, vol1_field, vol2_field, vol1_colmap
 
 
 # initialize figure
@@ -80,24 +80,26 @@ tog_vol1 = Toggle(volume1_grid[1,3],active = true, framecolor_inactive = RGBf(0.
 menu_vol1 = Menu(volume1_grid[2,1:3],options = ["A", "B", "C"], halign=:left)
 
 # add limit textboxes and a button to set these
-Textbox(volume1_grid[4, 1], placeholder = "lonmin",width=100)
-Textbox(volume1_grid[3, 2], placeholder = "latmax",width=100)
-Textbox(volume1_grid[4, 3], placeholder = "lonmax",width=100)
-Textbox(volume1_grid[5, 2], placeholder = "latmin",width=100)
-Button(volume1_grid[4,2],label="Set Limits",width=100)
+vol1_xmin = Textbox(volume1_grid[4, 1], placeholder = "xmin",width=100)
+vol1_zmax = Textbox(volume1_grid[3, 2], placeholder = "zmax",width=100)
+vol1_xmax = Textbox(volume1_grid[4, 3], placeholder = "xmax",width=100)
+vol1_zmin = Textbox(volume1_grid[5, 2], placeholder = "zmin",width=100)
+vol1_setlim = Button(volume1_grid[4,2],label="Set",width=100)
 
-# add clim textboxes
-Textbox(volume1_grid[6, 1], placeholder = "cmin",width=100)
-Textbox(volume1_grid[6, 2], placeholder = "cmax",width=100)
-Button(volume1_grid[6,3],label="clim",width=100)
+# add clim textboxes and button
+vol1_cmin = Textbox(volume1_grid[6, 1], placeholder = "cmin",width=100)
+vol1_cmax = Textbox(volume1_grid[6, 2], placeholder = "cmax",width=100)
+vol1_clim = Button(volume1_grid[6,3],label="clim",width=100)
 
 # add colormap menu
 Label(volume1_grid[7,1],"colormap")
 vol1_colmenu = Menu(volume1_grid[7,2:3], options = ["lapaz";"cork";"grayC";"roma";"vik";"bwr";"coolwarm";"plasma";"inferno";"viridis";"balance";"seismic"], default = "vik")
 
 # add toggle for flipped colormap
-Label(volume1_grid[8,1:2],"flip colormap")
-tog_flipvol1 = Toggle(volume1_grid[8,3],active = false, framecolor_inactive = RGBf(0.94, 0.94, 0.94))
+#Label(volume1_grid[8,1:2],"flip colormap")
+#tog_flipvol1 = Toggle(volume1_grid[8,3],active = false, framecolor_inactive = RGBf(0.94, 0.94, 0.94))
+vol1_colflip = Observable(false)
+tog_flipvol1 = Button(volume1_grid[8,2:3], label = @lift($vol1_colflip ? "flipped" : "not flipped"))
 
 rowgap!(volume1_grid, 5)
 colgap!(volume1_grid, 5)
@@ -109,25 +111,30 @@ tog_vol2= Toggle(volume2_grid[1,3],active = false, framecolor_inactive = RGBf(0.
 menu_vol2 = Menu(volume2_grid[2,1:3],options = ["A", "B", "C"], halign=:left)
 
 # add limit textboxes and a button to set these
-Textbox(volume2_grid[4, 1], placeholder = "lonmin",width=100)
-Textbox(volume2_grid[3, 2], placeholder = "latmax",width=100)
-Textbox(volume2_grid[4, 3], placeholder = "lonmax",width=100)
-Textbox(volume2_grid[5, 2], placeholder = "latmin",width=100)
-Button(volume2_grid[4,2],label="Set Limits",width=100)
+vol2_xmin = Textbox(volume2_grid[4, 1], placeholder = "xmin",width=100)
+vol2_zmax = Textbox(volume2_grid[3, 2], placeholder = "zmax",width=100)
+vol2_xmax = Textbox(volume2_grid[4, 3], placeholder = "xmax",width=100)
+vol2_zmin = Textbox(volume2_grid[5, 2], placeholder = "zmin",width=100)
+vol2_setlim = Button(volume2_grid[4,2],label="Set",width=100)
 
-# add clim slider
-IntervalSlider(volume2_grid[7, 2:3], range = LinRange(0, 1, 1000),
-    startvalues = (0.2, 0.8))
-Label(volume2_grid[7,1],"clim",width=100)
+# add clim textboxes and button
+vol2_cmin = Textbox(volume2_grid[6, 1], placeholder = "cmin",width=100)
+vol2_cmax = Textbox(volume2_grid[6, 2], placeholder = "cmax",width=100)
+vol2_clim = Button(volume2_grid[6,3],label="clim",width=100)
 
 # add colormap menu
-Label(volume2_grid[6,1],"colormap")
-vol2_colmenu = Menu(volume2_grid[6,2:3], options = ["lapaz";"cork";"grayC";"roma";"vik";"bwr";"coolwarm";"plasma";"inferno";"viridis";"balance";"seismic"], default = "vik")
+Label(volume2_grid[7,1],"colormap")
+vol2_colmenu = Menu(volume2_grid[7,2:3], options = ["lapaz";"cork";"grayC";"roma";"vik";"bwr";"coolwarm";"plasma";"inferno";"viridis";"balance";"seismic"], default = "vik")
+
+# button to flip the colormap
+vol2_colflip = Observable(false)
+tog_flipvol2 = Button(volume2_grid[8,2:3], label = @lift($vol2_colflip ? "flipped" : "not flipped"))
+
 
 
 # add opacity slider
-Label(volume2_grid[8,1],"opacity")
-Slider(volume2_grid[8, 2:3], range = 0:0.01:1, startvalue = 0)
+Label(volume2_grid[9,1],"opacity")
+Slider(volume2_grid[9, 2:3], range = 0:0.01:1, startvalue = 0)
 
 rowgap!(volume2_grid, 5)
 colgap!(volume2_grid, 5)
@@ -156,7 +163,7 @@ colgap!(point_grid, 5)
 #--------------------------------------------------------
 on(button_loaddata.clicks) do n
     # load the data stored in the respective tBox
-    global pdata = load(tBox_loaddata.stored_string.val,"ExtractedData")
+    global pdata = load(tBox_loaddata.displayed_string.val,"ExtractedData")
 
     dataset_string = collect(String.(keys(pdata.VolData.fields)));
 
@@ -179,10 +186,6 @@ on(button_loaddata.clicks) do n
     global vol1_cbar = Colorbar(plot_grid[1, 2], vol1_plot, label = dataset_string[1],width=50)
     global vol2_cbar = Colorbar(plot_grid[2, 2], vol2_plot, label = dataset_string[1],width=50)
 
-    # link toggle to flipped colormap
-    #connect!(ax3.scene.plots[iplot*2].visible, surftoggles[iplot].active)
-
-
     # link the heatmap visibility to the toggles
     connect!(ax1.scene.plots[1].visible, tog_vol1.active)
     connect!(ax2.scene.plots[1].visible, tog_vol2.active)
@@ -194,8 +197,6 @@ on(button_loaddata.clicks) do n
     
     menu_vol2.selection = dataset_string[2];
     menu_vol2.options = dataset_string;
-
-    #notify(menu_vol2.options)
 
     # the surface/point data in ax3
     #-----------------------------------------------
@@ -225,8 +226,8 @@ on(button_loaddata.clicks) do n
     # point data
     pointdata_txt = [];
 
-    xlim = ax3.xaxis.attributes.limits.val;
-    ylim = ax3.yaxis.attributes.limits.val
+    xlim = round.(ax3.xaxis.attributes.limits.val);
+    ylim = round.(ax3.yaxis.attributes.limits.val);
 
     iplot = 1;
     for ipoint = 1:length(pdata.PointData)
@@ -239,6 +240,16 @@ on(button_loaddata.clicks) do n
 
     ax3.limits = (xlim[1],xlim[2],ylim[1],ylim[2]) # reset the axis limits to before point plotting happened
 
+    vol1_xmin.displayed_string = string(ax3.limits.val[1]);
+    vol1_xmax.displayed_string = string(ax3.limits.val[2]);
+    vol1_zmin.displayed_string = string(ax3.limits.val[3]);
+    vol1_zmax.displayed_string = string(ax3.limits.val[4]);
+
+    vol2_xmin.displayed_string = string(ax3.limits.val[1]);
+    vol2_xmax.displayed_string = string(ax3.limits.val[2]);
+    vol2_zmin.displayed_string = string(ax3.limits.val[3]);
+    vol2_zmax.displayed_string = string(ax3.limits.val[4]);
+
     # take care of the point data toggles
     pointtoggles = [Toggle(point_grid[i+1,1], active = true) for i in 1:length(pointdata_txt)];
     pointlabels  = [Label(point_grid[i+1,2:3], pointdata_txt[i],halign=:left) for i in 1:length(pointdata_txt)];
@@ -250,7 +261,8 @@ on(button_loaddata.clicks) do n
 end
 
 
-# changed dataset in volume data 
+
+# changed dataset in volume data 1
 on(menu_vol1.selection) do s
     if !isnothing(s)
         if typeof(pdata.VolData.fields[Symbol(s)])==Array{Unitful.Quantity{Float64}, 3}
@@ -265,7 +277,7 @@ on(menu_vol1.selection) do s
     end
 end
 
-# changed dataset in volume data 
+# changed dataset in volume data 2
 on(menu_vol2.selection) do s
     if !isnothing(s)
         if typeof(pdata.VolData.fields[Symbol(s)])==Array{Unitful.Quantity{Float64}, 3}
@@ -280,6 +292,23 @@ on(menu_vol2.selection) do s
     end
 end
 
+# change limits for volume data 1 --> will change all other axis limits as well
+on(vol1_setlim.clicks) do n
+    ax1.limits = ( parse(Float64,vol1_xmin.displayed_string.val),parse(Float64,vol1_xmax.displayed_string.val), parse(Float64,vol1_zmin.displayed_string.val), parse(Float64,vol1_zmax.displayed_string.val)) # reset the axis limits to before point plotting happened
+    vol2_xmin.displayed_string = string(ax1.limits.val[1]);
+    vol2_xmax.displayed_string = string(ax1.limits.val[2]); 
+    vol2_zmin.displayed_string = string(ax1.limits.val[3]);
+    vol2_zmax.displayed_string = string(ax1.limits.val[4]);
+end
+
+# change colorbar limits for volume 1 dataset --> test with textboxes
+on(vol1_clim.clicks) do n
+    ax1.scene.plots[1].colorrange = [parse(Float64,vol1_cmin.displayed_string.val),parse(Float64,vol1_cmax.displayed_string.val)];
+end
+
+on(vol2_clim.clicks) do n
+    ax2.scene.plots[1].colorrange = [parse(Float64,vol2_cmin.displayed_string.val),parse(Float64,vol2_cmax.displayed_string.val)];
+end
 
 # changed colormap for volume data
 #----------------------------------
@@ -287,10 +316,43 @@ on(vol1_colmenu.selection) do s
     ax1.scene.plots[1].colormap = s
 end
 
-
 on(vol2_colmenu.selection) do s
     ax2.scene.plots[1].colormap = s
 end
+
+# toggle flipped colormap for volume data
+#--------------------------------------------
+function colormapvol1_flip()
+    vol1_colflip[] = !vol1_colflip[] # switch from flipped to nonflipped and vice versa
+    if(vol1_colflip[])
+        ax1.scene.plots[1].colormap = Reverse(colorschemes[Symbol(vol1_colmenu.selection.val)]);
+    else
+        ax1.scene.plots[1].colormap = (colorschemes[Symbol(vol1_colmenu.selection.val)]);
+    end
+end
+
+function colormapvol2_flip()
+    vol2_colflip[] = !vol2_colflip[] # switch from flipped to nonflipped and vice versa
+    if(vol2_colflip[])
+        ax2.scene.plots[1].colormap = Reverse(colorschemes[Symbol(vol2_colmenu.selection.val)]);
+    else
+        ax2.scene.plots[1].colormap = (colorschemes[Symbol(vol2_colmenu.selection.val)]);
+    end
+end
+
+on(tog_flipvol1.clicks) do _
+    colormapvol1_flip()
+end
+
+on(tog_flipvol2.clicks) do _
+    colormapvol2_flip()
+end
+
+
+
+#on(tog_flipvol1.active) do n
+#    ax1.scene.plots[1].colormap = Reverse(colorschemes[Symbol(vol1_colmenu.selection.val)]);
+#end
 
 # Reverse(colorschemes[Symbol(vol1_colmenu.selection.val)])
 
