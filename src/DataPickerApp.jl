@@ -132,7 +132,7 @@ tog_flipvol2 = Button(volume2_grid[8,2:3], label = @lift($vol2_colflip ? "flippe
 
 # add opacity slider
 Label(volume2_grid[9,1],"opacity")
-vol2_slopac = Slider(volume2_grid[9, 2:3], range = 0.01:0.01:1, startvalue = 1)
+#vol2_slopac = Slider(volume2_grid[9, 2:3], range = 0.01:0.01:1, startvalue = 1)
 
 rowgap!(volume2_grid, 5)
 colgap!(volume2_grid, 5)
@@ -322,9 +322,9 @@ end
 on(vol2_colmenu.selection) do s
     ax2.scene.plots[1].colormap = s
     if(vol2_colflip[])
-        ax2.scene.plots[1].colormap = (Reverse(colorschemes[Symbol(vol2_colmenu.selection.val)]),vol2_slopac.value.val);
+        ax2.scene.plots[1].colormap = (Reverse(colorschemes[Symbol(vol2_colmenu.selection.val)]));#,vol2_slopac.value.val);
     else
-        ax2.scene.plots[1].colormap = ((colorschemes[Symbol(vol2_colmenu.selection.val)]),vol2_slopac.value.val);
+        ax2.scene.plots[1].colormap = ((colorschemes[Symbol(vol2_colmenu.selection.val)]));#,vol2_slopac.value.val);
     end
 end
 
@@ -342,9 +342,9 @@ end
 function colormapvol2_flip()
     vol2_colflip[] = !vol2_colflip[] # switch from flipped to nonflipped and vice versa
     if(vol2_colflip[])
-        ax2.scene.plots[1].colormap = (Reverse(Symbol(vol2_colmenu.selection.val)),vol2_slopac.value.val);
+        ax2.scene.plots[1].colormap = (Reverse(Symbol(vol2_colmenu.selection.val)));#,vol2_slopac.value.val);
     else
-        ax2.scene.plots[1].colormap = (Symbol(vol2_colmenu.selection.val),vol2_slopac.value.val);
+        ax2.scene.plots[1].colormap = (Symbol(vol2_colmenu.selection.val));#,vol2_slopac.value.val);
     end
 end
 
@@ -357,15 +357,15 @@ on(tog_flipvol2.clicks) do _
 end
 
 # volume 2 colormap opacity
-lift(vol2_slopac.value) do x
-    if !isempty(ax2.scene.plots)
-        if(vol2_colflip[])
-            ax2.scene.plots[1].colormap = (Reverse(Symbol(vol2_colmenu.selection.val)),vol2_slopac.value.val);
-        else
-            ax2.scene.plots[1].colormap = (Symbol(vol2_colmenu.selection.val),vol2_slopac.value.val);
-        end
-    end
-end
+#lift(vol2_slopac.value) do x
+#    if !isempty(ax2.scene.plots)
+#        if(vol2_colflip[])
+#            ax2.scene.plots[1].colormap = (Reverse(Symbol(vol2_colmenu.selection.val)),vol2_slopac.value.val);
+#        else
+#            ax2.scene.plots[1].colormap = (Symbol(vol2_colmenu.selection.val),vol2_slopac.value.val);
+#        end
+#    end
+#end
 
 # volume 2 limit setting via NaN assignment
 
