@@ -247,24 +247,41 @@ function create_surfaces(Curves::NamedTuple)
     Surfaces = NamedTuple()
     labels = keys(Curves)
     for (i, curve) in enumerate(Curves)
-        np = size(curve[1],1)
-        if all(size.(curve,1) .== np)
-            n = length(curve)
-            X,Y,Z = zeros(np,n),  zeros(np,n),  zeros(np,n)
-            for j=1:n
-                X[:,j] = curve[j][:,1]
-                Y[:,j] = curve[j][:,2]
-                Z[:,j] = curve[j][:,3]
-            end
-            NT_local = NamedTuple{(labels[i],)}(((X,Y,Z),))
+        NT_local = create_surfaces(curve, labels[i])
+
+        if !isempty(NT_local)
             Surfaces = merge(Surfaces, NT_local)
-        else
-            println("Cannot create a surface from $(labels[i]) as not all curves have the same length")
         end
     end
 
     return Surfaces
 end
+
+"""
+    create_surfaces(curve::NTuple{Matrix}, label)
+
+Creates a 3D mesh from a tuple of lines (with 3D coordinates)
+"""
+function create_surfaces(curve::NTuple{N,Matrix}, label) where N
+
+    np = size(curve[1],1)
+    if all(size.(curve,1) .== np)
+        n = length(curve)
+        X,Y,Z = zeros(np,n),  zeros(np,n),  zeros(np,n)
+        for j=1:n
+            X[:,j] = curve[j][:,1]
+            Y[:,j] = curve[j][:,2]
+            Z[:,j] = curve[j][:,3]
+        end
+        NT_local = NamedTuple{(label,)}(((X,Y,Z),))
+    else
+        println("Cannot create a surface from $(label) as not all curves have the same length")
+    end
+    
+    return NT_local
+end
+
+
 
 
 add_dim(x::Array) = reshape(x, (size(x)...,1))
