@@ -314,10 +314,20 @@ end
 #----------------------------------
 on(vol1_colmenu.selection) do s
     ax1.scene.plots[1].colormap = s
+    if(vol1_colflip[])
+        ax1.scene.plots[1].colormap = Reverse(colorschemes[Symbol(vol1_colmenu.selection.val)]);
+    else
+        ax1.scene.plots[1].colormap = (colorschemes[Symbol(vol1_colmenu.selection.val)]);
+    end
 end
 
 on(vol2_colmenu.selection) do s
     ax2.scene.plots[1].colormap = s
+    if(vol2_colflip[])
+        ax2.scene.plots[1].colormap = Reverse(colorschemes[Symbol(vol2_colmenu.selection.val)]);
+    else
+        ax2.scene.plots[1].colormap = (colorschemes[Symbol(vol2_colmenu.selection.val)]);
+    end
 end
 
 # toggle flipped colormap for volume data
