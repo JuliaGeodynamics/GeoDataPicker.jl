@@ -1,5 +1,5 @@
 # This reads an Inkscape (or Affinity Design) file and returns the curves 
-using LightXML, WriteVTK, GeometryBasics, FileIO
+using LightXML, WriteVTK, GeometryBasics, FileIO, LinearAlgebra
 
 
 export parse_SVG, create_surfaces, Write_STL, Write_Paraview
@@ -278,8 +278,10 @@ function create_surfaces(curve::NTuple{N,Matrix}, label; STL=true) where N
         # Transfer to matrix of points
         if STL
             Pts = Point{3}.(X,Y,Z);             # using GeometryBasics
-            Tr  = convert_to_triangles(Pts)             # create triangular surface
-            NT_local = NamedTuple{(label,)}((Tr,))
+            Tr  = convert_to_triangles(Pts)     # create triangular surface
+            Tr_n = normal_mesh(Tr)              # with normals info  (compute normals with normals(Tr_n)) 
+
+            NT_local = NamedTuple{(label,)}((Tr_n,))
         else
             NT_local = NamedTuple{(label,)}(((X,Y,Z),))
         end
@@ -370,3 +372,157 @@ function Write_STL(Surfaces; verbose=true)
     
     return nothing
 end
+
+
+
+# One of the most challenging tasks is to compute the distance of points in the regular grid to the triangulated surface
+#
+# Below a playground of functions
+
+"""     
+    normal = normal_triangle(T::TriangleP)
+
+Computes the normal of a triangle `T`. 
+"""
+function normal_triangle(T::TriangleP)
+
+    point1 = T.points[1];
+    point2 = T.points[2];
+    point3 = T.points[3];
+    
+    # Calculate the vectors for two sides of the triangle
+    side1 = point2 - point1
+    side2 = point3 - point1
+    
+    # Compute the cross product of the two sides
+    norml = cross(side1, side2)
+    
+    # Normalize the normal vector
+    norml   = normalize(norml)
+
+    return norml
+end
+
+
+
+"""
+
+    signed_distance, isinside, projection project_point_onto_triangle(point, T::TriangleP)
+
+Projects a `point` on the plane of a triangle `T`. `isinside` indicates whether the projected point is within the triangle or not, and `signed_distance` is the signed distance
+
+# Example usage
+```julia
+julia> point = [1.0, 2.0, 3.0]
+julia> v1 = Point3(0.0, 0.0, 0.0)
+julia> v2 = Point3(1.0, 0.0, 0.0)
+julia> v3 = Point3(0.0, 1.0, 0.0)
+julia> triangle = TriangleP(v1,v2,v3)
+
+julia> signed_distance, isinside, projectione = project_point_onto_triangle(point, triangle)
+```
+
+"""
+function project_point_onto_triangle(point, T::TriangleP)
+    
+    normal = normal_triangle(T)
+
+    v1      = T.points[1];
+
+    # Compute the projection point
+    projection = point - dot(point - v1, normal) / dot(normal, normal) * normal
+    
+    isinside = in(projection, T)
+
+    # Compute the signed distance to the plane
+    signed_distance = dot(point - v1, normal) / norm(normal)
+    
+    return signed_distance, isinside, projection
+end
+
+
+
+
+"""
+    x,y,z = triangle_extrema(T)
+
+returns the extrema (min/max values) of a triangle `T`
+"""
+function  triangle_extrema(T)
+
+    points = T.points
+    x = extrema(v[1] for v in points)
+    y = extrema(v[2] for v in points)
+    z = extrema(v[3] for v in points)
+    return x, y, z
+end
+
+
+"""
+    id = get_index_range(xe::NTuple, x::StepRangeLen)
+
+Returns the indexes when x has a constant spacing. `xe` are the minimum/maximum coordinates of the triangle 
+"""
+function get_index_range(xe, x::StepRangeLen)
+    Δ   = x.step.hi
+    val = (xe .- x[1])./Δ; # normalized
+    id  = max(floor(Int64, val[1]),1):max(min(ceil(Int64, val[2]), x.len),1)
+
+    return id
+end
+
+
+function mark_neighborcells!(Dist, surf::GeometryBasics.Mesh,x,y,z)
+
+    for T in surf   
+        xe,ye,ze = triangle_extrema(T)
+        ix = get_index_range(xe, x)
+        iy = get_index_range(ye, y)
+        iz = get_index_range(ze, z)
+        @show xe, ye, ze
+        CI   = CartesianIndices((ix,iy,iz))
+        for id in CI
+            signed_distance, isinside, _ = project_point_onto_triangle([x[id[1]], y[id[2]], z[id[3]] ], T)
+
+            if Dist[id]>signed_distance
+                Dist[id] = signed_distance
+            end
+            if isinside
+                @show id, signed_distance
+            end
+            
+        end
+
+        #Phases[CI] .= 1
+    end
+
+    return nothing
+end
+
+
+
+using WriteVTK
+
+
+# create a 3D regular grid
+nx,ny,nz = 100,100,200
+x = range(-100,4000, length=nx)
+y = range(-100,4000, length=ny)
+z = range(-600,80 ,  length=nz)
+
+
+#Phases = zeros(Int64,nx,ny,nz)
+Dist = ones(nx,ny,nz)*1e3;
+
+
+for i=1:length(Surfaces)
+    mark_neighborcells!(Dist, Surfaces[i],x,y,z)
+end
+
+vtk_grid("Test", Vector(x), Vector(y), Vector(z)) do vtk
+    vtk["Phases"] = Phases
+end
+
+
+
+
