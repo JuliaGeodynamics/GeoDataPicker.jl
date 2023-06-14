@@ -1,7 +1,7 @@
-using GLMakie, GeophysicalModelGenerator,JLD2, ColorSchemes, Unitful
+using GLMakie, JLD2,GeophysicalModelGenerator, ColorSchemes, Unitful
 
 # include funcitons for profile processing
-include("ProfileProcessing.jl")
+include("../playground/Marcel/JuliaGTKMakie/ProfileProcessing.jl")
 
 # define global variables, otherwise we don't have them handy when needed
 global pdata, vol1_field, vol2_field, vol1_colmap
@@ -130,11 +130,9 @@ vol2_colmenu = Menu(volume2_grid[7,2:3], options = ["lapaz";"cork";"grayC";"roma
 vol2_colflip = Observable(false)
 tog_flipvol2 = Button(volume2_grid[8,2:3], label = @lift($vol2_colflip ? "flipped" : "not flipped"))
 
-
-
 # add opacity slider
 Label(volume2_grid[9,1],"opacity")
-Slider(volume2_grid[9, 2:3], range = 0:0.01:1, startvalue = 0)
+#vol2_slopac = Slider(volume2_grid[9, 2:3], range = 0.01:0.01:1, startvalue = 1)
 
 rowgap!(volume2_grid, 5)
 colgap!(volume2_grid, 5)
@@ -179,8 +177,8 @@ on(button_loaddata.clicks) do n
     #vol1_field = dropdims(pdata.VolData.fields[1],dims=3);
     #vol2_field = dropdims(pdata.VolData.fields[2],dims=3);
 
-    vol1_plot = heatmap!(ax1,pdata.VolData.fields.x_profile[:,1],pdata.VolData.depth.val[1,:],vol1_field);
-    vol2_plot = heatmap!(ax2,pdata.VolData.fields.x_profile[:,1],pdata.VolData.depth.val[1,:],vol2_field);
+    vol1_plot = heatmap!(ax1,pdata.VolData.fields.x_profile[:,1],pdata.VolData.depth.val[1,:],vol1_field,colormap=Reverse(:vik));
+    vol2_plot = heatmap!(ax2,pdata.VolData.fields.x_profile[:,1],pdata.VolData.depth.val[1,:],vol2_field,colormap=Reverse(:vik));
 
     # add colorbars
     global vol1_cbar = Colorbar(plot_grid[1, 2], vol1_plot, label = dataset_string[1],width=50)
@@ -324,9 +322,9 @@ end
 on(vol2_colmenu.selection) do s
     ax2.scene.plots[1].colormap = s
     if(vol2_colflip[])
-        ax2.scene.plots[1].colormap = Reverse(colorschemes[Symbol(vol2_colmenu.selection.val)]);
+        ax2.scene.plots[1].colormap = (Reverse(colorschemes[Symbol(vol2_colmenu.selection.val)]));#,vol2_slopac.value.val);
     else
-        ax2.scene.plots[1].colormap = (colorschemes[Symbol(vol2_colmenu.selection.val)]);
+        ax2.scene.plots[1].colormap = ((colorschemes[Symbol(vol2_colmenu.selection.val)]));#,vol2_slopac.value.val);
     end
 end
 
@@ -335,18 +333,18 @@ end
 function colormapvol1_flip()
     vol1_colflip[] = !vol1_colflip[] # switch from flipped to nonflipped and vice versa
     if(vol1_colflip[])
-        ax1.scene.plots[1].colormap = Reverse(colorschemes[Symbol(vol1_colmenu.selection.val)]);
+        ax1.scene.plots[1].colormap = (Reverse(Symbol(vol1_colmenu.selection.val)));
     else
-        ax1.scene.plots[1].colormap = (colorschemes[Symbol(vol1_colmenu.selection.val)]);
+        ax1.scene.plots[1].colormap = (Symbol(vol1_colmenu.selection.val));
     end
 end
 
 function colormapvol2_flip()
     vol2_colflip[] = !vol2_colflip[] # switch from flipped to nonflipped and vice versa
     if(vol2_colflip[])
-        ax2.scene.plots[1].colormap = Reverse(colorschemes[Symbol(vol2_colmenu.selection.val)]);
+        ax2.scene.plots[1].colormap = (Reverse(Symbol(vol2_colmenu.selection.val)));#,vol2_slopac.value.val);
     else
-        ax2.scene.plots[1].colormap = (colorschemes[Symbol(vol2_colmenu.selection.val)]);
+        ax2.scene.plots[1].colormap = (Symbol(vol2_colmenu.selection.val));#,vol2_slopac.value.val);
     end
 end
 
@@ -358,6 +356,18 @@ on(tog_flipvol2.clicks) do _
     colormapvol2_flip()
 end
 
+# volume 2 colormap opacity
+#lift(vol2_slopac.value) do x
+#    if !isempty(ax2.scene.plots)
+#        if(vol2_colflip[])
+#            ax2.scene.plots[1].colormap = (Reverse(Symbol(vol2_colmenu.selection.val)),vol2_slopac.value.val);
+#        else
+#            ax2.scene.plots[1].colormap = (Symbol(vol2_colmenu.selection.val),vol2_slopac.value.val);
+#        end
+#    end
+#end
+
+# volume 2 limit setting via NaN assignment
 
 
 #on(tog_flipvol1.active) do n
