@@ -75,8 +75,8 @@ end
 ```julia
 julia> nx, ny,nz = 10,10,5
 julia> distance_map = zeros(nx,ny,nz);
-julia> distance_map[4, 5, 1] = 2.0;
-julia> distance_map[7, 8, 2] = -1.0;
+julia> distance_map[4, 5, 1] = 0.2;
+julia> distance_map[7, 8, 2] = -0.1;
 julia> dx,dy,dz = 1.0/nx, 1.0 / ny, 1.0/nz;
 
 # Initialize the solution grid with initial values
@@ -96,9 +96,14 @@ julia> eikonal_solver_3d!(solution, start_nodes, distance_map, dx, dy, dz)
  -0.92985  -0.93985  -0.94985  -0.95985  -0.96985  -0.9789   -0.98795  -0.997    -0.98795  -0.9789
 ```
 """
-function eikonal_solver_3d!(solution, start_nodes, distance_map, dx, dy, dz)
+function eikonal_solver_3d!(solution, start_nodes, distance_map, dx, dy, dz, N=nothing, SGN=nothing)
     nx, ny, nz = size(distance_map)
 
+    compute_normal = false
+    if !isnothing(N)
+        compute_normal = true
+    end
+    
     # Create a priority queue to store the nodes
     queue = deepcopy(start_nodes)
 
@@ -133,18 +138,31 @@ function eikonal_solver_3d!(solution, start_nodes, distance_map, dx, dy, dz)
                 di = ni - i
                 dj = nj - j
                 dk = nk - k
+                
+                #sign = (distance_map[ni, nj, nk] >= 0) ? 1 : -1
+                sgn = 1.0
+                if compute_normal
+
+                #    dot_product = N[ni, nj, nk][1] * di + N[ni, nj, nk][2] * dj + N[ni, nj, nk][3] * dk
+               #      normal = N[ni, nj, nk]
+               #      sgn = sign(dot([di,dj,dk], normal))
+                    # @show sgn
+               #     sign = (dot_product >= 0) ? 1 : -1
+                end
+                sgn = SGN[i,j,k]
                 new_dist = sqrt(di^2 * dx2 + dj^2 * dy2 + dk^2 * dz2) + solution[i, j, k]
-
-
+                
+                
                 if new_dist < g
                     solution[ni, nj, nk] = new_dist
+                    SGN[ni,nj,nk] = sgn;
                     push!(queue, (ni, nj, nk))
                 end
             end
         end
     end
 
-    return solution
+    return nothing
 end
 
 
@@ -171,7 +189,7 @@ println(solution)
 =#
 
 
-
+#=
 nx, ny,nz = 10,10,5
 distance_map = zeros(nx,ny,nz);
 distance_map[4, 5, 1] = 2.0;
@@ -182,3 +200,6 @@ dx,dy,dz = 1.0/nx, 1.0 / ny, 1.0/nz;
 solution = fill(Inf, (nx, ny, nz));
 start_nodes = [(i, j, k) for i in 1:nx, j in 1:ny, k in 1:nz if abs(distance_map[i, j, k]) > 0];
 eikonal_solver_3d!(solution, start_nodes, distance_map, dx, dy, dz)
+
+
+=#
