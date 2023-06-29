@@ -1,6 +1,5 @@
 # This reads an Inkscape (or Affinity Design) file and returns the curves 
-using LightXML, WriteVTK, GeometryBasics, FileIO
-
+using LightXML, WriteVTK, GeometryBasics, FileIO, LinearAlgebra
 
 export parse_SVG, create_surfaces, Write_STL, Write_Paraview
 
@@ -278,8 +277,10 @@ function create_surfaces(curve::NTuple{N,Matrix}, label; STL=true) where N
         # Transfer to matrix of points
         if STL
             Pts = Point{3}.(X,Y,Z);             # using GeometryBasics
-            Tr  = convert_to_triangles(Pts)             # create triangular surface
-            NT_local = NamedTuple{(label,)}((Tr,))
+            Tr  = convert_to_triangles(Pts)     # create triangular surface
+            Tr_n = normal_mesh(Tr)              # with normals info  (compute normals with normals(Tr_n)) 
+
+            NT_local = NamedTuple{(label,)}((Tr_n,))
         else
             NT_local = NamedTuple{(label,)}(((X,Y,Z),))
         end
@@ -370,3 +371,274 @@ function Write_STL(Surfaces; verbose=true)
     
     return nothing
 end
+
+
+
+# One of the most challenging tasks is to compute the distance of points in the regular grid to the triangulated surface
+#
+# Below a playground of functions
+
+
+#=
+"""
+
+    signed_distance, isinside, projection = project_point_onto_triangle(point, T::TriangleP)
+
+Projects a `point` on the plane of a triangle `T`. `isinside` indicates whether the projected point is within the triangle or not, and `signed_distance` is the signed distance
+
+# Example usage
+```julia
+julia> point = [1.0, 2.0, 3.0]
+julia> v1 = Point3(0.0, 0.0, 0.0)
+julia> v2 = Point3(1.0, 0.0, 0.0)
+julia> v3 = Point3(0.0, 1.0, 0.0)
+julia> triangle = TriangleP(v1,v2,v3)
+
+julia> signed_distance, isinside, projectione = project_point_onto_triangle(point, triangle)
+```
+
+"""
+function project_point_onto_triangle(point, T::TriangleP)
+    
+    normal = normal_triangle(T)
+
+    v1      = T.points[1];
+
+    # Compute the projection point
+    projection = point - dot(point - v1, normal) / dot(normal, normal) * normal
+    
+    
+    #isinside = in(projection, T)
+    #isinside = is_inside_triangle(projection, T)
+    isinside = is_inside_triangle(projection, T)
+    
+    # Compute the signed distance to the plane
+    signed_distance = dot(point - v1, normal) / norm(normal)
+    
+    if !isinside
+
+         # Compute the shortest distance to the triangle edges
+         edge_distances = [point_edge_distance(point, v1, v2),
+                           point_edge_distance(point, v2, v3),
+                           point_edge_distance(point, v3, v1)]
+
+        shortest_distance = minimum(edge_distances)
+        #return shortest_distance, isinside, point
+
+    end
+    return signed_distance, isinside, projection
+end
+
+
+
+function is_inside_triangle(point, T::TriangleP)
+    #v1, v2, v3 = T.points
+
+    # Compute the barycentric coordinates of the projection point
+    u, v, w = barycentric_coordinates(point, T)
+
+    # Check if the barycentric coordinates are within the triangle's range
+    return (u >= 0.0) && (v >= 0.0) && (w >= 0.0) && (u <= 1.0) && (v <= 1.0) && (w <= 1.0)
+end
+
+function barycentric_coordinates(point, T::TriangleP)
+    v1, v2, v3 = T.points
+
+    # Compute the vectors of the triangle edges
+    e1 = v2 - v1
+    e2 = v3 - v1
+    e3 = point - v1
+
+    # Compute the dot products
+    dot11 = dot(e1, e1)
+    dot12 = dot(e1, e2)
+    dot22 = dot(e2, e2)
+    dot13 = dot(e1, e3)
+    dot23 = dot(e2, e3)
+
+    # Compute the barycentric coordinates
+    inv_denominator = 1.0 / (dot11 * dot22 - dot12 * dot12)
+    u = (dot22 * dot13 - dot12 * dot23) * inv_denominator
+    v = (dot11 * dot23 - dot12 * dot13) * inv_denominator
+    w = 1.0 - u - v
+
+    return u, v, w
+end
+
+function point_edge_distance(point, edge_start, edge_end)
+    edge = edge_end - edge_start
+    point_to_edge = point - edge_start
+    edge_length = norm(edge)
+    edge_normalized = edge / edge_length
+    projection_length = dot(point_to_edge, edge_normalized)
+    if projection_length < 0.0
+        # Closest point is edge_start
+        return norm(point - edge_start)
+    elseif projection_length > edge_length
+        # Closest point is edge_end
+        return norm(point - edge_end)
+    else
+        # Closest point is on the edge
+        projection_point = edge_start + projection_length * edge_normalized
+        return norm(point - projection_point)
+    end
+end
+
+
+"""
+    x,y,z = triangle_extrema(T)
+
+returns the extrema (min/max values) of a triangle `T`
+"""
+function  triangle_extrema(T)
+
+    points = T.points
+    x = extrema(v[1] for v in points)
+    y = extrema(v[2] for v in points)
+    z = extrema(v[3] for v in points)
+    return x, y, z
+end
+
+"""
+    id = get_index_range(xe::NTuple, x::StepRangeLen)
+
+Returns the indexes when x has a constant spacing. `xe` are the minimum/maximum coordinates of the triangle 
+"""
+function get_index_range(xe, x::StepRangeLen)
+    Δ   = x.step.hi
+    val = (xe .- x[1])./Δ; # normalized
+    id  = max(floor(Int64, val[1])-1,1):max(min(ceil(Int64, val[2]), x.len)+1,1)
+
+    return id
+end
+
+
+function mark_neighborcells!(Dist, surf::GeometryBasics.Mesh,x,y,z, N=nothing)
+
+    compute_normal = false
+    if !isnothing(N)
+        compute_normal = true
+    end
+
+    for T in surf   
+        # find min/max of triangle
+        xe,ye,ze = triangle_extrema(T)
+
+        if compute_normal
+            normal = normal_triangle(T)
+        end
+
+        # bounding box around triangle
+        ix = get_index_range(xe, x)
+        iy = get_index_range(ye, y)
+        iz = get_index_range(ze, z)
+
+        # get minimum distance for every point in BB
+        CI   = CartesianIndices((ix,iy,iz))
+        for id in CI
+      #      Dist[id] = 3333
+        end
+        for id in CI
+            signed_distance, isinside, _ = project_point_onto_triangle([x[id[1]], y[id[2]], z[id[3]] ], T)
+            #signed_distance, isinside   = closest_distance_to_triangle([x[id[1]], y[id[2]], z[id[3]] ], T)
+
+            if Dist[id]>signed_distance && isinside
+                Dist[id] = signed_distance
+                if compute_normal
+                    N[id] = normal      # store normal
+                end
+            end
+            if isinside
+            #    @show id, signed_distance, Dist[id]
+            end
+            
+        end
+
+        #Phases[CI] .= 1
+    end
+
+    return nothing
+end
+
+function point_edge_distance(point, edge_start, edge_end)
+    edge = edge_end - edge_start
+    point_to_edge = point - edge_start
+    edge_length = norm(edge)
+    edge_normalized = edge / edge_length
+    projection_length = dot(point_to_edge, edge_normalized)
+    if projection_length < 0.0
+        # Closest point is edge_start
+        return norm(point - edge_start)
+    elseif projection_length > edge_length
+        # Closest point is edge_end
+        return norm(point - edge_end)
+    else
+        # Closest point is on the edge
+        projection_point = edge_start + projection_length * edge_normalized
+        return norm(point - projection_point)
+    end
+end
+
+
+
+using LinearAlgebra
+
+function closest_distance_to_triangular_surface(point, triangular_surface)
+    # Initialize variables to store the minimum distance and closest point
+    min_distance = Inf
+    closest_point = []
+
+    # Iterate over each triangle in the triangular surface
+    for triangle in triangular_surface
+        # Compute the signed distance to the plane defined by the triangle
+        normal = cross(triangle[2] - triangle[1], triangle[3] - triangle[1])
+        signed_distance = dot(point - triangle[1], normal) / norm(normal)
+
+        # Compute the closest point
+        closest = ifelse(signed_distance > 0, point - signed_distance * normal, triangle[argmin([norm(v - point) for v in triangle])])
+
+        # Compute the distance between the closest point and the point
+        distance = norm(closest - point)
+
+        # Update the minimum distance and closest point if necessary
+        if distance < min_distance
+            min_distance = distance
+            closest_point = closest
+        end
+    end
+
+    return min_distance, closest_point
+end
+
+=#
+
+
+
+
+
+
+#=
+
+
+fname="test/data/Alps.HZ.svg";
+Curves = parse_SVG(fname, verbose=false);
+Surfaces = create_surfaces(Curves);
+
+
+
+# create a 3D regular grid
+nx,ny,nz = 100,100,200
+x = range(-100,4000, length=nx)
+y = range(-100,4000, length=ny)
+z = range(-600,80 ,  length=nz)
+
+
+Dist = fill(NaN, nx,ny,nz);
+compute_signed_distance_nearest_surface!(Dist,x,y,z, Surfaces[13])
+    
+using WriteVTK
+vtk_grid("Test", Vector(x), Vector(y), Vector(z)) do vtk
+    vtk["Dist"] = Dist
+end
+
+=#
