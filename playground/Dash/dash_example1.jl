@@ -190,13 +190,17 @@ end
 function cross_section_plot()
     options_fields = [(label = String(f), value="$f" ) for f in data_fields]
 
-    dcc_graph(
-        id = "cross_section",
-        figure = plot_cross(), 
-        animate = true,
-        responsive=true
+    [
+        dbc_row(dbc_col(
+                dcc_graph(
+                id = "cross_section",
+                figure = plot_cross(), 
+                animate = false,
+                responsive=false),  width=10
+        ))
+            ,
         
-    ),
+    
     dbc_row([
             dbc_col([dcc_input(id="start_val", name="start_val", type="text", value="start: 10,40",style = Dict(:width => "100%"), debounce=true)]),
             dbc_col([dcc_dropdown(
@@ -213,11 +217,13 @@ function cross_section_plot()
                             #step = .1,
                             value=[-3, 3],
                             allowCross=false,
+                            tooltip="always_visible"
                             #marks = Dict([i => ("$i") for i in [-10, -5, 0, 5, 10]])
                         ),    
                         ]),
             dbc_col([dcc_input(id="end_val", name="end_val", type="text", value="end: 10,50",style = Dict(:width => "100%"),placeholder="min")])
     ])
+    ]
 
 end
 
@@ -253,6 +259,8 @@ app.title = "GMG Data picker"
 
 # Create the main layout
 app.layout = dbc_container(className = "mxy-auto") do
+
+    
     html_h1("GMG Data Picker v0.1", style = Dict("margin-top" => 50, "textAlign" => "center")),
 
     html_div(className = "column",
@@ -340,22 +348,23 @@ callback!(app,  Output("mapview", "figure"),
     end
 end
 
-
-callback!(app,  Output("colorbar-slider", "value"),
-                Output("colorbar-slider", "min"),
+#=
+callback!(app,  Output("colorbar-slider", "min"),
                 Output("colorbar-slider", "max"),
                 Input("dropdown_field","value"),
-                Input("fig_cross","data")
-                ) do colorbar_value, cross_data
+                Input("cross_section","figure")
+                ) do dropdown_field, fig_cross
 
     # retrieve dataset
-    @show cross_data
+    @show dropdown_field typeof(fig_cross) fig_cross[Symbol("data")]
+
     min_value = -8
     max_value =  8
     value = [min_value, max_value]
     
-    return value, min_value, max_value
+    return min_value, max_value
 
 end
+=#
 
 run_server(app)
