@@ -8,6 +8,8 @@ include("utils.jl")  # tomographic dataset
 # Load data
 DataTomo, DataTopo = load_dataset();
 
+
+data_fields =  keys(DataTomo.fields)
 start_val = (10,41)
 end_val = (10,49) 
 
@@ -18,16 +20,6 @@ function lowerright_menu()
         html_div(id = "freq-val",
         style = Dict("margin-top" => "15px", "margin-left" => "15px", "margin-bottom" => "5px")),
        
-        dcc_rangeslider(
-            id = "colorbar-slider",
-            min = -10.,
-            max = 10.,
-            step = 1,
-            value=[-3, 3],
-            allowCross=false,
-            marks = Dict([i => ("$i") for i in [-10, -5, 0, 5, 10]])
-        ),
-
         html_div(id = "damp-val",
         style = Dict("margin-top" => "15px", "margin-left" => "15px", "margin-bottom" => "5px")),
         dcc_slider(
@@ -127,26 +119,23 @@ end
 """
 Creates topo plot & line that shows the cross-section
 """
-function plot_cross(Cross::NamedTuple)
+function plot_cross(Cross::NamedTuple; zmax=nothing, zmin=nothing)
     colorscale = "Rgb";
     reversescale = true;
     println("updating cross section")
     data = Cross.data';
-    data[data .== NaN] .= 0;
+    if isnothing(zmax)
+        zmin, zmax = extrema(data)
+    end
 
-    x = 1:rand(1:20)
-    y = 1:rand(1:10)
-    @show length(x), length(y)
-
-
-
-    pl = (  id = "fig_topo",
+    pl = (  id = "fig_cross",
             data = [heatmap(x = Cross.x, 
                             y = Cross.z, 
                             z = collect(eachcol(data)),
                             colorscale   = colorscale,
                             reversescale = reversescale,
-                            colorbar=attr(thickness=5)
+                            colorbar=attr(thickness=5),
+                            zmin=zmin, zmax=zmax
                             )
                     ],                            
             colorbar=Dict("orientation"=>"v", "len"=>0.5, "thickness"=>10,"title"=>"elevat"),
@@ -182,10 +171,7 @@ function create_topo_plot(DataTopo,start_val=nothing, end_val=nothing)
    
 
     html_div(className = "nine columns" ) do
-        dbc_row([dbc_col([dcc_input(id="start_val", name="start_val", type="text", value="start: 10,40",style = Dict(:width => "100%"), debounce=true)]),
-                 dbc_col([dcc_input(id="end_val", name="end_val", type="text", value="end: 10,50",style = Dict(:width => "100%"),placeholder="min")])
-                 ]),
-
+       
         dcc_graph(
             id = "mapview",
             
@@ -202,13 +188,37 @@ end
 
 # This creates the cross-section plot
 function cross_section_plot()
+    options_fields = [(label = String(f), value="$f" ) for f in data_fields]
+
     dcc_graph(
         id = "cross_section",
         figure = plot_cross(), 
         animate = true,
         responsive=true
         
-    )
+    ),
+    dbc_row([
+            dbc_col([dcc_input(id="start_val", name="start_val", type="text", value="start: 10,40",style = Dict(:width => "100%"), debounce=true)]),
+            dbc_col([dcc_dropdown(
+                            id="dropdown_field",
+                            options = options_fields,
+                            value = "dVp_paf21",
+                            clearable=false, placeholder="Select Dataset",
+                        ),
+                        ]),
+            dbc_col([ dcc_rangeslider(
+                            id = "colorbar-slider",
+                            min = -5.,
+                            max = 5.,
+                            #step = .1,
+                            value=[-3, 3],
+                            allowCross=false,
+                            #marks = Dict([i => ("$i") for i in [-10, -5, 0, 5, 10]])
+                        ),    
+                        ]),
+            dbc_col([dcc_input(id="end_val", name="end_val", type="text", value="end: 10,50",style = Dict(:width => "100%"),placeholder="min")])
+    ])
+
 end
 
 
@@ -288,8 +298,12 @@ callback!(app,  Output("mapview", "figure"),
                 Input("start_val", "n_submit"),
                 Input("end_val", "n_submit"),
                 Input("start_val", "value"),
-                Input("end_val", "value")) do n_start, n_end, start_value, end_value
+                Input("end_val", "value"),
+                Input("dropdown_field","value"),
+                Input("colorbar-slider", "value")
+                ) do n_start, n_end, start_value, end_value, selected_field, colorbar_value
 
+    @show colorbar_value
     if (!isnothing(start_value) ) ||
         (!isnothing(end_value)  ) 
         
@@ -313,11 +327,9 @@ callback!(app,  Output("mapview", "figure"),
         end
         
         retB = plot_topo(DataTopo,start_val, end_val)
-        field = :dVp_paf21
+        cross = get_cross_section(DataTomo, start_val, end_val, Symbol(selected_field))
+        data = plot_cross(cross, zmin=colorbar_value[1], zmax=colorbar_value[2])
 
-        cross = get_cross_section(DataTomo, start_val, end_val, field)
-        data = plot_cross(cross)
-        @show start_val typeof(cross)
         return (retB, data)
 
     else
@@ -328,5 +340,22 @@ callback!(app,  Output("mapview", "figure"),
     end
 end
 
+
+callback!(app,  Output("colorbar-slider", "value"),
+                Output("colorbar-slider", "min"),
+                Output("colorbar-slider", "max"),
+                Input("dropdown_field","value"),
+                Input("fig_cross","data")
+                ) do colorbar_value, cross_data
+
+    # retrieve dataset
+    @show cross_data
+    min_value = -8
+    max_value =  8
+    value = [min_value, max_value]
+    
+    return value, min_value, max_value
+
+end
 
 run_server(app)
