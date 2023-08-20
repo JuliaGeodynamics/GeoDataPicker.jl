@@ -190,16 +190,16 @@ end
 function cross_section_plot()
     options_fields = [(label = String(f), value="$f" ) for f in data_fields]
 
-    [
+    dbc_col([
         dbc_row(dbc_col(
                 dcc_graph(
                 id = "cross_section",
                 figure = plot_cross(), 
                 animate = false,
-                responsive=false),  width=10
-        ))
+                responsive=false,
+                config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["drawline","drawopenpath","eraseshape"])),  width=10
+        ), justify="center")
             ,
-        
     
     dbc_row([
             dbc_col([dcc_input(id="start_val", name="start_val", type="text", value="start: 10,40",style = Dict(:width => "100%"), debounce=true)]),
@@ -223,7 +223,7 @@ function cross_section_plot()
                         ]),
             dbc_col([dcc_input(id="end_val", name="end_val", type="text", value="end: 10,50",style = Dict(:width => "100%"),placeholder="min")])
     ])
-    ]
+    ])
 
 end
 
@@ -267,6 +267,16 @@ app.layout = dbc_container(className = "mxy-auto") do
         cross_section_plot()
     ),
     dcc_interval(id="plot-updater"),
+
+    
+    html_div([
+        dbc_row(dbc_col(html_div("A single column"))),
+        dbc_row([   dbc_col(html_div("One of 3 columns")),
+                    dbc_col(html_div("One of 3 columns")),
+                    dbc_col(html_div("One of 3 columns")),
+        ])
+    ]),
+
 
     html_div(className = "row") do
         create_topo_plot(DataTopo, start_val, end_val),
