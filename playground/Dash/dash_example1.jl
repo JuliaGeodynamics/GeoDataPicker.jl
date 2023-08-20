@@ -169,62 +169,26 @@ plot_cross() = plot_cross(nothing)
 # This creates the topography (mapview) plot (lower left)
 function create_topo_plot(DataTopo,start_val=nothing, end_val=nothing)
    
+    dcc_graph(
+        id = "mapview",
+        
+        figure    = plot_topo(DataTopo, start_val, end_val),
+        animate   = true,
+        clickData = true,
+        config = PlotConfig(displayModeBar=false, scrollZoom = false)
+    )
 
-    html_div(className = "nine columns" ) do
-       
-        dcc_graph(
-            id = "mapview",
-            
-            figure    = plot_topo(DataTopo, start_val, end_val),
-            animate   = true,
-            clickData = true,
-            config = PlotConfig(displayModeBar=false, scrollZoom = false)
-        )
-    
-
-    end
-    
 end
 
 # This creates the cross-section plot
 function cross_section_plot()
-    options_fields = [(label = String(f), value="$f" ) for f in data_fields]
-
-    dbc_col([
-        dbc_row(dbc_col(
-                dcc_graph(
-                id = "cross_section",
-                figure = plot_cross(), 
-                animate = false,
-                responsive=false,
-                config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["drawline","drawopenpath","eraseshape"])),  width=10
-        ), justify="center")
-            ,
-    
-    dbc_row([
-            dbc_col([dcc_input(id="start_val", name="start_val", type="text", value="start: 10,40",style = Dict(:width => "100%"), debounce=true)]),
-            dbc_col([dcc_dropdown(
-                            id="dropdown_field",
-                            options = options_fields,
-                            value = "dVp_paf21",
-                            clearable=false, placeholder="Select Dataset",
-                        ),
-                        ]),
-            dbc_col([ dcc_rangeslider(
-                            id = "colorbar-slider",
-                            min = -5.,
-                            max = 5.,
-                            #step = .1,
-                            value=[-3, 3],
-                            allowCross=false,
-                            tooltip="always_visible"
-                            #marks = Dict([i => ("$i") for i in [-10, -5, 0, 5, 10]])
-                        ),    
-                        ]),
-            dbc_col([dcc_input(id="end_val", name="end_val", type="text", value="end: 10,50",style = Dict(:width => "100%"),placeholder="min")])
-    ])
-    ])
-
+    dcc_graph(
+        id = "cross_section",
+        figure = plot_cross(), 
+        animate = false,
+        responsive=false,
+        config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["drawline","drawopenpath","eraseshape"],displaylogo=false))
+        
 end
 
 
@@ -257,33 +221,97 @@ app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP])
 
 app.title = "GMG Data picker"
 
+
+options_fields = [(label = String(f), value="$f" ) for f in data_fields]
+
 # Create the main layout
 app.layout = dbc_container(className = "mxy-auto") do
 
     
     html_h1("GMG Data Picker v0.1", style = Dict("margin-top" => 50, "textAlign" => "center")),
 
-    html_div(className = "column",
-        cross_section_plot()
-    ),
-    dcc_interval(id="plot-updater"),
-
-    
     html_div([
-        dbc_row(dbc_col(html_div("A single column"))),
-        dbc_row([   dbc_col(html_div("One of 3 columns")),
-                    dbc_col(html_div("One of 3 columns")),
-                    dbc_col(html_div("One of 3 columns")),
-        ])
-    ]),
+        dbc_col([
+            # plot with cross-section
+            dbc_placeholder(xs=12, button=true),
+            dbc_row([dbc_col([cross_section_plot()], width=10),
+                     dbc_col([
+                                dbc_row([dbc_button("Curve Interpretation",id="button-lock"),
+                                         dbc_collapse(
+                                             dbc_card(dbc_cardbody([
+                                                dbc_row([
+                                                    dbc_label("Options",align="center"),
+                                                    dbc_checkbox(label="lock curve", id="lock-curve"),
+                                                    dbc_button("Curves2",id="button-lock2"),
+                                                    dbc_button("Curves3",id="button-lock3")
+                                                ])
+                                                ])),
+                                             id="collapse",
+                                             is_open=false,
+                                         ),
+                                ])
+
+                        
+                            ], align="center"),
+                    ], justify="center"),
+
+            # info below plot
+            dbc_row([
+                    dbc_col([dcc_input(id="start_val", name="start_val", type="text", value="start: 10,40",style = Dict(:width => "100%"), debounce=true)]),
+                    dbc_col([dcc_dropdown(
+                                    id="dropdown_field",
+                                    options = options_fields,
+                                    value = "dVp_paf21",
+                                    clearable=false, placeholder="Select Dataset",
+                                ),
+                                ]),
+                    dbc_col([ dcc_rangeslider(
+                                    id = "colorbar-slider",
+                                    min = -5.,
+                                    max = 5.,
+                                    #step = .1,
+                                    value=[-3, 3],
+                                    allowCross=false,
+                                    tooltip="always_visible"
+                                    #marks = Dict([i => ("$i") for i in [-10, -5, 0, 5, 10]])
+                                ),    
+                                ]),
+                    dbc_col([dcc_input(id="end_val", name="end_val", type="text", value="end: 10,50",style = Dict(:width => "100%"),placeholder="min")])
+                    ]),
+            ], width=12),
+
+            # lower row | topography plot & buttons
+            dbc_row([
+                # plot topography
+                
+                dbc_col([create_topo_plot(DataTopo, start_val, end_val)]),
+                
+                # various menus @ lower right
+                dbc_col([
+                    dbc_row([html_div("various options")], justify="center"),
+                    dbc_row([dbc_placeholder(xs=6, button=true)], align="center",justify="end"),
+                   
+                    #dbc_card(dbc_cardbody(["This is some text within a card body",
+                    #         html_button(id="button-select", name="select", n_clicks=0, contentEditable=true),
+                    #         dbc_placeholder(xs=6),
+                    #]))
+                    
+                ], align="end")
+                #dbc_col([
+                #    dbc_row([html_button(id="button-select", name="select", n_clicks=0, contentEditable=true)])
+                #])
+
+            ])
+           
+        ]),
 
 
-    html_div(className = "row") do
-        create_topo_plot(DataTopo, start_val, end_val),
-        lowerright_menu()
-    end,
-  
-    html_pre(id="relayout-data")
+        #html_div(className = "row") do
+        #    create_topo_plot(DataTopo, start_val, end_val),
+        #    lowerright_menu()
+        #end,
+    
+        html_pre(id="relayout-data")
 end
 
 # this is the callback that is invoked if the line on the topography map is changed
@@ -356,6 +384,27 @@ callback!(app,  Output("mapview", "figure"),
         return (retB, data)
 
     end
+end
+
+
+
+callback!(app,
+    Output("collapse", "is_open"),
+    [Input("button-lock", "n_clicks")],
+    [State("collapse", "is_open")], ) do  n, is_open
+    
+    @show n, is_open
+    #if !isnothing(n)
+        if n>0
+            if is_open==1
+                is_open = 0
+            elseif is_open==0
+                is_open = 1
+            end
+            return is_open 
+        end
+    #end
+        
 end
 
 #=
