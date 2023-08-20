@@ -86,23 +86,95 @@ function plot_topo(DataTopo,start_val=nothing, end_val=nothing)
     if isnothing(end_val)
         end_val = (mean(xdata), maximum(ydata)-1)
     end
+    colorscale = "Viridis";
+    reversescale = false;
 
     pl = (
         id = "fig_topo",
-        data = [heatmap(x=xdata, y=ydata, z=collect(eachcol(zdata)))],
-        layout = (title = "mapview",
-                 shapes = [
-                    (   type = "line", x0=start_val[1], x1=end_val[1], 
-                                       y0=start_val[2], y1=end_val[2],
-                        editable = true)
-                    ]),
+        data = [heatmap(x = xdata, 
+                        y = ydata, 
+                        z = collect(eachcol(zdata)),
+                        colorscale = colorscale,reversescale=reversescale,
+                        zmin = -4, 
+                        zmax = 4,
+                        colorbar=attr(thickness=5)
+                        )
+                ],
+        colorbar=Dict("orientation"=>"v", "len"=>0.5, "thickness"=>10,"title"=>"elevat"),
+        layout = (  title = "topography [km]",
+                    yaxis=attr(
+                        title="Latitude",
+                        tickfont_size= 14,
+                        tickfont_color="rgb(100, 100, 100)"
+                    ),
+                    xaxis=attr(
+                        title="Longitude",
+                        tickfont_size= 14,
+                        tickfont_color="rgb(10, 10, 10)"
+                    ),
+                    shapes = [
+                            (   type = "line", x0=start_val[1], x1=end_val[1], 
+                                            y0=start_val[2], y1=end_val[2],
+                                editable = true)
+                            ],
+                    ),
         config = (edits    = (shapePosition =  true,)),                              
     )
     return pl
 end
 
 
+"""
+Creates topo plot & line that shows the cross-section
+"""
+function plot_cross(Cross::NamedTuple)
+    colorscale = "Rgb";
+    reversescale = true;
+    println("updating cross section")
+    data = Cross.data';
+    data[data .== NaN] .= 0;
 
+    x = 1:rand(1:20)
+    y = 1:rand(1:10)
+    @show length(x), length(y)
+
+
+
+    pl = (  id = "fig_topo",
+            data = [heatmap(x = Cross.x, 
+                            y = Cross.z, 
+                            z = collect(eachcol(data)),
+                            colorscale   = colorscale,
+                            reversescale = reversescale,
+                            colorbar=attr(thickness=5)
+                            )
+                    ],                            
+            colorbar=Dict("orientation"=>"v", "len"=>0.5, "thickness"=>10,"title"=>"elevat"),
+            layout = (  title = "Cross-section",
+                        xaxis=attr(
+                            title="Length along cross-section [km]",
+                            tickfont_size= 14,
+                            tickfont_color="rgb(100, 100, 100)"
+                        ),
+                        yaxis=attr(
+                            title="Depth [km]",
+                            tickfont_size= 14,
+                            tickfont_color="rgb(10, 10, 10)"
+                        ),
+                        ),
+            config = (edits    = (shapePosition =  true,)),  
+        )
+    return pl
+end
+
+
+function plot_cross(cross::Nothing) 
+    println("default cross section")
+    cross = get_cross_section(DataTomo, (10,41), (10,29))
+    pl = plot_cross(cross)
+    return pl
+end
+plot_cross() = plot_cross(nothing)  
 
 
 # This creates the topography (mapview) plot (lower left)
@@ -120,7 +192,7 @@ function create_topo_plot(DataTopo,start_val=nothing, end_val=nothing)
             figure    = plot_topo(DataTopo, start_val, end_val),
             animate   = true,
             clickData = true,
-            config = PlotConfig(displayModeBar=false)
+            config = PlotConfig(displayModeBar=false, scrollZoom = false)
         )
     
 
@@ -131,14 +203,10 @@ end
 # This creates the cross-section plot
 function cross_section_plot()
     dcc_graph(
-        id = "cross section",
-        figure = (
-            data = [
-                (x = [1, 2, 3], y = [4, 1, 2], type = "scatter", name = "SF"),
-            ],
-            layout = (title = "Cross-section",)
-        ),
+        id = "cross_section",
+        figure = plot_cross(), 
         animate = true,
+        responsive=true
         
     )
 end
@@ -180,13 +248,13 @@ app.layout = dbc_container(className = "mxy-auto") do
     html_div(className = "column",
         cross_section_plot()
     ),
-
+    dcc_interval(id="plot-updater"),
 
     html_div(className = "row") do
         create_topo_plot(DataTopo, start_val, end_val),
         lowerright_menu()
     end,
-
+  
     html_pre(id="relayout-data")
 end
 
@@ -216,6 +284,7 @@ end
 
 # This callback changes the cross-section line if we change the values by hand
 callback!(app,  Output("mapview", "figure"), 
+                Output("cross_section","figure"),
                 Input("start_val", "n_submit"),
                 Input("end_val", "n_submit"),
                 Input("start_val", "value"),
@@ -244,12 +313,17 @@ callback!(app,  Output("mapview", "figure"),
         end
         
         retB = plot_topo(DataTopo,start_val, end_val)
+        field = :dVp_paf21
 
-        return retB
+        cross = get_cross_section(DataTomo, start_val, end_val, field)
+        data = plot_cross(cross)
+        @show start_val typeof(cross)
+        return (retB, data)
 
     else
         retB = plot_topo(DataTopo)
-        return retB
+        data = plot_cross()
+        return (retB, data)
 
     end
 end

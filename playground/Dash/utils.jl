@@ -19,12 +19,30 @@ function load_dataset(fname::String="AlpsModels.jld2"; grid_name="@earth_relief_
 end
 
 """
-Extracts a cross-section from a tomographic dataset
+    x,z,data = get_cross_section(DataAlps, start_value=(10,41), end_value=(10,49), field=:dVp_paf21)
+
+Extracts a cross-section from a tomographic dataset and returns this as cartesian values (x,z) formatted for the Plotly heatmap format
 """
-function get_cross_section(DataAlps; lon=0)
+function get_cross_section(DataAlps::GeoData, start_value=(10,41), end_value=(10,49), field=:dVp_paf21)
 
-    cross=CrossSection(DataAlps, Lon_level=lon)
+    # retrieve the cross-section in GeoData format
+    cross   =   CrossSection(DataAlps, Start=start_value, End=end_value)
 
-    return cross
+    # transfer it to cartesian data
+    p           = ProjectionPoint(Lon=minimum(cross.lon.val),Lat=minimum(cross.lat.val));
+    cross_cart  = Convert2CartData(cross,p)
+    x_cross     = FlattenCrossSection(cross_cart);
+    x           = x_cross[:,1];
+    z           = cross_cart.z.val[1,:,1]
+
+    if !hasfield(typeof(cross.fields), field)
+        error("The dataset does not have field $field")
+    end
+
+    data        = cross_cart.fields[field][:,:,1]
+
+    # now transfer 
+
+    return (x=x,z=z,data=data)
 end
 
