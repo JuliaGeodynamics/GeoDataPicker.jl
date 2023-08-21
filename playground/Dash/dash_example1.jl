@@ -131,7 +131,6 @@ function plot_cross(Cross::Profile; zmax=nothing, zmin=nothing, shapes=nothing)
 
     shapes_data = [];
     if !isnothing(shapes)
-        @show shapes
         # a shape was added to the plot; add it again
         if shapes[1]=="line"
             line = shapes[2]
@@ -346,11 +345,12 @@ callback!(app,  Output("mapview", "figure"),
                 Input("end_val", "value"),
                 Input("dropdown_field","value"),
                 Input("colorbar-slider", "value"),
-                Input("cross_section","relayoutData")       # curves potentially added to cross-section
-                ) do n_start, n_end, start_value, end_value, selected_field, colorbar_value, cross_section_shape
+                Input("cross_section","relayoutData"),       # curves potentially added to cross-section
+                Input("cross_section","figure")             # figure with cross section
+                
+                ) do n_start, n_end, start_value, end_value, selected_field, colorbar_value, cross_section_shape, fig_cross
 
-    @show colorbar_value, cross_section_shape
-    shapes = interpret_drawn_curve(cross_section_shape);
+    shapes = interpret_drawn_curve(fig_cross.layout);
 
     if (!isnothing(start_value) ) ||
         (!isnothing(end_value)  ) 

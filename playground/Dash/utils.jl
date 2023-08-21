@@ -92,7 +92,6 @@ Gets the numerical values of start & end of the cross-section (which we can modi
 function get_startend_cross_section(value::JSON3.Object)
 
     if haskey(value, Symbol("shapes[0].x0"))
-        @show value
         # retrieve values from line 
         x0 = value[Symbol("shapes[0].x0")]
         x1 = value[Symbol("shapes[0].x1")]
@@ -112,33 +111,35 @@ get_startend_cross_section(value::Any) = nothing,nothing
     This interprets a curve that is drawn on the figure; can be a line or path
 """
 function interpret_drawn_curve(data::JSON3.Object)
-    @show data
     type=nothing
     data_curve=nothing
-    try
+
+    fieldnames_data = keys(data)
+    if any(fieldnames_data .== Symbol("shapes"))
         shapes = data.shapes
-        data_curve = []
-        type = data.shapes[1].type
-        if type=="path" 
-            data_curve = data.shapes[1].path        # this is in SVG format
-        elseif type=="line"
-            data_curve = [data.shapes[1].x0, data.shapes[1].y0, data.shapes[1].x1, data.shapes[1].y1]
-        else
-            error("unknown curve shape")    
+        if !isempty(shapes)
+            data_curve = []
+            type = data.shapes[1].type
+            if type=="path" 
+                data_curve = data.shapes[1].path        # this is in SVG format
+            elseif type=="line"
+                data_curve = [data.shapes[1].x0, data.shapes[1].y0, data.shapes[1].x1, data.shapes[1].y1]
+            else
+                error("unknown curve shape")    
+            end
         end
-    catch 
-        try 
-            data_curve = data[Symbol("shapes[0].path")]
-        catch
-            data_curve = [  data[Symbol("shapes[0].x0")],
-                            data[Symbol("shapes[0].y0")],
-                            data[Symbol("shapes[0].x1")],
-                            data[Symbol("shapes[0].y1")]]
-        end
+
+    elseif any(fieldnames_data .== Symbol("shapes[0].path"))
+        data_curve = data[Symbol("shapes[0].path")]
         type = "path"
-    end    
-    #
-    @show data_curve, type
+    elseif any(fieldnames_data .== Symbol("shapes[0].x0"))
+        data_curve = [  data[Symbol("shapes[0].x0")],
+                        data[Symbol("shapes[0].y0")],
+                        data[Symbol("shapes[0].x1")],
+                        data[Symbol("shapes[0].y1")]]
+        type = "line"
+        
+    end
 
     return (type, data_curve)
 end
