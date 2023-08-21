@@ -120,7 +120,7 @@ end
 """
 Creates topo plot & line that shows the cross-section
 """
-function plot_cross(Cross::Profile; zmax=nothing, zmin=nothing, shapes=nothing)
+function plot_cross(Cross::Profile; zmax=nothing, zmin=nothing, shapes=[])
     colorscale = "Rgb";
     reversescale = true;
     println("updating cross section")
@@ -130,19 +130,23 @@ function plot_cross(Cross::Profile; zmax=nothing, zmin=nothing, shapes=nothing)
     end
 
     shapes_data = [];
-    if !isnothing(shapes)
+    if !isempty(shapes)
         # a shape was added to the plot; add it again
-        if shapes[1]=="line"
-            line = shapes[2]
-            shapes_data = [
-                (   type = "line", x0=line[1], x1=line[3], 
-                                   y0=line[2], y1=line[4],
-                    editable = true)
-                ]
-        elseif shapes[1]=="path"
-            shapes_data =   [
-                (   type = "path", path=shapes[2], editable = true)
-                            ]
+        for shape in shapes
+            
+            if shape.type=="line"
+                line = shape.data_curve
+                val  = (type = "line",   x0=line[1], x1=line[3], y0=line[2], y1=line[4], editable = true,
+                            label = (text=shape.label_text,),
+                            line  = (color=shape.line_color, width=shape.line_width))
+                    
+            elseif shape.type=="path"
+                val =  (type = "path", path=shape.data_curve, editable = true,
+                            label = (text=shape.label_text,),
+                            line  = (color=shape.line_color, width=shape.line_width))
+                                
+            end
+            push!(shapes_data, val)
         end
     end
 
@@ -384,7 +388,6 @@ callback!(app,  Output("mapview", "figure"),
         retB = plot_topo(DataTopo)
         data = plot_cross(; shapes=shapes)
         return (retB, data)
-
     end
 end
 

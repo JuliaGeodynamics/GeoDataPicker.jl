@@ -114,34 +114,46 @@ function interpret_drawn_curve(data::JSON3.Object)
     type=nothing
     data_curve=nothing
 
+    shapes_vec = []
     fieldnames_data = keys(data)
+
     if any(fieldnames_data .== Symbol("shapes"))
         shapes = data.shapes
-        if !isempty(shapes)
-            data_curve = []
-            type = data.shapes[1].type
-            if type=="path" 
-                data_curve = data.shapes[1].path        # this is in SVG format
-            elseif type=="line"
-                data_curve = [data.shapes[1].x0, data.shapes[1].y0, data.shapes[1].x1, data.shapes[1].y1]
-            else
-                error("unknown curve shape")    
-            end
+        @show shapes
+
+        for shape in shapes
+
+            if !isempty(shape)
+                data_curve  = []
+                type        = shape.type
+                label_text  = shape.label.text 
+                label_text="alps"
+                
+                line_color = "#444"
+                line_width  = "4"
+
+                names = keys(shape)
+                if any(names.==:line)
+                    line_color  = shape.line.color
+                    line_width  = shape.line.width
+                end
+
+                if type=="path" 
+                    data_curve = shape.path        # this is in SVG format
+                elseif type=="line"
+                    data_curve = [shape.x0, shape.y0, shape.x1, shape.y1]
+                else
+                    error("unknown curve shape")    
+                end
+
+                dat = (type=type, data_curve=data_curve, label_text=label_text, line_color=line_color, line_width=line_width)
+                push!(shapes_vec, dat)
+            end  
         end
 
-    elseif any(fieldnames_data .== Symbol("shapes[0].path"))
-        data_curve = data[Symbol("shapes[0].path")]
-        type = "path"
-    elseif any(fieldnames_data .== Symbol("shapes[0].x0"))
-        data_curve = [  data[Symbol("shapes[0].x0")],
-                        data[Symbol("shapes[0].y0")],
-                        data[Symbol("shapes[0].x1")],
-                        data[Symbol("shapes[0].y1")]]
-        type = "line"
-        
     end
 
-    return (type, data_curve)
+    return shapes_vec
 end
 
-interpret_drawn_curve(data::Nothing) = (nothing, nothing)
+interpret_drawn_curve(data::Nothing) = []
