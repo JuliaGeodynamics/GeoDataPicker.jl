@@ -15,6 +15,7 @@ end_val = (10,49)
 
 
 # define the options on the lower-right
+# OBSOLETE
 function lowerright_menu()
     html_div(style = Dict("border" => "0.5px solid", "border-radius" => 5, "margin-top" => 68), className = "three columns") do
         html_div(id = "freq-val",
@@ -119,13 +120,31 @@ end
 """
 Creates topo plot & line that shows the cross-section
 """
-function plot_cross(Cross::NamedTuple; zmax=nothing, zmin=nothing)
+function plot_cross(Cross::NamedTuple; zmax=nothing, zmin=nothing, shapes=nothing)
     colorscale = "Rgb";
     reversescale = true;
     println("updating cross section")
     data = Cross.data';
     if isnothing(zmax)
         zmin, zmax = extrema(data)
+    end
+
+    shapes_data = [];
+    if !isnothing(shapes)
+        @show shapes
+        # a shape was added to the plot; add it again
+        if shapes[1]=="line"
+            line = shapes[2]
+            shapes_data = [
+                (   type = "line", x0=line[1], x1=line[3], 
+                                   y0=line[2], y1=line[4],
+                    editable = true)
+                ]
+        elseif shapes[1]=="path"
+            shapes_data =   [
+                (   type = "path", path=shapes[2], editable = true)
+                            ]
+        end
     end
 
     pl = (  id = "fig_cross",
@@ -150,6 +169,7 @@ function plot_cross(Cross::NamedTuple; zmax=nothing, zmin=nothing)
                             tickfont_size= 14,
                             tickfont_color="rgb(10, 10, 10)"
                         ),
+                        shapes = shapes_data,
                         ),
             config = (edits    = (shapePosition =  true,)),  
         )
@@ -192,27 +212,6 @@ function cross_section_plot()
 end
 
 
-"""
-    start_val, end_val =  get_startend_cross_section(value::JSON3.Object)
-
-Gets the numerical values of start & end of the cross-section (which we can modify by dragging)
-"""
-function get_startend_cross_section(value::JSON3.Object)
-
-    if haskey(value, Symbol("shapes[0].x0"))
-        # retrieve values from line 
-        x0 = value[Symbol("shapes[0].x0")]
-        x1 = value[Symbol("shapes[0].x1")]
-        y0 = value[Symbol("shapes[0].y0")]
-        y1 = value[Symbol("shapes[0].y1")]
-        start_val, end_val = (x0,y0), (x1,y1)
-    else
-        start_val, end_val = nothing, nothing
-    end    
-    return start_val, end_val
-end
-
-get_startend_cross_section(value::Any) = nothing,nothing
 
 
 # sets some defaults for webpage
@@ -236,13 +235,13 @@ app.layout = dbc_container(className = "mxy-auto") do
             dbc_placeholder(xs=12, button=true),
             dbc_row([dbc_col([cross_section_plot()], width=10),
                      dbc_col([
-                                dbc_row([dbc_button("Curve Interpretation",id="button-lock"),
+                                dbc_row([dbc_button("Curve Interpretation",id="button-curve-interpretation"),
                                          dbc_collapse(
                                              dbc_card(dbc_cardbody([
                                                 dbc_row([
                                                     dbc_label("Options",align="center"),
                                                     dbc_checkbox(label="lock curve", id="lock-curve"),
-                                                    dbc_button("Curves2",id="button-lock2"),
+                                                    dbc_button("Save Curve",id="button-save-curve"),
                                                     dbc_button("Curves3",id="button-lock3")
                                                 ])
                                                 ])),
@@ -346,10 +345,13 @@ callback!(app,  Output("mapview", "figure"),
                 Input("start_val", "value"),
                 Input("end_val", "value"),
                 Input("dropdown_field","value"),
-                Input("colorbar-slider", "value")
-                ) do n_start, n_end, start_value, end_value, selected_field, colorbar_value
+                Input("colorbar-slider", "value"),
+                Input("cross_section","relayoutData")       # curves potentially added to cross-section
+                ) do n_start, n_end, start_value, end_value, selected_field, colorbar_value, cross_section_shape
 
-    @show colorbar_value
+    @show colorbar_value, cross_section_shape
+    shapes = interpret_drawn_curve(cross_section_shape);
+
     if (!isnothing(start_value) ) ||
         (!isnothing(end_value)  ) 
         
@@ -374,54 +376,48 @@ callback!(app,  Output("mapview", "figure"),
         
         retB = plot_topo(DataTopo,start_val, end_val)
         cross = get_cross_section(DataTomo, start_val, end_val, Symbol(selected_field))
-        data = plot_cross(cross, zmin=colorbar_value[1], zmax=colorbar_value[2])
+        data = plot_cross(cross, zmin=colorbar_value[1], zmax=colorbar_value[2], shapes=shapes)
 
         return (retB, data)
 
     else
         retB = plot_topo(DataTopo)
-        data = plot_cross()
+        data = plot_cross(; shapes=shapes)
         return (retB, data)
 
     end
 end
 
 
-
+# open/close Curve interpretation
 callback!(app,
     Output("collapse", "is_open"),
-    [Input("button-lock", "n_clicks")],
+    [Input("button-curve-interpretation", "n_clicks")],
     [State("collapse", "is_open")], ) do  n, is_open
     
-    @show n, is_open
-    #if !isnothing(n)
-        if n>0
-            if is_open==1
-                is_open = 0
-            elseif is_open==0
-                is_open = 1
-            end
-            return is_open 
+    if isnothing(n); n=0 end
+
+    if n>0
+        if is_open==1
+            is_open = 0
+        elseif is_open==0
+            is_open = 1
         end
-    #end
+    end
+    return is_open 
         
 end
 
 #=
-callback!(app,  Output("colorbar-slider", "min"),
-                Output("colorbar-slider", "max"),
-                Input("dropdown_field","value"),
-                Input("cross_section","figure")
-                ) do dropdown_field, fig_cross
+callback!(app,  Output("relayout-data", "children"),
+                Input("button-save-curve","n_clicks"),
+                Input("cross_section","relayoutData")       # curves potentially added to cross-section
+                ) do n, cross_section_shape
 
     # retrieve dataset
-    @show dropdown_field typeof(fig_cross) fig_cross[Symbol("data")]
+    @show n, cross_section_shape
 
-    min_value = -8
-    max_value =  8
-    value = [min_value, max_value]
-    
-    return min_value, max_value
+    return nothing
 
 end
 =#

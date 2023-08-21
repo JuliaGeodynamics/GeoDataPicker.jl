@@ -46,3 +46,67 @@ function get_cross_section(DataAlps::GeoData, start_value=(10,41), end_value=(10
     return (x=x,z=z,data=data)
 end
 
+
+
+"""
+    start_val, end_val =  get_startend_cross_section(value::JSON3.Object)
+
+Gets the numerical values of start & end of the cross-section (which we can modify by dragging)
+"""
+function get_startend_cross_section(value::JSON3.Object)
+
+    if haskey(value, Symbol("shapes[0].x0"))
+        @show value
+        # retrieve values from line 
+        x0 = value[Symbol("shapes[0].x0")]
+        x1 = value[Symbol("shapes[0].x1")]
+        y0 = value[Symbol("shapes[0].y0")]
+        y1 = value[Symbol("shapes[0].y1")]
+        start_val, end_val = (x0,y0), (x1,y1)
+    else
+        start_val, end_val = nothing, nothing
+    end    
+    return start_val, end_val
+end
+
+get_startend_cross_section(value::Any) = nothing,nothing
+
+
+"""
+    This interprets a curve that is drawn on the figure; can be a line or path
+"""
+function interpret_drawn_curve(data::JSON3.Object)
+    @show data
+    type=nothing
+    data_curve=nothing
+    try
+        shapes = data.shapes
+        data_curve = []
+        type = data.shapes[1].type
+        if type=="path" 
+            data_curve = data.shapes[1].path        # this is in SVG format
+        elseif type=="line"
+            data_curve = [data.shapes[1].x0, data.shapes[1].y0, data.shapes[1].x1, data.shapes[1].y1]
+        else
+            error("unknown curve shape")    
+        end
+    catch 
+        try 
+            data_curve = data[Symbol("shapes[0].path")]
+        catch
+            data_curve = [  data[Symbol("shapes[0].x0")],
+                            data[Symbol("shapes[0].y0")],
+                            data[Symbol("shapes[0].x1")],
+                            data[Symbol("shapes[0].y1")]]
+        end
+        type = "path"
+    end    
+    #
+     @show data_curve, type
+
+    
+
+    return (type, data_curve)
+end
+
+interpret_drawn_curve(data::Nothing) = (nothing, nothing)
