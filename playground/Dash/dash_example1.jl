@@ -120,7 +120,7 @@ end
 """
 Creates topo plot & line that shows the cross-section
 """
-function plot_cross(Cross::NamedTuple; zmax=nothing, zmin=nothing, shapes=nothing)
+function plot_cross(Cross::Profile; zmax=nothing, zmin=nothing, shapes=nothing)
     colorscale = "Rgb";
     reversescale = true;
     println("updating cross section")
@@ -148,8 +148,8 @@ function plot_cross(Cross::NamedTuple; zmax=nothing, zmin=nothing, shapes=nothin
     end
 
     pl = (  id = "fig_cross",
-            data = [heatmap(x = Cross.x, 
-                            y = Cross.z, 
+            data = [heatmap(x = Cross.x_cart, 
+                            y = Cross.z_cart, 
                             z = collect(eachcol(data)),
                             colorscale   = colorscale,
                             reversescale = reversescale,

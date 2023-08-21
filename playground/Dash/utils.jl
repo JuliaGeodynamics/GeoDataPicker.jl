@@ -3,6 +3,31 @@ using GeophysicalModelGenerator, GMT, JLD2
 
 
 """
+structure that holds info about the project
+"""
+mutable struct Profile
+    ProfileData::GeoData        # the geodata with profile info
+    
+    start_lonlat::NTuple        # start of profile in lon/lat
+    end_lonlat::NTuple          # start of profile in lon/lat
+
+    start_cart::Number          # start of profile in cartesian coords
+    end_cart::Number            # start of profile in cartesian coords
+
+    z_cart::Vector              # 1D vector with z-coordinates (or y, in case of horizontal profile)
+    x_cart::Vector              # 1D vector with x-coordinates (along profile)
+    
+    x_lon::Vector               # 1D vector with lon values
+    x_lat::Vector               # 1D vector with lat values
+
+    data::Matrix                # the current data displayed
+    
+    Polygons::Vector            # Interpreted polygons along the profile         
+    
+    # Intersection points       # Vector with intersection points of other profiles with the current one (to be added
+end
+
+"""
     DataTomo, DataTopo =  load_dataset(fname::String="AlpsModels.jld2"; grid_name="@earth_relief_02m.grd")
 
 This loads a 3D tomographic dataset from the file `fname` (prepared with the GeophysicalModelGenerator and saves as `*.jld2` format).
@@ -32,8 +57,12 @@ function get_cross_section(DataAlps::GeoData, start_value=(10,41), end_value=(10
     p           = ProjectionPoint(Lon=minimum(cross.lon.val),Lat=minimum(cross.lat.val));
     cross_cart  = Convert2CartData(cross,p)
     x_cross     = FlattenCrossSection(cross_cart);
-    x           = x_cross[:,1];
-    z           = cross_cart.z.val[1,:,1]
+    x_cart      = x_cross[:,1];
+    z_cart      = cross_cart.z.val[1,:,1]
+
+    x_lon       = cross.lon.val[:,1];
+    x_lat       = cross.lat.val[1,:];
+    
 
     if !hasfield(typeof(cross.fields), field)
         error("The dataset does not have field $field")
@@ -41,9 +70,16 @@ function get_cross_section(DataAlps::GeoData, start_value=(10,41), end_value=(10
 
     data        = cross_cart.fields[field][:,:,1]
 
-    # now transfer 
+    # add this to the profile structure
+    start_lonlat = (minimum(cross.lon.val), minimum(cross.lat.val))
+    end_lonlat   = (maximum(cross.lon.val), maximum(cross.lat.val))
+    
+    start_cart   = minimum(x_cart)         
+    end_cart     = maximum(x_cart)         
 
-    return (x=x,z=z,data=data)
+    profile = Profile(cross, start_lonlat, end_lonlat, start_cart, end_cart, z_cart, x_cart, x_lon, x_lat, data, [])
+
+    return profile
 end
 
 
@@ -102,9 +138,7 @@ function interpret_drawn_curve(data::JSON3.Object)
         type = "path"
     end    
     #
-     @show data_curve, type
-
-    
+    @show data_curve, type
 
     return (type, data_curve)
 end
