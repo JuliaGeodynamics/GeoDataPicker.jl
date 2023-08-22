@@ -8,13 +8,13 @@ include("utils.jl")  # tomographic dataset
 # Load data
 DataTomo, DataTopo = load_dataset();
 
-
 data_fields =  keys(DataTomo.fields)
 start_val = (10,41)
 end_val = (10,49) 
+cross = get_cross_section(DataTomo, start_val, end_val)
 
 global AppData
-AppData = ();        # this will later hold the cross-section and plot data
+AppData = (DataTomo=DataTomo, DataTopo=DataTopo, cross=cross);        # this will later hold the cross-section and plot data
 
 # define the options on the lower-right
 # OBSOLETE?
@@ -130,6 +130,7 @@ function plot_cross(Cross::Profile; zmax=nothing, zmin=nothing, shapes=[])
     if isnothing(zmax)
         zmin, zmax = extrema(data)
     end
+    shapes = Cross.Polygons
 
     shapes_data = [];
     if !isempty(shapes)
@@ -247,10 +248,10 @@ app.layout = dbc_container(className = "mxy-auto") do
                                                     dbc_label("Options",align="center"),
                                                    # dbc_checkbox(label="lock curve", id="lock-curve"),
                                                     dbc_input(placeholder="Name of curve",id="shape-name"),
-                                                    dbc_input(placeholder="Linewidth",id="shape-linewidth"),
+                                                    dbc_input(placeholder="Linewidth",id="shape-linewidth", value="1"),
                                                     dbc_placeholder(button=true),
                                                     
-                                                    dbc_button("Update latest curve",id="button-save-curve"),
+                                                    dbc_button("Update latest curve",id="button-update-curve"),
                                                 ])
                                                 ])),
                                              id="collapse",
@@ -388,10 +389,17 @@ callback!(app,  Output("mapview", "figure"),
                 
                 ) do n_start, n_end, start_value, end_value, selected_field, colorbar_value, cross_section_shape, fig_cross, shape_name, n_shape_name
     global AppData
-    @show AppData
+    @show  keys(AppData)
 
     modify_data = (name=shape_name,)
     shapes = interpret_drawn_curve(fig_cross.layout, modify_data);
+    if hasfield(typeof(AppData.cross),:Polygons)
+        @show length(AppData.cross.Polygons), length(shapes)
+        if length(AppData.cross.Polygons)>=length(shapes)
+            shapes = AppData.cross.Polygons
+        end
+    end
+
 
     if !isnothing(n_shape_name)
         @show keys(fig_cross)
@@ -421,15 +429,22 @@ callback!(app,  Output("mapview", "figure"),
         
         retB = plot_topo(DataTopo,start_val, end_val)
         cross = get_cross_section(DataTomo, start_val, end_val, Symbol(selected_field))
-        data = plot_cross(cross, zmin=colorbar_value[1], zmax=colorbar_value[2], shapes=shapes)
+        
+        cross.Polygons = shapes;    # drawn shapes
+        data = plot_cross(cross, zmin=colorbar_value[1], zmax=colorbar_value[2])
 
+        # add cross section to App data
+        AppData = (AppData..., cross=cross)
 
-        AppData = (cross=cross,)
         return (retB, data)
 
     else
+        
+
         retB = plot_topo(DataTopo)
-        data = plot_cross(; shapes=shapes)
+        if hasfield(typeof(AppData),:cross)
+            data = plot_cross(cross)
+        end
         return (retB, data)
     end
 end
@@ -459,18 +474,35 @@ end
 
 
 
-#=
-callback!(app,  Output("relayout-data", "children"),
-                Input("button-save-curve","n_clicks"),
-                Input("cross_section","relayoutData")       # curves potentially added to cross-section
-                ) do n, cross_section_shape
+
+callback!(app,  Output("relayout-data", "children"), 
+                Input("button-update-curve","n_clicks"),
+                Input("shape-name","value"),            # curves potentially added to cross-section
+                Input("shape-linewidth","value")        # curves potentially added to cross-section
+                ) do n, name, linewidth
 
     # retrieve dataset
-    @show n, cross_section_shape
+    if isnothing(n); n=0 end
 
-    return nothing
+    if hasfield(typeof(AppData),:cross)
+        if !isempty(AppData.cross.Polygons)
+            shape = AppData.cross.Polygons[end]
+            
+            # update values
+            shape = (shape..., label_text=name, line_width=parse(Int64,linewidth))
+
+            AppData.cross.Polygons[end] = shape
+        end
+      
+    end
+    @show n, name, linewidth
+    
+    fig = plot_cross(AppData.cross)
+    @show AppData.cross.Polygons
+    
+    return fig 
 
 end
-=#
+
 
 run_server(app)
