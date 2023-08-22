@@ -1,5 +1,6 @@
 # various helper routines 
-using GeophysicalModelGenerator, GMT, JLD2
+using GeophysicalModelGenerator, JLD2
+#using GMT
 
 
 """
@@ -34,12 +35,14 @@ This loads a 3D tomographic dataset from the file `fname` (prepared with the Geo
 It also uses GMT to download the corresponding topographic map for the region
 
 """
-function load_dataset(fname::String="AlpsModels.jld2"; grid_name="@earth_relief_02m.grd")
+function load_dataset(fname::String="AlpsModels.jld2"; topo_name="AlpsTopo.jld2", grid_name="@earth_relief_02m.grd")
     DataTomo = load_object(fname)
     lon = extrema(DataTomo.lon.val)
     lat = extrema(DataTomo.lat.val)
     
-    DataTopo = ImportTopo(lat=[lat...], lon=[lon...],file=grid_name)
+    #DataTopo = ImportTopo(lat=[lat...], lon=[lon...],file=grid_name)
+    DataTopo = load_object(topo_name)
+    
     return DataTomo, DataTopo
 end
 
@@ -110,10 +113,11 @@ get_startend_cross_section(value::Any) = nothing,nothing
 """
     This interprets a curve that is drawn on the figure; can be a line or path
 """
-function interpret_drawn_curve(data::JSON3.Object)
+function interpret_drawn_curve(data::JSON3.Object, modify_data)
     type=nothing
     data_curve=nothing
-
+    @show data
+    
     shapes_vec = []
     fieldnames_data = keys(data)
 

@@ -13,9 +13,11 @@ data_fields =  keys(DataTomo.fields)
 start_val = (10,41)
 end_val = (10,49) 
 
+global AppData
+AppData = ();        # this will later hold the cross-section and plot data
 
 # define the options on the lower-right
-# OBSOLETE
+# OBSOLETE?
 function lowerright_menu()
     html_div(style = Dict("border" => "0.5px solid", "border-radius" => 5, "margin-top" => 68), className = "three columns") do
         html_div(id = "freq-val",
@@ -243,9 +245,12 @@ app.layout = dbc_container(className = "mxy-auto") do
                                              dbc_card(dbc_cardbody([
                                                 dbc_row([
                                                     dbc_label("Options",align="center"),
-                                                    dbc_checkbox(label="lock curve", id="lock-curve"),
-                                                    dbc_button("Save Curve",id="button-save-curve"),
-                                                    dbc_button("Curves3",id="button-lock3")
+                                                   # dbc_checkbox(label="lock curve", id="lock-curve"),
+                                                    dbc_input(placeholder="Name of curve",id="shape-name"),
+                                                    dbc_input(placeholder="Linewidth",id="shape-linewidth"),
+                                                    dbc_placeholder(button=true),
+                                                    
+                                                    dbc_button("Update latest curve",id="button-save-curve"),
                                                 ])
                                                 ])),
                                              id="collapse",
@@ -316,6 +321,33 @@ app.layout = dbc_container(className = "mxy-auto") do
         html_pre(id="relayout-data")
 end
 
+#=
+callback!(app,  Output("cross_section","figure"),
+                Input("cross_section","figure"),
+                Input("shape-name","value"),
+                Input("shape-name","n_submit"),
+                ) do fig_cross,shape_name, n
+
+    # retrieve dataset
+    #=
+    layout=fig_cross.layout
+    if !isnothing(n)
+        @show fig_cross.layout
+        
+
+        @show keys(fig_cross)
+       
+    end
+=#
+  #  retB = plot_topo(DataTopo)
+    fig  = plot_cross()
+
+    
+     
+    return fig
+end
+=#
+
 # this is the callback that is invoked if the line on the topography map is changed
 callback!(app,  Output("start_val", "value"),
                 Output("end_val", "value"),
@@ -350,12 +382,21 @@ callback!(app,  Output("mapview", "figure"),
                 Input("dropdown_field","value"),
                 Input("colorbar-slider", "value"),
                 Input("cross_section","relayoutData"),       # curves potentially added to cross-section
-                Input("cross_section","figure")             # figure with cross section
+                Input("cross_section","figure"),             # figure with cross section
+                Input("shape-name","value"),
+                Input("shape-name","n_submit"),
                 
-                ) do n_start, n_end, start_value, end_value, selected_field, colorbar_value, cross_section_shape, fig_cross
+                ) do n_start, n_end, start_value, end_value, selected_field, colorbar_value, cross_section_shape, fig_cross, shape_name, n_shape_name
+    global AppData
+    @show AppData
 
-    shapes = interpret_drawn_curve(fig_cross.layout);
+    modify_data = (name=shape_name,)
+    shapes = interpret_drawn_curve(fig_cross.layout, modify_data);
 
+    if !isnothing(n_shape_name)
+        @show keys(fig_cross)
+    end
+    
     if (!isnothing(start_value) ) ||
         (!isnothing(end_value)  ) 
         
@@ -382,6 +423,8 @@ callback!(app,  Output("mapview", "figure"),
         cross = get_cross_section(DataTomo, start_val, end_val, Symbol(selected_field))
         data = plot_cross(cross, zmin=colorbar_value[1], zmax=colorbar_value[2], shapes=shapes)
 
+
+        AppData = (cross=cross,)
         return (retB, data)
 
     else
@@ -410,6 +453,11 @@ callback!(app,
     return is_open 
         
 end
+
+
+
+
+
 
 #=
 callback!(app,  Output("relayout-data", "children"),
