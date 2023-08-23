@@ -116,17 +116,15 @@ get_startend_cross_section(value::Any) = nothing,nothing
 """
     This interprets a curve that is drawn on the figure; can be a line or path
 """
-function interpret_drawn_curve(data::JSON3.Object, modify_data)
+function interpret_drawn_curve(data::JSON3.Object)
     type=nothing
     data_curve=nothing
-    @show data
     
     shapes_vec = []
     fieldnames_data = keys(data)
 
     if any(fieldnames_data .== Symbol("shapes"))
         shapes = data.shapes
-        @show shapes
 
         for shape in shapes
 
@@ -134,7 +132,6 @@ function interpret_drawn_curve(data::JSON3.Object, modify_data)
                 data_curve  = []
                 type        = shape.type
                 label_text  = shape.label.text 
-                label_text="alps"
                 
                 line_color = "#444"
                 line_width  = "4"
