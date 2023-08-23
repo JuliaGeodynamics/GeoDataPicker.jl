@@ -17,7 +17,7 @@ cross = get_cross_section(DataTomo, start_val, end_val)
 
 # Create a global variable with the data structure
 global AppData
-AppData = (DataTomo=DataTomo, DataTopo=DataTopo, cross=cross, move_cross=false);        # this will later hold the cross-section and plot data
+AppData = (DataTomo=DataTomo, DataTopo=DataTopo, cross=cross, move_cross=false, CrossSections=[]);        # this will later hold the cross-section and plot data
 
 
 colornames = ["red",    "green",    "blue",    "black", "white"]
@@ -36,6 +36,20 @@ function plot_topo(AppData)
     end_val   = cross.end_lonlat
     colorscale = "Viridis";
     reversescale = false;
+
+    shapes = [ (   type = "line",   x0=start_val[1], x1=end_val[1], 
+                                    y0=start_val[2], y1=end_val[2],
+                                    editable = true,
+                                    line  = (color="#000000", width=4),
+                                    label = (text="",))] 
+    for cr in AppData.CrossSections
+        shape = (   type = "line",    x0=cr.start_lonlat[1], x1=cr.end_lonlat[1], 
+                                      y0=cr.start_lonlat[2], y1=cr.end_lonlat[2],
+                                      editable = false,
+                                      line  = (color="#0000FF", width=1),
+                                      label=(text="$(cr.Number)",))
+        push!(shapes, shape)
+    end
 
     pl = (
         id = "fig_topo",
@@ -62,14 +76,12 @@ function plot_topo(AppData)
                     ),
 
                     # once we save additional cross-sections, add them here
-                    shapes = [
-                            (   type = "line",  x0=start_val[1], x1=end_val[1], 
-                                                y0=start_val[2], y1=end_val[2],
-                                editable = true)
-                            ],
+                    shapes = shapes,
+
                     ),
         config = (edits    = (shapePosition =  true,)),                              
     )
+
     return pl
 end
 
@@ -192,7 +204,6 @@ app.layout = dbc_container(className = "mxy-auto") do
     html_div([
         dbc_col([
             # plot with cross-section
-            dbc_placeholder(xs=12, button=true),
             dbc_row([dbc_col([cross_section_plot()], width=10),
                      dbc_col([
                                 dbc_row([dbc_button("Curve Interpretation",id="button-curve-interpretation"),
@@ -231,7 +242,7 @@ app.layout = dbc_container(className = "mxy-auto") do
 
             # info below plot
             dbc_row([
-                    dbc_col([dcc_input(id="start_val", name="start_val", type="text", value="start: 10,40",style = Dict(:width => "100%"), debounce=true)]),
+                    dbc_col([dcc_input(id="start_val", name="start_val", type="text", value="start: 5,46",style = Dict(:width => "100%"), debounce=true)]),
                     dbc_col([dcc_dropdown(
                                     id="dropdown_field",
                                     options = options_fields,
@@ -250,27 +261,31 @@ app.layout = dbc_container(className = "mxy-auto") do
                                     #marks = Dict([i => ("$i") for i in [-10, -5, 0, 5, 10]])
                                 ),    
                                 ]),
-                    dbc_col([dcc_input(id="end_val", name="end_val", type="text", value="end: 10,50",style = Dict(:width => "100%"),placeholder="min")])
+                    dbc_col([dcc_input(id="end_val", name="end_val", type="text", value="end: 10,45",style = Dict(:width => "100%"),placeholder="min")])
                     ]),
             ], width=12),
 
             # lower row | topography plot & buttons
             dbc_row([
                 # plot topography
-                
                 dbc_col([create_topo_plot(AppData)]),
                 
                 # various menus @ lower right
                 dbc_col([
-                    dbc_row([html_div("various options")], justify="center"),
-                    dbc_row([dbc_placeholder(xs=6, button=true)], align="center",justify="end"),
+                    dbc_row(dbc_label("Profile options"),justify="center"),
+                    dbc_row(dbc_label("# of profiles: 0"),id="num_profiles"),
+                    dbc_row([dbc_button("Add profile", id="button-add-profile")]),
+                    dbc_row([dcc_dropdown(options="none", id="dropdown-profiles", placeholder="Select profile")]),
+                    
+                    #dbc_row([html_div("various options")], justify="center"),
+                    #dbc_row([dbc_placeholder(xs=6, button=true)], align="center",justify="end"),
                    
                     #dbc_card(dbc_cardbody(["This is some text within a card body",
                     #         html_button(id="button-select", name="select", n_clicks=0, contentEditable=true),
                     #         dbc_placeholder(xs=6),
                     #]))
                     
-                ], align="end")
+                ], align="center", width=5)
                 #dbc_col([
                 #    dbc_row([html_button(id="button-select", name="select", n_clicks=0, contentEditable=true)])
                 #])
@@ -494,5 +509,81 @@ callback!(app,  Output("button-clear-curve","n_clicks"),
     return n 
 
 end
+
+
+
+# save current cross-section to list
+callback!(app,  Output("button-add-profile","n_clicks"),
+                Output("num_profiles","component_name"),
+                Output("start_val", "n_submit"),
+                Output("dropdown-profiles","options"),
+                Input("button-add-profile","n_clicks"),
+                Input("num_profiles","className"),
+                Input("start_val", "n_submit"),
+                State("mapview", "figure")
+                
+                ) do n, comp_name, n_start, fig_map
+    global AppData
+
+    # retrieve dataset
+    prof_names=""
+    if !isnothing(n)
+        cross = AppData.cross
+
+        n_cross = length(AppData.CrossSections)
+        if cross.Number==0
+            cross.Number = n_cross+1
+        end
+
+        # Add to data set
+        push!(AppData.CrossSections, AppData.cross)
+
+        prof_names = ["none"]
+
+        for cr in AppData.CrossSections
+            push!(prof_names, "profile $(cr.Number)")
+        end
+        
+    end
+    if isnothing(n_start)
+        n_start=0
+    end
+
+    return n, comp_name, n_start+1, prof_names 
+
+end
+
+# select a profile
+callback!(app,  Output("dropdown-profiles","value"),
+                Output("end_val", "n_submit"),
+                Input("dropdown-profiles","value"),
+                Input("end_val", "n_submit")
+                ) do select_profile, n_end
+
+    global AppData
+    if !isnothing(select_profile)
+        if select_profile != "none"
+             _, num = split(select_profile)
+             n = parse(Int64,num)
+             @show num, select_profile
+             
+             for cr in AppData.CrossSections
+                @show cr.Number
+                if cr.Number==n
+                    @show n
+                    cross = cr
+                    # update AppData
+                    AppData = (AppData...,  cross=cross)
+                end
+             end
+        end
+    end
+    if isnothing(n_end)
+        n_end=0
+    end
+
+    return select_profile, n_end+1
+end
+
 
 run_server(app)
