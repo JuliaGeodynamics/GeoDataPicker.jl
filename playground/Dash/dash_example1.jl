@@ -19,6 +19,10 @@ cross = get_cross_section(DataTomo, start_val, end_val)
 global AppData
 AppData = (DataTomo=DataTomo, DataTopo=DataTopo, cross=cross, move_cross=false);        # this will later hold the cross-section and plot data
 
+
+colornames = ["red",    "green",    "blue",    "black", "white"]
+colorvalues= ["#F80038", "#00FF00", "#0000FF", "#000000","#FFFFFF"]
+
 """
 Creates a topo plot & line that shows the cross-section
 """
@@ -195,12 +199,20 @@ app.layout = dbc_container(className = "mxy-auto") do
                                          dbc_collapse(
                                              dbc_card(dbc_cardbody([
                                                 dbc_row([
-                                                    dbc_label("Options",align="center"),
+                                                    dbc_row(dbc_label("Options"),justify="center"),
                                                    # dbc_checkbox(label="lock curve", id="lock-curve"),
-                                                    dbc_input(placeholder="Name of curve",id="shape-name"),
-                                                    dbc_input(placeholder="Linewidth",id="shape-linewidth", value="1"),
-                                                    dbc_placeholder(button=true),
-                                                    
+
+                                                     dbc_row([dbc_col(dbc_label("Name:"),align="center", width=5),
+                                                             dbc_col(dbc_input(placeholder="Name of curve",id="shape-name"), width=6)]),
+
+                                                    dbc_row([dbc_col(dbc_label("Linewidth:"),align="center", width=5),
+                                                             dbc_col(dbc_input(placeholder="Linewidth",id="shape-linewidth", value="1", type="number"))
+                                                            ]),
+
+                                                    dbc_row([dbc_col(dbc_label("Colors:"),align="center", width=5),
+                                                            dbc_col(dcc_dropdown(options=colornames,id="shape-color", value="black", clearable=false))
+                                                           ]),
+
                                                     dbc_button("Update props of last curve",id="button-update-curve"),
                                                     dbc_button("Add all curves to profile",id="button-add-curve"),
                                                     dbc_button("Clear all curves",id="button-clear-curve"),
@@ -422,8 +434,9 @@ callback!(app,  Output("relayout-data", "children"),
                 Input("button-update-curve","n_clicks"),
                 State("shape-name","value"),            # curves potentially added to cross-section
                 State("shape-linewidth","value"),       # curves potentially added to cross-section
+                State("shape-color","value"),
                 State("cross_section","figure")
-                ) do n, name, linewidth, fig_cross
+                ) do n, name, linewidth, colorname, fig_cross
 
     # retrieve dataset
     if isnothing(n); n=0 end
@@ -432,8 +445,11 @@ callback!(app,  Output("relayout-data", "children"),
     
     # update values of last shape
     if !isempty(shapes)
+        id = findall(colornames.==colorname);
+        col = colorvalues[id][1]
+
         shape = shapes[end]
-        shape = (shape..., label_text=name, line_width=parse(Int64,linewidth))
+        shape = (shape..., label_text=name, line_width=linewidth, line_color=col)
         shapes[end] = shape
     end
 
@@ -453,10 +469,8 @@ end
 
 callback!(app,  Output("button-add-curve","n_clicks"), 
                 Input("button-add-curve","n_clicks"),
-                State("shape-name","value"),            # curves potentially added to cross-section
-                State("shape-linewidth","value"),       # curves potentially added to cross-section
                 State("cross_section","figure")
-                ) do n, name, linewidth, fig_cross
+                ) do n, fig_cross
 
     # retrieve dataset
     if !isnothing(n)
