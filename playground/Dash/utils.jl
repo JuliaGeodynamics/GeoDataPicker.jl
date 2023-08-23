@@ -7,6 +7,8 @@ using GeophysicalModelGenerator, JLD2
 structure that holds info about the project
 """
 mutable struct Profile
+    Number :: Int64             # Number of the profile
+
     ProfileData::GeoData        # the geodata with profile info
     
     start_lonlat::NTuple        # start of profile in lon/lat
@@ -22,6 +24,7 @@ mutable struct Profile
     x_lat::Vector               # 1D vector with lat values
 
     data::Matrix                # the current data displayed
+    selected_field::Symbol      # currently selected field
     
     Polygons::Vector            # Interpreted polygons along the profile         
     
@@ -74,13 +77,13 @@ function get_cross_section(DataAlps::GeoData, start_value=(10,41), end_value=(10
     data        = cross_cart.fields[field][:,:,1]
 
     # add this to the profile structure
-    start_lonlat = (minimum(cross.lon.val), minimum(cross.lat.val))
-    end_lonlat   = (maximum(cross.lon.val), maximum(cross.lat.val))
+    start_lonlat = Float64.(start_value)
+    end_lonlat   = Float64.(end_value)
     
     start_cart   = minimum(x_cart)         
     end_cart     = maximum(x_cart)         
 
-    profile = Profile(cross, start_lonlat, end_lonlat, start_cart, end_cart, z_cart, x_cart, x_lon, x_lat, data, [])
+    profile = Profile(0, cross, start_lonlat, end_lonlat, start_cart, end_cart, z_cart, x_cart, x_lon, x_lat, data, field, [])
 
     return profile
 end
@@ -161,3 +164,28 @@ function interpret_drawn_curve(data::JSON3.Object, modify_data)
 end
 
 interpret_drawn_curve(data::Nothing) = []
+
+
+function extract_start_end_values(start_value, end_value)
+
+    # extract values:
+    start_val1 = split(start_value,":")
+    start_val1 = start_val1[end]
+
+    end_val1 = split(end_value,":")
+    end_val1 = end_val1[end]
+
+    start_val, end_val = nothing, nothing
+    s_str = split(start_val1,",")
+    e_str = split(end_val1,  ",")
+    if length(s_str)==2 && length(e_str)==2
+        if !any(isempty.(s_str)) && !any(isempty.(e_str))
+            x0,y0 = parse.(Float64,s_str)
+            x1,y1 = parse.(Float64,e_str)
+            start_val = (x0,y0)
+            end_val = (x1,y1)
+        end
+    end
+
+    return start_val, end_val
+end
