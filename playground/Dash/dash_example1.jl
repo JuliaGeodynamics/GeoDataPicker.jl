@@ -19,60 +19,6 @@ cross = get_cross_section(DataTomo, start_val, end_val)
 global AppData
 AppData = (DataTomo=DataTomo, DataTopo=DataTopo, cross=cross, move_cross=false);        # this will later hold the cross-section and plot data
 
-# define the options on the lower-right
-# OBSOLETE?
-function lowerright_menu()
-    html_div(style = Dict("border" => "0.5px solid", "border-radius" => 5, "margin-top" => 68), className = "three columns") do
-        html_div(id = "freq-val",
-        style = Dict("margin-top" => "15px", "margin-left" => "15px", "margin-bottom" => "5px")),
-       
-        html_div(id = "damp-val",
-        style = Dict("margin-top" => "15px", "margin-left" => "15px", "margin-bottom" => "5px")),
-        dcc_slider(
-            id = "damp-slider",
-            min = 1,
-            max = 6,
-            step = nothing,
-            value = 1,
-            marks = Dict([i => ("$(i)") for i in 1:6])
-        ),
-
-        html_div(id = "disp-val",
-        style = Dict("margin-top" => "15px", "margin-left" => "15px", "margin-bottom" => "5px")),
-        dcc_slider(
-            id = "disp-slider",
-            min = -1.,
-            max = 1.,
-            step = 0.1,
-            value = 0.5,
-            marks = Dict([i => ("$i") for i in [-1, 0, 1]])
-        ),
-
-        html_div(id = "vel-val",
-        style = Dict("margin-top" => "15px", "margin-left" => "15px",  "margin-bottom" => "5px")),
-        dcc_slider(
-            id = "vel-slider",
-            min = -100.,
-            max = 100.,
-            step = 1.,
-            value = 0.,
-            marks = Dict([i => ("$i") for i in [-100, -50, 0, 50, 100]])
-        ),
-
-        dcc_checklist(
-            options = [
-                Dict("label" => "horizontal cross-section", "value" => false)
-            ],
-            value = ["MTL", "SF"],
-        ),
-
-        html_button("plot cross-section", id="button_cross", name="plot cross-section", n_clicks=0, contentEditable=true)
-
-    end
-end
-
-
-
 """
 Creates a topo plot & line that shows the cross-section
 """
@@ -255,8 +201,9 @@ app.layout = dbc_container(className = "mxy-auto") do
                                                     dbc_input(placeholder="Linewidth",id="shape-linewidth", value="1"),
                                                     dbc_placeholder(button=true),
                                                     
-                                                    dbc_button("Update latest curve",id="button-update-curve"),
+                                                    dbc_button("Update props of last curve",id="button-update-curve"),
                                                     dbc_button("Add all curves to profile",id="button-add-curve"),
+                                                    dbc_button("Clear all curves",id="button-clear-curve"),
                                                     
                                                 ])
                                                 ])),
@@ -330,33 +277,6 @@ app.layout = dbc_container(className = "mxy-auto") do
 
 end
 
-#=
-callback!(app,  Output("cross_section","figure"),
-                Input("cross_section","figure"),
-                Input("shape-name","value"),
-                Input("shape-name","n_submit"),
-                ) do fig_cross,shape_name, n
-
-    # retrieve dataset
-    #=
-    layout=fig_cross.layout
-    if !isnothing(n)
-        @show fig_cross.layout
-        
-
-        @show keys(fig_cross)
-       
-    end
-=#
-  #  retB = plot_topo(DataTopo)
-    fig  = plot_cross()
-
-    
-     
-    return fig
-end
-=#
-
 # this is the callback that is invoked if the line on the topography map is changed
 callback!(app,  Output("start_val", "value"),
                 Output("end_val", "value"),
@@ -381,10 +301,10 @@ callback!(app,  Output("start_val", "value"),
     if isnothing(end_val)
         end_val = AppData.cross.end_lonlat
     end
+    
     shapes = AppData.cross.Polygons
     cross = get_cross_section(AppData.DataTomo, start_val, end_val, Symbol(selected_field))
     cross.Polygons = shapes
-    # perhaps empty shapes, as this is a new cross-section?
 
     # update cross-section in AppData
     AppData = (AppData..., cross=cross,move_cross=false);
@@ -479,81 +399,6 @@ callback!(app,  Output("cross_section", "figure"),
     return fig_cross
 end
 
-
-
-#=
-# This callback changes the cross-section line if we change the values by hand
-callback!(app,  Output("cross_section","figure"),
-                Input("cross_section","relayoutData"),       # curves potentially added to cross-section
-                Input("cross_section","figure"),             # figure with cross section
-                Input("shape-name","value"),
-                Input("shape-name","n_submit")
-                ) do cross_section_shape, fig_cross, shape_name, n_shape_name
-    global AppData
-    @show  keys(AppData)
-    @show cross_section_shape
-    
-    modify_data = (name=shape_name,)
-    shapes = interpret_drawn_curve(fig_cross.layout, modify_data);
-    if hasfield(typeof(AppData.cross),:Polygons)
-        @show length(AppData.cross.Polygons), length(shapes)
-        if length(AppData.cross.Polygons)>=length(shapes)
-            shapes = AppData.cross.Polygons
-
-        end
-    end
-
-
-    if !isnothing(n_shape_name)
-        @show keys(fig_cross)
-    end
-    
-    if (!isnothing(start_value) ) ||
-        (!isnothing(end_value)  ) 
-        
-        # extract values:
-        start_val1 = split(start_value,":")
-        start_val1 = start_val1[end]
-
-        end_val1 = split(end_value,":")
-        end_val1 = end_val1[end]
-
-        start_val, end_val = nothing, nothing
-        s_str = split(start_val1,",")
-        e_str = split(end_val1,  ",")
-        if length(s_str)==2 && length(e_str)==2
-            if !any(isempty.(s_str)) && !any(isempty.(e_str))
-                x0,y0 = parse.(Float64,s_str)
-                x1,y1 = parse.(Float64,e_str)
-                start_val = (x0,y0)
-                end_val = (x1,y1)
-            end
-        end
-        
-        retB = plot_topo(AppData)
-        cross = get_cross_section(DataTomo, start_val, end_val, Symbol(selected_field))
-        
-        cross.Polygons = shapes;    # drawn shapes
-        data = plot_cross(cross, zmin=colorbar_value[1], zmax=colorbar_value[2])
-
-        # add cross section to App data
-        AppData = (AppData..., cross=cross)
-
-        return (retB, data)
-
-    else
-        
-
-        retB = plot_topo(AppData)
-        if hasfield(typeof(AppData),:cross)
-            data = plot_cross(cross)
-        end
-        return (retB, data)
-    end
-end
-=#
-
-
 # open/close Curve interpretation box
 callback!(app,
     Output("collapse", "is_open"),
@@ -573,16 +418,10 @@ callback!(app,
         
 end
 
-
-
-
-
-
-
 callback!(app,  Output("relayout-data", "children"), 
                 Input("button-update-curve","n_clicks"),
-                Input("shape-name","value"),            # curves potentially added to cross-section
-                Input("shape-linewidth","value"),       # curves potentially added to cross-section
+                State("shape-name","value"),            # curves potentially added to cross-section
+                State("shape-linewidth","value"),       # curves potentially added to cross-section
                 State("cross_section","figure")
                 ) do n, name, linewidth, fig_cross
 
@@ -607,8 +446,6 @@ callback!(app,  Output("relayout-data", "children"),
         end
     end
     
-    @show n, name, linewidth
-    
     return nothing 
 
 end
@@ -622,17 +459,23 @@ callback!(app,  Output("button-add-curve","n_clicks"),
                 ) do n, name, linewidth, fig_cross
 
     # retrieve dataset
-    @show n
     if !isnothing(n)
-
         shapes = interpret_drawn_curve(fig_cross.layout)
         AppData.cross.Polygons = shapes
-        
-        #fig = plot_cross(AppData.cross)
-        @show AppData.cross.Polygons
-        
     end
 
+    return n 
+end
+
+
+callback!(app,  Output("button-clear-curve","n_clicks"), 
+                Input("button-clear-curve","n_clicks"),
+                ) do n
+
+    # retrieve dataset
+    if !isnothing(n)
+        AppData.cross.Polygons = []
+    end
 
     return n 
 
