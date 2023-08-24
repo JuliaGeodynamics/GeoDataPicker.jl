@@ -186,3 +186,13 @@ function extract_start_end_values(start_value, end_value)
 
     return start_val, end_val
 end
+
+function profile_names(AppData)
+
+    prof_names = ["none"]
+    for cr in AppData.CrossSections
+        push!(prof_names, "profile $(cr.Number)")
+    end
+
+    return prof_names
+end

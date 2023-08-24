@@ -17,7 +17,8 @@ cross = get_cross_section(DataTomo, start_val, end_val)
 
 # Create a global variable with the data structure
 global AppData
-AppData = (DataTomo=DataTomo, DataTopo=DataTopo, cross=cross, move_cross=false, CrossSections=[]);        # this will later hold the cross-section and plot data
+AppData = (DataTomo=DataTomo, DataTopo=DataTopo, cross=cross, move_cross=false, 
+           CrossSections=[], active_crosssection=0);        # this will later hold the cross-section and plot data
 
 
 colornames = ["red",    "green",    "blue",    "black", "white"]
@@ -276,14 +277,8 @@ app.layout = dbc_container(className = "mxy-auto") do
                     dbc_row(dbc_label("# of profiles: 0"),id="num_profiles"),
                     dbc_row([dbc_button("Add profile", id="button-add-profile")]),
                     dbc_row([dcc_dropdown(options="none", id="dropdown-profiles", placeholder="Select profile")]),
-                    
-                    #dbc_row([html_div("various options")], justify="center"),
-                    #dbc_row([dbc_placeholder(xs=6, button=true)], align="center",justify="end"),
-                   
-                    #dbc_card(dbc_cardbody(["This is some text within a card body",
-                    #         html_button(id="button-select", name="select", n_clicks=0, contentEditable=true),
-                    #         dbc_placeholder(xs=6),
-                    #]))
+                    dbc_row([dbc_button("Update current profile", id="button-update-profile")]),
+                    dbc_row([dbc_button("Delete current profile", id="button-delete-profile")]),
                     
                 ], align="center", width=5)
                 #dbc_col([
@@ -363,8 +358,11 @@ callback!(app,  Output("mapview", "figure"),
             # compute new cross-section
             selected_field = AppData.cross.selected_field;
             shapes = AppData.cross.Polygons
-            cross = get_cross_section(AppData.DataTomo, start_val, end_val, selected_field)
-
+            if AppData.active_crosssection==0
+                cross = get_cross_section(AppData.DataTomo, start_val, end_val, selected_field)
+            else
+                cross = AppData.cross;
+            end
             cross.Polygons = shapes;
 
             # perhaps empty shapes, as this is a new cross-section?
@@ -491,6 +489,19 @@ callback!(app,  Output("button-add-curve","n_clicks"),
     if !isnothing(n)
         shapes = interpret_drawn_curve(fig_cross.layout)
         AppData.cross.Polygons = shapes
+
+        if AppData.active_crosssection>0
+            @show AppData.active_crosssection
+
+            CrossSections = AppData.CrossSections
+            for i=1:length(CrossSections)
+                if CrossSections[i].Number == AppData.active_crosssection
+                    CrossSections[i] = AppData.cross;
+                    CrossSections[i].Number = AppData.active_crosssection
+                end
+            end
+            AppData.CrossSections = CrossSections
+        end
     end
 
     return n 
@@ -538,19 +549,15 @@ callback!(app,  Output("button-add-profile","n_clicks"),
         # Add to data set
         push!(AppData.CrossSections, AppData.cross)
 
-        prof_names = ["none"]
-
-        for cr in AppData.CrossSections
-            push!(prof_names, "profile $(cr.Number)")
-        end
-        
+        # Update profile names
+        prof_names = profile_names(AppData)
+ 
     end
     if isnothing(n_start)
         n_start=0
     end
 
     return n, comp_name, n_start+1, prof_names 
-
 end
 
 # select a profile
@@ -573,9 +580,11 @@ callback!(app,  Output("dropdown-profiles","value"),
                     @show n
                     cross = cr
                     # update AppData
-                    AppData = (AppData...,  cross=cross)
+                    AppData = (AppData...,  cross=cross, active_crosssection=n)
                 end
              end
+        else
+            AppData = (AppData...,  active_crosssection=0)
         end
     end
     if isnothing(n_end)
@@ -583,6 +592,51 @@ callback!(app,  Output("dropdown-profiles","value"),
     end
 
     return select_profile, n_end+1
+end
+
+
+
+# delete a profile
+callback!(app,  Output("button-delete-profile","n_clicks"),
+                Input("button-delete-profile","n_clicks"),
+                State("dropdown-profiles","value"),
+                ) do n_delete, select_profile
+
+    global AppData
+
+    if !isnothing(n_delete)
+        if select_profile != "none"
+            _, num = split(select_profile)
+            n = parse(Int64,num)
+             
+            CrossSections = AppData.CrossSections 
+            id_delete = 0
+            for i = 1:length(AppData.CrossSections)
+                if CrossSections[i].Number==n
+                    id_delete=i
+                    @show id_delete
+                    deleteat!(CrossSections, id_delete)
+                end
+            end
+            @show id_delete
+            @show length(CrossSections)
+            # delete x-section
+            
+            # update AppData
+            AppData = (AppData...,  CrossSections=CrossSections, active_crosssection=0)
+          
+
+        else
+            AppData = (AppData...,  active_crosssection=0)
+        end
+    end
+    if isnothing(n_delete)
+        n_delete=0
+    end
+    @show n_delete
+   # prof_names = profile_names(AppData)
+
+    return n_delete+1, "none"
 end
 
 
