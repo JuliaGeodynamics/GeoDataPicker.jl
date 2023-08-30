@@ -38,10 +38,10 @@ tBox_loaddata   = Textbox(data_grid[2, 1:2], placeholder = "loadfile",width=250)
 button_loaddata = Button(data_grid[2,3] ,label = "load data",width=150)
 
 Textbox(data_grid[3, 1:2], placeholder = "savefile",width=250)
-Button(data_grid[3,3] ,label = "save settings",width=150)
-Textbox(data_grid[4, 1:2], placeholder = "savefile",width=250)
-Button(data_grid[4,3] ,label = "snapshot",width=150)
-Button(data_grid[5,3] ,label = "clear",width=150)
+button_savesettings = Button(data_grid[3,3] ,label = "save settings",width=150)
+tbox_snapshot = Textbox(data_grid[4, 1:2], placeholder = "testplot.png",width=250)
+button_savesnapshot = Button(data_grid[4,3] ,label = "snapshot",width=150)
+button_clear = Button(data_grid[5,3] ,label = "clear",width=150)
 
 rowgap!(data_grid, 5)
 colgap!(data_grid, 5)
@@ -131,7 +131,7 @@ vol2_colflip = Observable(false)
 tog_flipvol2 = Button(volume2_grid[8,2:3], label = @lift($vol2_colflip ? "flipped" : "not flipped"))
 
 # add opacity slider
-Label(volume2_grid[9,1],"opacity")
+#Label(volume2_grid[9,1],"opacity")
 #vol2_slopac = Slider(volume2_grid[9, 2:3], range = 0.01:0.01:1, startvalue = 1)
 
 rowgap!(volume2_grid, 5)
@@ -173,9 +173,6 @@ on(button_loaddata.clicks) do n
 
     global vol1_field = @lift(dropdims($data1,dims=3));
     global vol2_field = @lift(dropdims($data2,dims=3));
-
-    #vol1_field = dropdims(pdata.VolData.fields[1],dims=3);
-    #vol2_field = dropdims(pdata.VolData.fields[2],dims=3);
 
     vol1_plot = heatmap!(ax1,pdata.VolData.fields.x_profile[:,1],pdata.VolData.depth.val[1,:],vol1_field,colormap=Reverse(:vik));
     vol2_plot = heatmap!(ax2,pdata.VolData.fields.x_profile[:,1],pdata.VolData.depth.val[1,:],vol2_field,colormap=Reverse(:vik));
@@ -258,6 +255,9 @@ on(button_loaddata.clicks) do n
 
 end
 
+on (button_savesnapshot.clicks) do n
+    tBox_tbox_snapshot.displayed_string.val
+end
 
 
 # changed dataset in volume data 1
@@ -369,28 +369,5 @@ end
 
 # volume 2 limit setting via NaN assignment
 
-
-#on(tog_flipvol1.active) do n
-#    ax1.scene.plots[1].colormap = Reverse(colorschemes[Symbol(vol1_colmenu.selection.val)]);
-#end
-
-# Reverse(colorschemes[Symbol(vol1_colmenu.selection.val)])
-
-# test:set limits for ax1
-#limits!(ax1,0,20,30,40)
-
-#heatmap!(ax1,rand(51,51))
-#heatmap!(ax2,rand(51,51), colormap=(:balance,0.5))
-
-#Colorbar(fig[2, 1], limits = (0, 10), colormap = :viridis,
-#    vertical = false)
-#Colorbar(fig[3, 1], limits = (0, 5), size = 25,
-#    colormap = cgrad(:Spectral, 5, categorical = true), vertical = false)
-#Colorbar(fig[4, 1], limits = (-1, 1), colormap = :heat,
-#    label = "Temperature", vertical = false, flipaxis = false,
-#    highclip = :cyan, lowclip = :red)
-
-#ax1.scene.plots[1].colormap.val = (:plasma, 0.5);
-#notify(ax1.scene.plots[1].colormap)
 
 fig
