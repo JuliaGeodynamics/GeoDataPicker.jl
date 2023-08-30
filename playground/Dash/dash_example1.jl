@@ -198,6 +198,7 @@ options_fields = [(label = String(f), value="$f" ) for f in data_fields]
 
 # Create the main layout of the GUI. Note that the layout of the different tabs is specified in separate routines
 app.layout = dbc_container(className = "mxy-auto") do
+    dbc_col(dbc_row(dcc_dropdown(options=["File","Save","Load"],id="id-dropdown-file", value="File", clearable=false)),  width=1),
     html_h1("GMG Data Picker v0.1", style = Dict("margin-top" => 50, "textAlign" => "center")),
     dbc_tabs(
         [
@@ -205,9 +206,9 @@ app.layout = dbc_container(className = "mxy-auto") do
             dbc_tab(label="3D view",           children = [Tab2()])
         ]
 
-        )
+    ),
         
-    
+    dcc_store(id="id-topo", data=DataTopo.lat)
 
 end
 
@@ -449,7 +450,7 @@ callback!(app,  Output("button-add-profile","n_clicks"),
     global AppData
 
     trigger = callback_context().triggered[1]
-    @show trigger keys(callback_context())
+    @show trigger 
 
     # retrieve dataset
     prof_names=[""]
