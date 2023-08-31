@@ -160,6 +160,102 @@ end
 plot_cross() = plot_cross(nothing)  
 
 
+"""
+
+this creates the 3D plot with topography and the cross-sections
+"""
+function plot_3D_data(DataTopo::GeoData, DataTomo::GeoData, AppData; field=:dVp_paf21, add_currentcross=true, add_allcross=false, add_volumetric=false, add_topo=true)
+  
+
+    data_plot = [];
+    if add_topo 
+        color_topo = "Viridis";
+        # topography surface plot
+        xdata =  DataTopo.lon.val[:,:]
+        ydata =  DataTopo.lat.val[:,:]
+        zdata =  DataTopo.depth.val[:,:,1]
+        push!(data_plot,
+                    surface(x = xdata, y = ydata, z = zdata,  opacity=0.8, hoverinfo="none", 
+                    contours = attr(x=attr(highlight=false, show=false, project=attr(x=false) ),y=attr(highlight=false), z=attr(highlight=false),   
+                                    xaxis=attr(visible=false), yaxis=attr(visible=false, showspikes=false), zaxis=attr(visible=false, showspikes=false)),
+                    colorscale = color_topo,  showscale=false, 
+                    cmin=-4.0, cmax=4.0))
+    end
+
+    color_seismic =  "Rgb"
+    if add_volumetric
+        # add volume plot if requested
+        vol = DataTomo.fields[field]
+        push!(data_plot,
+                volume( x=DataTomo.lon.val[:], y=DataTomo.lat.val[:], z=DataTomo.depth.val[:], value=vol[:], isomin=1.0, isomax=3.0, opacity=0.1, surface_count=17,
+                        showscale=false, colorscale = color_seismic)
+                       )
+    end
+    if add_currentcross
+        # add active cross section
+        cross = AppData.cross.ProfileData
+        vol   = cross.fields[field]
+        push!(data_plot,
+                surface( x=cross.lon.val[:,:], y=cross.lat.val[:,:], z=cross.depth.val[:,:,1], surfacecolor=vol[:,:,1], 
+                         contours = attr(x=attr(highlight=false),y=attr(highlight=false), z=attr(highlight=false)),
+                         colorscale = color_seismic,
+                         hoverinfo  = false,
+                         showscale  = false,  reversescale=false))
+
+
+    end
+    if add_allcross
+        for profile in AppData.Profiles
+            cross = profile.ProfileData
+            vol   = cross.fields[field]
+            push!(data_plot,
+                    surface( x=cross.lon.val[:,:], y=cross.lat.val[:,:], z=cross.depth.val[:,:,1], surfacecolor=vol[:,:,1], 
+                             contours = attr(x=attr(highlight=false),y=attr(highlight=false), z=attr(highlight=false)),
+                             colorscale = color_seismic,
+                             hoverinfo  = false,
+                             showscale  = false,  reversescale=false))
+        end
+    end
+
+
+    # create actual figure
+    pl = (
+        id = "fig_3D",
+        
+        # Topography
+        data = data_plot,
+        
+        colorbar=Dict("orientation"=>"h", "len"=>0.5, "thickness"=>10,"title"=>"elevat"),
+        layout = (  autosize=false,
+                    scene = attr(  yaxis=attr(
+                                    showspikes=false,
+                                    title="Latitude",
+                                    tickfont_size= 14,
+                                    tickfont_color="rgb(100, 100, 100)"),
+                                 xaxis=attr(
+                                    showspikes=false,
+                                    title="Longitude",
+                                    tickfont_size= 14,
+                                    tickfont_color="rgb(100, 100, 100)"
+                                 ),
+                                 zaxis=attr(
+                                    showspikes=false,
+                                    title="Depth",
+                                    tickfont_size= 14,
+                                    tickfont_color="rgb(10, 10, 10)"
+                                 ),
+                                 aspectmode="manual", 
+                                 aspectratio=attr(x=3, y=3, z=1)
+                                )
+
+                    ),
+        config = (edits    = (shapePosition =  true,)),                              
+    )
+
+
+    return pl
+end
+
 # This creates the topography (mapview) plot (lower left)
 function create_topo_plot(AppData)
    

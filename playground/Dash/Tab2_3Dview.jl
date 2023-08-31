@@ -1,7 +1,13 @@
 # Tab 2
 function Tab2()
     dbc_col([
-        html_h1("TAB 2", style = Dict("margin-top" => 50, "textAlign" => "center")),
-        html_h1("plot to be put here", style = Dict("margin-top" => 50, "textAlign" => "center"))
+        dcc_graph(
+            id = "3D images",
+            figure    = plot_3D_data(DataTopo::GeoData, DataTomo::GeoData, AppData),
+            animate   = true,
+            clickData = true,
+            config = PlotConfig(displayModeBar=true, scrollZoom = true)
+        )
+
     ])
 end
