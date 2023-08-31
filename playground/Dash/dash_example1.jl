@@ -164,9 +164,15 @@ plot_cross() = plot_cross(nothing)
 
 this creates the 3D plot with topography and the cross-sections
 """
-function plot_3D_data(DataTopo::GeoData, DataTomo::GeoData, AppData; field=:dVp_paf21, add_currentcross=true, add_allcross=false, add_volumetric=false, add_topo=true)
-  
-
+function plot_3D_data(DataTopo::GeoData, DataTomo::GeoData, AppData; 
+                        field=:dVp_paf21, 
+                        add_currentcross=true, 
+                        add_allcross=false, 
+                        add_volumetric=false, 
+                        add_topo=true,
+                        cvals=[-4,4],
+                        cvals_vol=[1,3])
+    
     data_plot = [];
     if add_topo 
         color_topo = "Viridis";
@@ -178,8 +184,7 @@ function plot_3D_data(DataTopo::GeoData, DataTomo::GeoData, AppData; field=:dVp_
                     surface(x = xdata, y = ydata, z = zdata,  opacity=0.8, hoverinfo="none", 
                     contours = attr(x=attr(highlight=false, show=false, project=attr(x=false) ),y=attr(highlight=false), z=attr(highlight=false),   
                                     xaxis=attr(visible=false), yaxis=attr(visible=false, showspikes=false), zaxis=attr(visible=false, showspikes=false)),
-                    colorscale = color_topo,  showscale=false, 
-                    cmin=-4.0, cmax=4.0))
+                    colorscale = color_topo,  showscale=false))
     end
 
     color_seismic =  "Rgb"
@@ -187,7 +192,8 @@ function plot_3D_data(DataTopo::GeoData, DataTomo::GeoData, AppData; field=:dVp_
         # add volume plot if requested
         vol = DataTomo.fields[field]
         push!(data_plot,
-                volume( x=DataTomo.lon.val[:], y=DataTomo.lat.val[:], z=DataTomo.depth.val[:], value=vol[:], isomin=1.0, isomax=3.0, opacity=0.1, surface_count=17,
+                volume( x=DataTomo.lon.val[:], y=DataTomo.lat.val[:], z=DataTomo.depth.val[:], value=vol[:], 
+                        isomin=cvals_vol[1], isomax=cvals_vol[2], opacity=0.1, surface_count=17,
                         showscale=false, colorscale = color_seismic)
                        )
     end
@@ -200,12 +206,12 @@ function plot_3D_data(DataTopo::GeoData, DataTomo::GeoData, AppData; field=:dVp_
                          contours = attr(x=attr(highlight=false),y=attr(highlight=false), z=attr(highlight=false)),
                          colorscale = color_seismic,
                          hoverinfo  = false,
-                         showscale  = false,  reversescale=false))
-
-
+                         showscale  = true,  reversescale=false,
+                         cmin=cvals[1], cmax=cvals[2]))
     end
+
     if add_allcross
-        for profile in AppData.Profiles
+        for profile in AppData.CrossSections
             cross = profile.ProfileData
             vol   = cross.fields[field]
             push!(data_plot,
@@ -227,6 +233,7 @@ function plot_3D_data(DataTopo::GeoData, DataTomo::GeoData, AppData; field=:dVp_
         
         colorbar=Dict("orientation"=>"h", "len"=>0.5, "thickness"=>10,"title"=>"elevat"),
         layout = (  autosize=false,
+                    width=1000, height=500,                 # need to check that this works fine on different screens/OS
                     scene = attr(  yaxis=attr(
                                     showspikes=false,
                                     title="Latitude",
@@ -294,7 +301,19 @@ options_fields = [(label = String(f), value="$f" ) for f in data_fields]
 
 # Create the main layout of the GUI. Note that the layout of the different tabs is specified in separate routines
 app.layout = dbc_container(className = "mxy-auto") do
-    dbc_col(dbc_row(dcc_dropdown(options=["File","Save","Load"],id="id-dropdown-file", value="File", clearable=false)),  width=1),
+    dbc_col(dbc_row(
+      #  dcc_dropdown(options=["File","Save","Load"],
+            dbc_dropdownmenu(
+                    [
+                        dbc_dropdownmenuitem("Load", disabled=true),
+                        dbc_dropdownmenuitem("Save", disabled=true),
+                        dbc_dropdownmenuitem(divider=true),
+                    ],
+                    label="File",
+                    id="id-dropdown-file")), width=2),
+
+
+
     html_h1("GMG Data Picker v0.1", style = Dict("margin-top" => 50, "textAlign" => "center")),
     dbc_tabs(
         [
@@ -648,6 +667,35 @@ callback!(app,  Output("button-delete-profile","n_clicks"),
 
     return n_delete+1, "none"
 end
+
+
+# Update the 3D plot
+callback!(app,  Output("3D-image","figure"),
+                Input("id-plot-3D","n_clicks"),
+                Input("colorbar-slider", "value"),
+                State("id-3D-isosurface-slider","value"),
+                State("id-3D-topo","value"),
+                State("id-3D-cross","value"),
+                State("id-3D-volume","value"),
+                State("id-3D-cross-all","value"),
+                State("dropdown_field","value")
+                ) do n_clicks, colorbar_value, colorbar_value_vol, val_topo, val_cross, val_vol, val_allcross, field 
+
+    global AppData
+
+    pl = plot_3D_data(DataTopo, DataTomo, AppData, 
+                        add_currentcross=Bool(val_cross),
+                        add_allcross=Bool(val_allcross), 
+                        add_volumetric=Bool(val_vol), 
+                        add_topo=Bool(val_topo),
+                        cvals=colorbar_value,
+                        field=Symbol(field),
+                        cvals_vol=colorbar_value_vol
+                      )
+
+    return pl
+end
+
 
 
 run_server(app, debug=false)
