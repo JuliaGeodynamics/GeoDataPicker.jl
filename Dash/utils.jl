@@ -1,35 +1,63 @@
 # various helper routines 
 using GeophysicalModelGenerator, JLD2
 #using GMT
-
+import Base:show 
 
 """
-structure that holds info about the project
+    Structure that holds info about the profiles within the project. 
+    Note that we do not store actual data here, but only things that can be changed by the user from the GUI 
 """
-mutable struct Profile
-    Number :: Int64             # Number of the profile
-
-    ProfileData::GeoData        # the geodata with profile info
+mutable struct ProfileUser
+    number   :: Int64                   # Number of the profile
+    name     :: Union{Nothing,String}   # optional name
+    vertical :: Bool                    # vertical profile or not?
     
-    start_lonlat::NTuple        # start of profile in lon/lat
-    end_lonlat::NTuple          # start of profile in lon/lat
+    start_lonlat::NTuple                # start of profile in lon/lat
+    end_lonlat::NTuple                  # end of profile in lon/lat
 
-    start_cart::Number          # start of profile in cartesian coords
-    end_cart::Number            # start of profile in cartesian coords
+    depth :: Union{Nothing, Float64}    # depth (only active if vertical == false)
+    start_cart::Number                  # start of profile in cartesian coords
+    end_cart::Union{Nothing, Float64}   # end of profile in cartesian coords
 
-    z_cart::Vector              # 1D vector with z-coordinates (or y, in case of horizontal profile)
-    x_cart::Vector              # 1D vector with x-coordinates (along profile)
-    
-    x_lon::Vector               # 1D vector with lon values
-    x_lat::Vector               # 1D vector with lat values
-
-    data::Matrix                # the current data displayed
-    selected_field::Symbol      # currently selected field
-    
-    Polygons::Vector            # Interpreted polygons along the profile         
-    
-    # Intersection points       # Vector with intersection points of other profiles with the current one (to be added
+    Polygons::Vector                    # Interpreted polygons along this profile         
 end
+
+"""
+Create a user profile with keywords
+"""
+function ProfileUser(;  number=0, 
+                        name=nothing, 
+                        vertical=true,
+                        start_lonlat=(), 
+                        end_lonlat=(), 
+                        depth=nothing,
+                        start_cart=0,
+                        end_cart = nothing,
+                        Polygons=[])
+    if isnothing(name)
+        name = "$number"
+    end
+    if !isnothing(depth)
+        vertical = false
+    end
+
+    return ProfileUser(number,name,vertical,Float64.(start_lonlat), Float64.(end_lonlat), depth, start_cart, end_cart, Polygons)
+end
+
+# Print info 
+function show(io::IO, g::ProfileUser)
+    if g.vertical
+        println(io, "Vertical profile ($(g.name))")
+        println(io, "  lon/lat   : $(g.start_lonlat)-$(g.end_lonlat) ")
+    else
+        println(io, "Horizontal profile ($(g.name))")
+        println(io, "  depth     : $(g.depth) ")
+    end
+    println(io, "  # polygons: $(length(g.Polygons)) ")
+
+    return nothing
+end
+
 
 """
     DataTomo, DataTopo =  load_dataset(fname::String="AlpsModels.jld2"; grid_name="@earth_relief_02m.grd")
@@ -49,6 +77,7 @@ function load_dataset(fname::String="AlpsModels.jld2"; topo_name="AlpsTopo.jld2"
     return DataTomo, DataTopo
 end
 
+
 """
     x,z,data = get_cross_section(DataAlps, start_value=(10,41), end_value=(10,49), field=:dVp_paf21)
 
@@ -64,17 +93,10 @@ function get_cross_section(DataAlps::GeoData, start_value=(10,41), end_value=(10
     cross_cart  = Convert2CartData(cross,p)
     x_cross     = FlattenCrossSection(cross_cart);
     x_cart      = x_cross[:,1];
-    z_cart      = cross_cart.z.val[1,:,1]
-
-    x_lon       = cross.lon.val[:,1];
-    x_lat       = cross.lat.val[1,:];
-    
 
     if !hasfield(typeof(cross.fields), field)
         error("The dataset does not have field $field")
     end
-
-    data        = cross_cart.fields[field][:,:,1]
 
     # add this to the profile structure
     start_lonlat = Float64.(start_value)
@@ -82,8 +104,9 @@ function get_cross_section(DataAlps::GeoData, start_value=(10,41), end_value=(10
     
     start_cart   = minimum(x_cart)         
     end_cart     = maximum(x_cart)         
-
-    profile = Profile(0, cross, start_lonlat, end_lonlat, start_cart, end_cart, z_cart, x_cart, x_lon, x_lat, data, field, [])
+  
+    profile = Profile(  start_lonlat=start_lonlat,  end_lonlat=end_lonlat, 
+                        start_cart=start_cart,      end_cart=end_cart)
 
     return profile
 end
@@ -184,7 +207,7 @@ function extract_start_end_values(start_value, end_value)
         end
     end
 
-    return start_val, end_val
+    return Float64.(start_val), Float64.(end_val)
 end
 
 function profile_names(AppData)
@@ -236,3 +259,57 @@ function get_AppData(AppData::NamedTuple, session_id::String)
 end
   
 
+"""
+    data = get_AppDataUser(AppData::NamedTuple, session_id::String)
+
+Retrieves data from the global data set if it exists; other
+"""
+function get_AppDataUser(AppData::NamedTuple, session_id::String)
+  
+    data = nothing
+    if haskey(AppData, Symbol(session_id))
+        if haskey(AppData[Symbol(session_id)], :AppDataUser)
+            data = AppData[Symbol(session_id)].AppDataUser
+        end
+    else
+    end
+    return data
+end
+
+
+function get_start_end_profile(AppDataUser; num=0)
+    id = find_profile_index(AppDataUser.Profiles, num)
+    start_lonlat = AppDataUser.Profiles[id].start_lonlat
+    end_lonlat   = AppDataUser.Profiles[id].end_lonlat
+
+    return start_lonlat, end_lonlat
+end
+
+"""
+
+Gives the index of the profile given its number (in case numbers are scrambled)
+"""
+function find_profile_index(Profiles::Vector{ProfileUser}, num::Int64)
+    num_vec = [prof.number for prof in Profiles]
+    id = findall(num_vec .== num)
+    if length(id)>0
+        id = id[1]
+    end
+    return id
+end
+
+
+"""
+    AppDataUser = update_profile(AppDataUser, profile::ProfileUser; num=0)
+
+updates the profile with number `num`
+"""
+function update_profile(AppData, profile::ProfileUser; num=0)
+    id = find_profile_index(AppData.AppDataUser.Profiles, num)
+
+    if !isempty(id)
+        AppData.AppDataUser.Profiles[id] = profile
+    end
+
+    return AppData
+end

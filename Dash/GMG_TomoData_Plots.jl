@@ -10,18 +10,18 @@ function plot_topo(AppData)
     xdata =  AppData.DataTopo.lon.val[:,1]
     ydata =  AppData.DataTopo.lat.val[1,:]
     zdata =  AppData.DataTopo.depth.val[:,:,1]'
-    cross =  AppData.cross
-    start_val = cross.start_lonlat
-    end_val   = cross.end_lonlat
+    start_val, end_val = get_start_end_profile(AppData.AppDataUser)
+
     colorscale = "Viridis";
     reversescale = false;
-
     shapes = [ (   type = "line",   x0=start_val[1], x1=end_val[1], 
                                     y0=start_val[2], y1=end_val[2],
                                     editable = true,
                                     line  = (color="#000000", width=4),
                                     label = (text="",))] 
-    for cr in AppData.CrossSections
+                                    
+    for i = 2:length(AppData.AppDataUser.Profiles)
+        cr = Profiles[i]
         shape = (   type = "line",    x0=cr.start_lonlat[1], x1=cr.end_lonlat[1], 
                                       y0=cr.start_lonlat[2], y1=cr.end_lonlat[2],
                                       editable = false,
@@ -64,6 +64,7 @@ function plot_topo(AppData)
     return pl
 end
 
+#=
 """
 Creates topo plot & line that shows the cross-section
 """
@@ -126,6 +127,7 @@ function plot_cross(Cross::Profile; zmax=nothing, zmin=nothing, shapes=[])
         )
     return pl
 end
+=#
 
 function plot_cross(cross::Nothing) 
     println("default cross section")

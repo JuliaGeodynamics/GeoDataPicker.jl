@@ -73,11 +73,11 @@ function Tab_CrossSection()
                 dbc_col([
                     dbc_row(dbc_label("Profile options"),justify="center"),
                     dbc_row(dbc_label("# of profiles: 0"),id="num_profiles"),
-                    dbc_row([dbc_button("Plot topography", id="button-plot-topography")]),
-                    dbc_row([dbc_button("Add profile", id="button-add-profile")]),
-                    dbc_row([dbc_button("Update current profile", id="button-update-profile")]),
-                    dbc_row([dbc_button("Delete current profile", id="button-delete-profile")]),
-                    dbc_row([dcc_dropdown(options=["none"], id="dropdown-profiles", placeholder="Select profile")]),
+                    dbc_row([dbc_button("Plot topography", id="button-plot-topography", disabled=true)]),
+                    dbc_row([dbc_button("Add profile", id="button-add-profile", disabled=true)]),
+                    dbc_row([dbc_button("Update current profile", id="button-update-profile", disabled=true)]),
+                    dbc_row([dbc_button("Delete current profile", id="button-delete-profile", disabled=true)]),
+                    dbc_row([dcc_dropdown(options=["none"], id="dropdown-profiles", placeholder="Select profile", disabled=true)]),
                 ], align="center", width=3)
                 #dbc_col([
                 #    dbc_row([html_button(id="button-select", name="select", n_clicks=0, contentEditable=true)])

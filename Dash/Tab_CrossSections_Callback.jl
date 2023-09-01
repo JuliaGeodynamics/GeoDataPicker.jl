@@ -4,14 +4,23 @@
 # Main feedback that updates the topography plot
 callback!(app,  Output("mapview", "figure"),
                 Input("button-plot-topography","n_clicks"),
-                State("session-id","data")) do n_clicks, session_id
+                State("session-id","data"),
+                State("start_val", "value"),
+                State("end_val", "value")) do n_clicks, session_id, start_value, end_value
     
     @show n_clicks, session_id
-    
+    trigger        = callback_context().triggered;
+    if !isnothing(trigger)
+        trigger = trigger[1]
+        @show trigger
+    end
+
     if !isnothing(n_clicks)  
-        AppDataLocal = get_AppData(AppData, session_id)
-        fig_topo = plot_topo(AppDataLocal)
-        selected_field = AppDataLocal.cross.selected_field;
+        # extract numerical values of start & end
+        #prof = ProfileUser(start_val=start_val, end_val=end_val)
+
+        AppDataLocal   = get_AppData(AppData, session_id)
+        fig_topo       = plot_topo(AppDataLocal)
 
     else
         fig_topo = [];
@@ -21,50 +30,59 @@ callback!(app,  Output("mapview", "figure"),
 end
 
 
-#=
 # this is the callback that is invoked if the line on the topography map is changed
 callback!(app,  Output("start_val", "value"),
                 Output("end_val", "value"),
-                Output("colorbar-slider", "value"),
                 Input("mapview", "relayoutData"),
-                Input("dropdown_field","value"),
                 Input("mapview", "clickData"),
-                Input("colorbar-slider", "value"),
-                State("session-id","data")
-                ) do value, selected_field, clickData, colorbar_value, session_id
+                State("session-id","data"),
+                State("start_val", "value"),
+                State("end_val", "value")
+                ) do value, clickData, session_id, retStart, retEnd
     global AppData
     AppDataLocal = get_AppData(AppData, session_id)
 
+    #trigger        = callback_context().triggered;
+    #if !isnothing(trigger)
+    #    @show trigger
+    #    trigger = trigger[1]
+    #    @show trigger, value
+    #end
+
     # if we move the line value on the cross-section it will update this here:
-    if AppDataLocal.move_cross==false
-        start_val, end_val = get_startend_cross_section(value)
-    else
-        start_val = AppData.cross.start_lonlat
-        end_val   = AppData.cross.end_lonlat
-    end
+    start_val, end_val = get_startend_cross_section(value)
+    @show start_val, end_val
+
     if isnothing(start_val)
-        start_val = AppData.cross.start_lonlat
+        if !isnothing(AppDataLocal)
+            if hasfield(typeof(AppDataLocal), :Profiles)
+                start_val = AppDataLocal.Profiles[1].start_lonlat
+            end
+        end
     end
     if isnothing(end_val)
-        end_val = AppData.cross.end_lonlat
+        if !isnothing(AppDataLocal)
+            if hasfield(typeof(AppDataLocal), :Profiles)
+                end_val = AppDataLocal.Profiles[1].end_lonlat
+            end
+        end
     end
-    
-    shapes = AppDataLocal.cross.Polygons
-    cross = get_cross_section(AppDataLocal.DataTomo, start_val, end_val, Symbol(selected_field))
-    cross.Polygons = shapes
-
-    # update cross-section in AppData
-    AppDataLocal = (AppDataLocal..., cross=cross,move_cross=false);
-
+ 
     # Update textbox values
-    retStart = "start: $(@sprintf("%.2f", start_val[1])),$(@sprintf("%.2f", start_val[2]))"
-    retEnd   = "end: $(@sprintf("%.2f", end_val[1])),$(@sprintf("%.2f", end_val[2]))"
+    if !isnothing(start_val)
+        retStart = "start: $(@sprintf("%.2f", start_val[1])),$(@sprintf("%.2f", start_val[2]))"
+        retEnd   = "end: $(@sprintf("%.2f", end_val[1])),$(@sprintf("%.2f", end_val[2]))"
 
-    
+        # Update the active cross-section (number 0) accordingly
+        profile = ProfileUser(number=0, start_lonlat=start_val, end_lonlat=end_val)
+        AppDataLocal = update_profile(AppDataLocal, profile, num=0)
+        AppData = add_AppData(AppData, session_id, AppDataLocal)
+    end
 
-    return retStart, retEnd, colorbar_value
+   return retStart, retEnd
 end
 
+#=
 
 
 

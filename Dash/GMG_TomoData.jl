@@ -23,7 +23,7 @@ data_fields =  keys(DataTomo.fields)
 # set the initial cross-section
 start_val = (5.0,46.0)
 end_val = (12.0,44.0) 
-cross = get_cross_section(DataTomo, start_val, end_val)
+#cross = get_cross_section(DataTomo, start_val, end_val)
 
 # Create a global variable with the data structure. Note that we will 
 global AppData

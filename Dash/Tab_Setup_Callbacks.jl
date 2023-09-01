@@ -14,27 +14,42 @@ end
 # Load the data from the app
 callback!(app,  Output("setup-button", "n_clicks"),
                 Output("button-plot-topography", "n_clicks"),
+                Output("button-plot-topography", "disabled"),
                 Input("setup-button", "n_clicks"),
                 State("session-id", "data"),
                 State("button-plot-topography", "n_clicks"),
-                ) do n,  session_id, n_topo
+                State("start_val", "value"),
+                State("end_val", "value")
+                ) do n,  session_id, n_topo, start_value, end_value
     global AppData 
     if !isnothing(n)
         # This is some vanilla data
         DataTomo, DataTopo = load_dataset();
 
         # Initial cross-section
-        cross = get_cross_section(DataTomo, start_val, end_val)
+        start_val, end_val = extract_start_end_values(start_value, end_value)
+        @show start_val, end_val
+
+        profile = ProfileUser(start_lonlat=start_val, end_lonlat=end_val)
+        
+       # cross = get_cross_section(DataTomo, start_val, end_val)
+
+        # User data that results from all GUI interactions
+        # This should also hold info onm which data sets were loaded
+        AppDataUser = (Profiles=[profile],)
 
         # Add the data to a NamedTuple
-        data = (DataTomo=DataTomo, DataTopo=DataTopo, cross=cross, CrossSections=[])
+        data = (DataTomo=DataTomo, DataTopo=DataTopo, CrossSections=[], AppDataUser=AppDataUser)
 
         # Store it within the AppData global struct
         AppData = add_AppData(AppData, session_id, data)
         n_topo = 0
+
+        plot_button_topo_disabled = false
     else
+        plot_button_topo_disabled = true
         n=0
     end
 
-    return n+1, n_topo
+    return n+1, n_topo, plot_button_topo_disabled
 end
