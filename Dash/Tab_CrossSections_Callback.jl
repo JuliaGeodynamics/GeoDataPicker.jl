@@ -236,31 +236,34 @@ callback!(app,  Output("button-add-profile","n_clicks"),
                 ) do n, comp_name, n_start, fig_map
     global AppData
 
+    tr = callback_context().triggered;
+    @show tr
+
+    if !isempty(tr)
     trigger = callback_context().triggered[1]
     @show trigger 
-
+    end
+    
     # retrieve dataset
     prof_names=[""]
     if !isnothing(n)
         cross = AppData.cross
-
         n_cross = length(AppData.CrossSections)
         if cross.Number==0
             cross.Number = n_cross+1
         end
-
         # Add to data set
         push!(AppData.CrossSections, AppData.cross)
-
         # Update profile names
         prof_names = profile_names(AppData)
- 
+
     end
     if isnothing(n_start)
         n_start=0
     end
-
     return n, comp_name, n_start+1, prof_names 
+    
+   
 end
 
 # select a profile

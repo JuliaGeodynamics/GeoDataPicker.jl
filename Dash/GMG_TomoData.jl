@@ -33,7 +33,7 @@ AppData = (DataTomo=DataTomo, DataTopo=DataTopo, cross=cross, move_cross=false,
 
 
 # Sets some defaults for the layout of webpage
-app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=true)
+app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=false)
 
 app.title = "GMG Data Picker"
 options_fields = [(label = String(f), value="$f" ) for f in data_fields]
@@ -65,7 +65,7 @@ function main_layout()
         ),
             
         dcc_store(id="id-topo", data=DataTopo.lat),              
-        dcc_store(id="session-id", data =  session_id)     # gives a unique number of our session
+        dcc_store(id="session-id", data =  "")     # gives a unique number of our session
     ])
 
 end
