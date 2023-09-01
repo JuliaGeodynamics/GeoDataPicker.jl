@@ -244,9 +244,12 @@ function create_topo_plot(AppData)
    
     dcc_graph(
         id = "mapview",
-        figure    = plot_topo(AppData),
-        animate   = true,
-        clickData = true,
+        figure    = [], #plot_topo(AppData),
+        #animate   = true,
+        #clickData = true,
+        animate   = false,
+        responsive=false,
+        #clickData = true,
         config = PlotConfig(displayModeBar=false, scrollZoom = false)
     )
 
@@ -256,7 +259,7 @@ end
 function cross_section_plot()
     dcc_graph(
         id = "cross_section",
-        figure = plot_cross(), 
+        figure = [], #plot_cross(), 
         animate = false,
         responsive=false,
         config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["drawline","drawopenpath","eraseshape","drawclosedpath"],displaylogo=false))

@@ -25,11 +25,13 @@ start_val = (5.0,46.0)
 end_val = (12.0,44.0) 
 cross = get_cross_section(DataTomo, start_val, end_val)
 
-# Create a global variable with the data structure
-# REMARK: we need to remove this!
+# Create a global variable with the data structure. Note that we will 
 global AppData
-AppData = (DataTomo=DataTomo, DataTopo=DataTopo, cross=cross, move_cross=false, 
-           CrossSections=[], active_crosssection=0);        # this will later hold the cross-section and plot data
+AppData=NamedTuple()
+
+
+#AppData = (DataTomo=DataTomo, DataTopo=DataTopo, cross=cross, move_cross=false, 
+#           CrossSections=[], active_crosssection=0);        # this will later hold the cross-section and plot data
 
 
 # Sets some defaults for the layout of webpage
@@ -74,9 +76,9 @@ app.layout = main_layout()
     
 
 # Specify different callbacks for the different tabs:
+include("./Tab_Setup_Callbacks.jl")    
 include("./Tab_CrossSections_Callback.jl")    
 include("./Tab_3Dview_Callbacks.jl")    
-include("./Tab_Setup_Callbacks.jl")    
 
 run_server(app, debug=false)
 

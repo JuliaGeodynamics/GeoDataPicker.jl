@@ -1,6 +1,6 @@
 
 
-function Tab1()
+function Tab_CrossSection()
     html_div([
         dbc_col([
             # plot with cross-section

@@ -3,7 +3,7 @@ function Tab_3Dview()
     dbc_col([
         dcc_graph(
             id = "3D-image",
-            figure    = [], #plot_3D_data(DataTopo, DataTomo, AppData),
+            figure    = plot_3D_data(DataTopo::GeoData, DataTomo::GeoData, AppData),
             animate = false,
             responsive=false,
             config = PlotConfig(displayModeBar=true, scrollZoom = true)

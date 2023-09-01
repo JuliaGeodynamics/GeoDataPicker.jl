@@ -1,5 +1,27 @@
 # callbacks for the cross-sections tab
 
+
+# Main feedback that updates the topography plot
+callback!(app,  Output("mapview", "figure"),
+                Input("button-plot-topography","n_clicks"),
+                State("session-id","data")) do n_clicks, session_id
+    
+    @show n_clicks, session_id
+    
+    if !isnothing(n_clicks)  
+        AppDataLocal = get_AppData(AppData, session_id)
+        fig_topo = plot_topo(AppDataLocal)
+        selected_field = AppDataLocal.cross.selected_field;
+
+    else
+        fig_topo = [];
+    end
+ 
+    return fig_topo
+end
+
+
+#=
 # this is the callback that is invoked if the line on the topography map is changed
 callback!(app,  Output("start_val", "value"),
                 Output("end_val", "value"),
@@ -7,12 +29,14 @@ callback!(app,  Output("start_val", "value"),
                 Input("mapview", "relayoutData"),
                 Input("dropdown_field","value"),
                 Input("mapview", "clickData"),
-                Input("colorbar-slider", "value")
-                ) do value, selected_field, clickData, colorbar_value
+                Input("colorbar-slider", "value"),
+                State("session-id","data")
+                ) do value, selected_field, clickData, colorbar_value, session_id
     global AppData
-  
+    AppDataLocal = get_AppData(AppData, session_id)
+
     # if we move the line value on the cross-section it will update this here:
-    if AppData.move_cross==false
+    if AppDataLocal.move_cross==false
         start_val, end_val = get_startend_cross_section(value)
     else
         start_val = AppData.cross.start_lonlat
@@ -25,29 +49,40 @@ callback!(app,  Output("start_val", "value"),
         end_val = AppData.cross.end_lonlat
     end
     
-    shapes = AppData.cross.Polygons
-    cross = get_cross_section(AppData.DataTomo, start_val, end_val, Symbol(selected_field))
+    shapes = AppDataLocal.cross.Polygons
+    cross = get_cross_section(AppDataLocal.DataTomo, start_val, end_val, Symbol(selected_field))
     cross.Polygons = shapes
 
     # update cross-section in AppData
-    AppData = (AppData..., cross=cross,move_cross=false);
+    AppDataLocal = (AppDataLocal..., cross=cross,move_cross=false);
 
     # Update textbox values
     retStart = "start: $(@sprintf("%.2f", start_val[1])),$(@sprintf("%.2f", start_val[2]))"
     retEnd   = "end: $(@sprintf("%.2f", end_val[1])),$(@sprintf("%.2f", end_val[2]))"
 
+    
+
     return retStart, retEnd, colorbar_value
 end
 
-# Updates the topo plot if we change the numerical start/end values
+
+
+
+# Updates the topography plot if we change the numerical start/end values or if we push the plot topo button
 callback!(app,  Output("mapview", "figure"),
                 Output("dropdown_field", "value"),
-                Input("start_val", "n_submit"),
-                Input("end_val", "n_submit"),
+                Input("button-plot-topography","n_clicks"),
+                State("start_val", "n_submit"),
+                State("end_val", "n_submit"),
                 State("start_val", "value"),
-                State("end_val", "value")) do n_start, n_end, start_value, end_value
+                State("end_val", "value"),
+                State("session_id","data")) do n_clicks, n_start, n_end, start_value, end_value, session_id
+                    
+    println("changed topo")
+    AppDataLocal = get_AppData(AppData, session_id)
 
-    global AppData
+    #=
+    @show AppDataLocal
     if isnothing(n_start); n_start=0 end
     if isnothing(n_end); n_end=0 end
    
@@ -75,31 +110,36 @@ callback!(app,  Output("mapview", "figure"),
             fig_topo = plot_topo(AppData)
 
     else
-        fig_topo = plot_topo(AppData)
-        selected_field = AppData.cross.selected_field;
+        fig_topo = plot_topo(AppDataLocal)
+        selected_field = AppDataLocal.cross.selected_field;
 
     end
+    =#
+    fig_topo = plot_topo(AppDataLocal)
+    selected_field = AppDataLocal.cross.selected_field;
+
     return fig_topo, String(selected_field)
     
 end
-
 
 # Updates the cross-section if we change the field or color axes
 callback!(app,  Output("button-plot-cross_section","n_clicks"), 
                 Input("dropdown_field","value"),
                 Input("colorbar-slider", "value"),
-                Input("button-plot-cross_section","n_clicks")) do selected_field, colorbar_value, n_clicks
+                Input("button-plot-cross_section","n_clicks"),
+                State("session_id","data")) do selected_field, colorbar_value, n_clicks, session_id
     global AppData
-                
+    AppDataLocal = get_AppData(AppData, session_id)
+
     if !isnothing(colorbar_value)
-        start_val = AppData.cross.start_lonlat
-        end_val   = AppData.cross.end_lonlat
+        start_val = AppDataLocal.cross.start_lonlat
+        end_val   = AppDataLocal.cross.end_lonlat
         
-        shapes = AppData.cross.Polygons
-        cross = get_cross_section(AppData.DataTomo, start_val, end_val, Symbol(selected_field))
+        shapes = AppDataLocal.cross.Polygons
+        cross = get_cross_section(AppDataLocal.DataTomo, start_val, end_val, Symbol(selected_field))
         cross.Polygons = shapes
 
-        AppData = (AppData..., cross=cross)
+        AppDataLocal = (AppDataLocal..., cross=cross)
 
         # increment button click to replot (will auto-replot cross-section)
         if isnothing(n_clicks) 
@@ -113,12 +153,14 @@ end
 # replot the cross-section
 callback!(app,  Output("cross_section", "figure"), 
                 Input("button-plot-cross_section","n_clicks"),
-                State("colorbar-slider", "value")) do n_clicks, colorbar_value
+                State("colorbar-slider", "value"),
+                State("session_id","data")) do n_clicks, colorbar_value, session_id
     global AppData
+    AppDataLocal = get_AppData(AppData, session_id)
     if !isnothing(n_clicks)
-        fig_cross = plot_cross(AppData.cross, zmin=colorbar_value[1], zmax=colorbar_value[2]) 
+        fig_cross = plot_cross(AppDataLocal.cross, zmin=colorbar_value[1], zmax=colorbar_value[2]) 
     else
-        fig_cross = plot_cross(AppData.cross)
+        fig_cross = plot_cross(AppDataLocal.cross)
     end
 
     return fig_cross
@@ -148,10 +190,12 @@ callback!(app,  Output("relayout-data", "children"),
                 State("shape-name","value"),            # curves potentially added to cross-section
                 State("shape-linewidth","value"),       # curves potentially added to cross-section
                 State("shape-color","value"),
-                State("cross_section","figure")
-                ) do n, name, linewidth, colorname, fig_cross
-
+                State("cross_section","figure"),
+                State("session_id","data")
+                ) do n, name, linewidth, colorname, fig_cross, session_id
+    
     # retrieve dataset
+    AppDataLocal = get_AppData(AppData, session_id)
     if isnothing(n); n=0 end
 
     shapes = interpret_drawn_curve(fig_cross.layout)
@@ -166,12 +210,12 @@ callback!(app,  Output("relayout-data", "children"),
         shapes[end] = shape
     end
 
-    if hasfield(typeof(AppData),:cross)
-        if !isempty(AppData.cross.Polygons)
-            shape = AppData.cross.Polygons[end]
+    if hasfield(typeof(AppDataLocal),:cross)
+        if !isempty(AppDataLocal.cross.Polygons)
+            shape = AppDataLocal.cross.Polygons[end]
             
             # update latest curve (any changes made on the plot)
-            AppData.cross.Polygons[end] = shapes[end]
+            AppDataLocal.cross.Polygons[end] = shapes[end]
         end
     end
     
@@ -182,25 +226,27 @@ end
 
 callback!(app,  Output("button-add-curve","n_clicks"), 
                 Input("button-add-curve","n_clicks"),
-                State("cross_section","figure")
-                ) do n, fig_cross
+                State("cross_section","figure"),
+                State("session_id","data")
+                ) do n, fig_cross, session_id
 
     # retrieve dataset
     if !isnothing(n)
+        AppDataLocal = get_AppData(AppData, session_id)
         shapes = interpret_drawn_curve(fig_cross.layout)
-        AppData.cross.Polygons = shapes
+        AppDataLocal.cross.Polygons = shapes
 
-        if AppData.active_crosssection>0
-            @show AppData.active_crosssection
+        if AppDataLocal.active_crosssection>0
+            @show AppDataLocal.active_crosssection
 
-            CrossSections = AppData.CrossSections
+            CrossSections = AppDataLocal.CrossSections
             for i=1:length(CrossSections)
-                if CrossSections[i].Number == AppData.active_crosssection
-                    CrossSections[i] = AppData.cross;
-                    CrossSections[i].Number = AppData.active_crosssection
+                if CrossSections[i].Number == AppDataLocal.active_crosssection
+                    CrossSections[i] = AppDataLocal.cross;
+                    CrossSections[i].Number = AppDataLocal.active_crosssection
                 end
             end
-            AppData.CrossSections = CrossSections
+            AppDataLocal.CrossSections = CrossSections
         end
     end
 
@@ -231,29 +277,30 @@ callback!(app,  Output("button-add-profile","n_clicks"),
                 Input("button-add-profile","n_clicks"),
                 Input("num_profiles","className"),
                 Input("start_val", "n_submit"),
-                State("mapview", "figure")
-                
-                ) do n, comp_name, n_start, fig_map
+                State("mapview", "figure"),
+                State("session_id","data")
+                ) do n, comp_name, n_start, fig_map, session_id
     global AppData
+    AppDataLocal = get_AppData(AppData, session_id)
 
     tr = callback_context().triggered;
     @show tr
 
     if !isempty(tr)
-    trigger = callback_context().triggered[1]
-    @show trigger 
+        trigger = callback_context().triggered[1]
+        @show trigger 
     end
-    
+
     # retrieve dataset
     prof_names=[""]
     if !isnothing(n)
-        cross = AppData.cross
-        n_cross = length(AppData.CrossSections)
+        cross = AppDataLocal.cross
+        n_cross = length(AppDataLocal.CrossSections)
         if cross.Number==0
             cross.Number = n_cross+1
         end
         # Add to data set
-        push!(AppData.CrossSections, AppData.cross)
+        push!(AppDataLocal.CrossSections, AppDataLocal.cross)
         # Update profile names
         prof_names = profile_names(AppData)
 
@@ -270,27 +317,29 @@ end
 callback!(app,  Output("dropdown-profiles","value"),
                 Output("end_val", "n_submit"),
                 Input("dropdown-profiles","value"),
-                Input("end_val", "n_submit")
-                ) do select_profile, n_end
+                Input("end_val", "n_submit"),
+                State("session_id","data")
+                ) do select_profile, n_end, session_id
 
     global AppData
+    AppDataLocal = get_AppData(AppData, session_id)
     if !isnothing(select_profile)
         if select_profile != "none"
              _, num = split(select_profile)
              n = parse(Int64,num)
              @show num, select_profile
              
-             for cr in AppData.CrossSections
+             for cr in AppDataLocal.CrossSections
                 @show cr.Number
                 if cr.Number==n
                     @show n
                     cross = cr
                     # update AppData
-                    AppData = (AppData...,  cross=cross, active_crosssection=n)
+                    AppDataLocal = (AppDataLocal...,  cross=cross, active_crosssection=n)
                 end
              end
         else
-            AppData = (AppData...,  active_crosssection=0)
+            AppDataLocal = (AppDataLocal...,  active_crosssection=0)
         end
     end
     if isnothing(n_end)
@@ -304,18 +353,19 @@ end
 callback!(app,  Output("button-delete-profile","n_clicks"),
                 Input("button-delete-profile","n_clicks"),
                 State("dropdown-profiles","value"),
-                ) do n_delete, select_profile
+                State("session_id","data")
+                ) do n_delete, select_profile, session_id
 
     global AppData
-
+    AppDataLocal = get_AppData(AppData, session_id)
     if !isnothing(n_delete)
         if select_profile != "none"
             _, num = split(select_profile)
             n = parse(Int64,num)
              
-            CrossSections = AppData.CrossSections 
+            CrossSections = AppDataLocal.CrossSections 
             id_delete = 0
-            for i = 1:length(AppData.CrossSections)
+            for i = 1:length(AppDataLocal.CrossSections)
                 if CrossSections[i].Number==n
                     id_delete=i
                     @show id_delete
@@ -327,11 +377,10 @@ callback!(app,  Output("button-delete-profile","n_clicks"),
             # delete x-section
             
             # update AppData
-            AppData = (AppData...,  CrossSections=CrossSections, active_crosssection=0)
-          
+            AppDataLocal = (AppDataLocal...,  CrossSections=CrossSections, active_crosssection=0)
 
         else
-            AppData = (AppData...,  active_crosssection=0)
+            AppDataLocal = (AppDataLocal...,  active_crosssection=0)
         end
     end
     if isnothing(n_delete)
@@ -342,3 +391,5 @@ callback!(app,  Output("button-delete-profile","n_clicks"),
 
     return n_delete+1, "none"
 end
+
+=#

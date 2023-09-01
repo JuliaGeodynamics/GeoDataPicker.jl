@@ -4,8 +4,9 @@ using PlotlyJS, JSON3, Printf, Statistics
 
 # include helper functions
 include("utils.jl")  # tomographic dataset
-include("Tab1_crosssections.jl")
-include("Tab2_3Dview.jl")
+include("Tab_crosssections.jl")
+include("Tab_3Dview.jl")
+include("Tab_data.jl")
 
 # Load data
 DataTomo, DataTopo = load_dataset();
@@ -182,9 +183,9 @@ function plot_3D_data(DataTopo::GeoData, DataTomo::GeoData, AppData;
         zdata =  DataTopo.depth.val[:,:,1]
         push!(data_plot,
                     surface(x = xdata, y = ydata, z = zdata,  opacity=0.8, hoverinfo="none", 
-                    contours = attr(x=attr(highlight=false, show=false, project=attr(x=false) ),y=attr(highlight=false), z=attr(highlight=false),   
-                                    xaxis=attr(visible=false), yaxis=attr(visible=false, showspikes=false), zaxis=attr(visible=false, showspikes=false)),
-                    colorscale = color_topo,  showscale=false))
+                            contours = attr(x=attr(highlight=false, show=false, project=attr(x=false) ),y=attr(highlight=false), z=attr(highlight=false),   
+                            xaxis=attr(visible=false), yaxis=attr(visible=false, showspikes=false), zaxis=attr(visible=false, showspikes=false)),
+                            colorscale = color_topo,  showscale=false))
     end
 
     color_seismic =  "Rgb"
@@ -283,7 +284,7 @@ function cross_section_plot()
         figure = plot_cross(), 
         animate = false,
         responsive=false,
-        config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["drawline","drawopenpath","eraseshape"],displaylogo=false))
+        config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["drawline","drawopenpath","eraseshape","drawclosedpath"],displaylogo=false))
         
 end
 
@@ -302,7 +303,7 @@ options_fields = [(label = String(f), value="$f" ) for f in data_fields]
 # Create the main layout of the GUI. Note that the layout of the different tabs is specified in separate routines
 app.layout = dbc_container(className = "mxy-auto") do
     dbc_col(dbc_row(
-      #  dcc_dropdown(options=["File","Save","Load"],
+
             dbc_dropdownmenu(
                     [
                         dbc_dropdownmenuitem("Load", disabled=true),
@@ -314,12 +315,13 @@ app.layout = dbc_container(className = "mxy-auto") do
 
 
 
-    html_h1("GMG Data Picker v0.1", style = Dict("margin-top" => 50, "textAlign" => "center")),
-    dbc_tabs(
-        [
-            dbc_tab(label="Cross-sections",    children = [Tab1()]),
-            dbc_tab(label="3D view",           children = [Tab2()])
-        ]
+        html_h1("GMG Data Picker v0.1", style = Dict("margin-top" => 50, "textAlign" => "center")),
+        dbc_tabs(
+            [
+                dbc_tab(label="Setup",             children = [Tab_Data()]),
+                dbc_tab(label="Cross-sections",    children = [Tab_CrossSection()]),
+                dbc_tab(label="3D view",           children = [Tab_3Dview()])
+            ]
 
     ),
         
@@ -683,6 +685,9 @@ callback!(app,  Output("3D-image","figure"),
 
     global AppData
 
+    # compute profile
+
+
     pl = plot_3D_data(DataTopo, DataTomo, AppData, 
                         add_currentcross=Bool(val_cross),
                         add_allcross=Bool(val_allcross), 
@@ -695,7 +700,6 @@ callback!(app,  Output("3D-image","figure"),
 
     return pl
 end
-
 
 
 run_server(app, debug=false)

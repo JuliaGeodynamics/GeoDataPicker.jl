@@ -196,3 +196,43 @@ function profile_names(AppData)
 
     return prof_names
 end
+
+
+"""
+    AppData = add_AppData(AppData::NamedTuple, session_id::String, new_data::NamedTuple)
+
+This adds data to the global AppData structure
+"""
+function add_AppData(AppData::NamedTuple, session_id::String, new_data::NamedTuple)
+  
+  # Store it within the AppData
+  data_local  = NamedTuple{(Symbol(session_id),)}((new_data,))
+
+  # Update local data - note that this will overwrite data if a data set with session_id already exist
+  AppData     = merge(AppData, data_local)
+
+  @show length(AppData)
+
+  if length(AppData)>10
+        println("More than 10 datasets stored in AppData dataset- we may want to limit this automatically")
+  end
+
+  return AppData
+end
+
+"""
+    data = get_AppData(AppData::NamedTuple, session_id::String)
+
+Retrieves data from the global data set if it exists; other
+"""
+function get_AppData(AppData::NamedTuple, session_id::String)
+  
+    if haskey(AppData, Symbol(session_id))
+        data = AppData[Symbol(session_id)]
+    else
+        data = nothing
+    end
+    return data
+end
+  
+
