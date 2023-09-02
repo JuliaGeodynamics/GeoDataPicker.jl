@@ -244,8 +244,6 @@ function add_AppData(AppData::NamedTuple, session_id::String, new_data::NamedTup
   # Update local data - note that this will overwrite data if a data set with session_id already exist
   AppData     = merge(AppData, data_local)
 
-  @show length(AppData)
-
   if length(AppData)>10
         println("More than 10 datasets stored in AppData dataset- we may want to limit this automatically")
   end

@@ -11,27 +11,45 @@ callback!(app,  Output("mapview", "figure"),
                 Input("end_val", "value"),
                 Input("input-depth","value"),
                 Input("selected_profile","options"),
-                Input("selected_profile","value"),
+                State("selected_profile","value"),
                 State("session-id","data"),
                 State("checklist_orientation", "value")
                 ) do n_clicks, start_value, end_value, depth, selected_profile_options, selected_profile, session_id, vertical
     global AppData
-    @show n_clicks, session_id
+    AppDataLocal = get_AppData(AppData, session_id)
+
     trigger        = callback_context().triggered;
     if !isnothing(trigger)
         trigger = trigger[1]
-        @show trigger
     end
 
     if !isnothing(n_clicks)  
+        AppDataUser  = AppDataLocal.AppDataUser
+
         # extract numerical values of start & end
         start_val, end_val = extract_start_end_values(start_value, end_value)
         orient_prof = true
         if vertical==true
             depth  = nothing
         end
+
+
         profile = ProfileUser(start_lonlat=start_val, end_lonlat=end_val, vertical=orient_prof, depth=depth)
-        @show profile
+        
+        if !isnothing(selected_profile)
+            if selected_profile>0
+                if hasfield(typeof(AppDataUser),:Profiles)
+                    number_profiles =  get_number_profiles(AppDataUser.Profiles)    # get numbers
+                    id = findall(number_profiles .== selected_profile)
+                    if !isempty(id)
+                        profile = deepcopy(AppDataUser.Profiles[id[1]])
+                        profile.number = 0
+                        AppDataUser.Profiles[1] = profile
+                        AppData = set_AppDataUser(AppData, session_id, AppDataUser)
+                    end
+                end
+            end
+        end
         AppDataLocal   = get_AppData(AppData, session_id)
         AppDataLocal = update_profile(AppDataLocal, profile, num=0)
         AppData = add_AppData(AppData, session_id, AppDataLocal)
@@ -73,8 +91,7 @@ callback!(app,  Output("start_val", "value"),
 
     # if we move the line value on the cross-section it will update this here:
     start_val, end_val = get_startend_cross_section(value)
-    @show start_val, end_val
-
+    
     if isnothing(start_val)
         if !isnothing(AppDataLocal)
             if hasfield(typeof(AppDataLocal), :Profiles)
@@ -133,11 +150,9 @@ callback!(app,  Output("button-add-profile", "n_clicks"),
     if trigger == "button-add-profile"
         profile.number = maximum(number_profiles)+1         # new number
         push!(AppDataUser.Profiles, profile)               # add to data structure 
-        @show AppDataUser.Profiles
         AppData = set_AppDataUser(AppData, session_id, AppDataUser)
         println("Added profile")
     elseif trigger == "button-delete-profile"
-        @show selected_profile
         if !isnothing(selected_profile) 
             if selected_profile>0
                 id = findall(number_profiles .== selected_profile)
@@ -148,7 +163,6 @@ callback!(app,  Output("button-add-profile", "n_clicks"),
             end
         end
     elseif trigger == "button-update-profile"
-        @show selected_profile
         if !isnothing(selected_profile) 
             id = findall(number_profiles .== selected_profile)
             profile = deepcopy(AppDataUser.Profiles[1])           # main profile
@@ -162,7 +176,6 @@ callback!(app,  Output("button-add-profile", "n_clicks"),
             profile_selected.vertical     = profile.vertical
             profile_selected.depth        = profile.depth
             
-            @show AppDataUser.Profiles
         end
 
     end
@@ -173,7 +186,6 @@ callback!(app,  Output("button-add-profile", "n_clicks"),
     else
         options = [(label="default profile", value=0)] 
     end
-    @show n_add options AppDataUser
 
     return n_add, options
 end
@@ -190,10 +202,10 @@ callback!(app,  Output("selected_profile", "value"),
     if !isnothing(selected_profile)
         @show selected_profile
         Profiles = AppDataUser.Profiles
-                number_profiles =  get_number_profiles(AppDataUser.Profiles)    # get numbers
+        number_profiles =  get_number_profiles(AppDataUser.Profiles)    # get numbers
+        id = findall(number_profiles == selected_profile)[1]
 
-
-        profile = deepcopy(AppDataUser.Profiles[selected_profile])
+        profile = deepcopy(AppDataUser.Profiles[id])
         profile.number = 0
         AppDataUser.Profiles[1] = profile
     end
