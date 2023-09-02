@@ -71,13 +71,17 @@ function Tab_CrossSection()
                 
                 # various menus @ lower right
                 dbc_col([
-                    dbc_row(dbc_label("Profile options"),justify="center"),
-                    dbc_row(dbc_label("# of profiles: 0"),id="num_profiles"),
+                    dbc_row(dbc_col(dcc_markdown("Profile options")),justify="center"),
+                    dbc_row(dbc_radioitems(id="checklist_orientation",options=[(label="vertical", value=true),(label="horizontal", value=false)], inline=true, value=true)),
+                    dbc_row([dbc_col(dbc_label("depth [km]")), dbc_col(dbc_input(value=100,type="number",id="input-depth", disabled=true))]),
                     dbc_row([dbc_button("Plot topography", id="button-plot-topography", disabled=true)]),
-                    dbc_row([dbc_button("Add profile", id="button-add-profile", disabled=true)]),
-                    dbc_row([dbc_button("Update current profile", id="button-update-profile", disabled=true)]),
-                    dbc_row([dbc_button("Delete current profile", id="button-delete-profile", disabled=true)]),
-                    dbc_row([dcc_dropdown(options=["none"], id="dropdown-profiles", placeholder="Select profile", disabled=true)]),
+                    dbc_row([dbc_buttongroup([dbc_button("add", id="button-add-profile", disabled=true),
+                                              dbc_button("update", id="button-update-profile", disabled=true),
+                                              dbc_button("delete", id="button-delete-profile", disabled=true)])]),
+                    #dbc_row([dcc_dropdown(options=["none"], id="dropdown-profiles", placeholder="Select profile", disabled=true)]),
+                    #dbc_row([dcc_dropdown(options=["none"], id="dropdown-profiles", placeholder="Select profile", disabled=true)]),
+                    dbc_row(dbc_radioitems(id="selected_profile",options=[(label="Profile 0", value="Profile 0")]))
+
                 ], align="center", width=3)
                 #dbc_col([
                 #    dbc_row([html_button(id="button-select", name="select", n_clicks=0, contentEditable=true)])

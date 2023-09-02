@@ -23,6 +23,16 @@ mutable struct ProfileUser
 end
 
 """
+    function ProfileUser(;  number=0, 
+        name=nothing, 
+        vertical=true,
+        start_lonlat=(), 
+        end_lonlat=(), 
+        depth=nothing,
+        start_cart=0,
+        end_cart = nothing,
+        Polygons=[])
+
 Create a user profile with keywords
 """
 function ProfileUser(;  number=0, 
@@ -47,10 +57,10 @@ end
 # Print info 
 function show(io::IO, g::ProfileUser)
     if g.vertical
-        println(io, "Vertical profile ($(g.name))")
+        println(io, "Vertical profile ($(g.number))")
         println(io, "  lon/lat   : $(g.start_lonlat)-$(g.end_lonlat) ")
     else
-        println(io, "Horizontal profile ($(g.name))")
+        println(io, "Horizontal profile ($(g.number))")
         println(io, "  depth     : $(g.depth) ")
     end
     println(io, "  # polygons: $(length(g.Polygons)) ")
@@ -258,6 +268,37 @@ function get_AppData(AppData::NamedTuple, session_id::String)
     return data
 end
   
+"""
+    data = get_AppDataUser(AppData::NamedTuple, session_id::String)
+
+Retrieves GUI user data from the global data set if it exists; other
+"""
+function get_AppDataUser(AppData::NamedTuple, session_id::String)
+  
+    if haskey(AppData, Symbol(session_id))
+        data = AppData[Symbol(session_id)].AppDataUser
+    else
+        data = nothing
+    end
+    return data
+end
+
+"""
+    AppData = set_AppDataUser(AppData::NamedTuple, session_id::String, AppDataUser)
+
+Retrieves GUI user data from the global data set if it exists; other
+"""
+function set_AppDataUser(AppData::NamedTuple, session_id::String, AppDataUser)
+    
+    # first update local structure with AppDataUser
+    AppDataLocal = get_AppData(AppData, session_id)
+    AppDataLocal = add_AppData(AppDataLocal, "AppDataUser", AppDataUser)
+
+    AppData = add_AppData(AppData, session_id, AppDataLocal)
+
+    return AppData
+end
+
 
 """
     data = get_AppDataUser(AppData::NamedTuple, session_id::String)
@@ -285,12 +326,15 @@ function get_start_end_profile(AppDataUser; num=0)
     return start_lonlat, end_lonlat
 end
 
+
+get_number_profiles(Profiles::Vector{ProfileUser}) =  [prof.number for prof in Profiles]
+
 """
 
 Gives the index of the profile given its number (in case numbers are scrambled)
 """
 function find_profile_index(Profiles::Vector{ProfileUser}, num::Int64)
-    num_vec = [prof.number for prof in Profiles]
+    num_vec = get_number_profiles(Profiles)
     id = findall(num_vec .== num)
     if length(id)>0
         id = id[1]
@@ -312,4 +356,22 @@ function update_profile(AppData, profile::ProfileUser; num=0)
     end
 
     return AppData
+end
+
+
+
+function add_profile(AppData, profile::ProfileUser; num=0)
+    id = find_profile_index(AppData.AppDataUser.Profiles, num)
+
+    if !isempty(id)
+        AppData.AppDataUser.Profiles[id] = profile
+    end
+
+    return AppData
+end
+
+
+function get_profile_options(Profiles)
+   options =  [(label="profile $(prof.number)", value=prof.number) for prof in Profiles]
+   return options
 end

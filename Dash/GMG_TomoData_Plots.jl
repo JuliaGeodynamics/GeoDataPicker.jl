@@ -21,12 +21,12 @@ function plot_topo(AppData)
                                     label = (text="",))] 
                                     
     for i = 2:length(AppData.AppDataUser.Profiles)
-        cr = Profiles[i]
+        cr = AppData.AppDataUser.Profiles[i]
         shape = (   type = "line",    x0=cr.start_lonlat[1], x1=cr.end_lonlat[1], 
                                       y0=cr.start_lonlat[2], y1=cr.end_lonlat[2],
                                       editable = false,
                                       line  = (color="#0000FF", width=1),
-                                      label=(text="$(cr.Number)",))
+                                      label=(text="$(cr.number)",))
         push!(shapes, shape)
     end
 

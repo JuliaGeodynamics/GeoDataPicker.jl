@@ -3,11 +3,19 @@
 
 # Main feedback that updates the topography plot
 callback!(app,  Output("mapview", "figure"),
+                Output("button-add-profile","disabled"),
+                Output("button-update-profile","disabled"),
+                Output("button-delete-profile","disabled"),
                 Input("button-plot-topography","n_clicks"),
+                Input("start_val", "value"),
+                Input("end_val", "value"),
+                Input("input-depth","value"),
+                Input("selected_profile","options"),
+                Input("selected_profile","value"),
                 State("session-id","data"),
-                State("start_val", "value"),
-                State("end_val", "value")) do n_clicks, session_id, start_value, end_value
-    
+                State("checklist_orientation", "value")
+                ) do n_clicks, start_value, end_value, depth, selected_profile_options, selected_profile, session_id, vertical
+    global AppData
     @show n_clicks, session_id
     trigger        = callback_context().triggered;
     if !isnothing(trigger)
@@ -17,16 +25,30 @@ callback!(app,  Output("mapview", "figure"),
 
     if !isnothing(n_clicks)  
         # extract numerical values of start & end
-        #prof = ProfileUser(start_val=start_val, end_val=end_val)
-
+        start_val, end_val = extract_start_end_values(start_value, end_value)
+        orient_prof = true
+        if vertical==true
+            depth  = nothing
+        end
+        profile = ProfileUser(start_lonlat=start_val, end_lonlat=end_val, vertical=orient_prof, depth=depth)
+        @show profile
         AppDataLocal   = get_AppData(AppData, session_id)
-        fig_topo       = plot_topo(AppDataLocal)
+        AppDataLocal = update_profile(AppDataLocal, profile, num=0)
+        AppData = add_AppData(AppData, session_id, AppDataLocal)
 
+        fig_topo       = plot_topo(AppDataLocal)
+        but_add_prof_disabled=false
+        but_up_prof_disabled=false
+        but_del_prof_disabled=false
+        
     else
         fig_topo = [];
+        but_add_prof_disabled = true 
+        but_up_prof_disabled  = true
+        but_del_prof_disabled = true
     end
  
-    return fig_topo
+    return fig_topo, but_add_prof_disabled, but_up_prof_disabled, but_del_prof_disabled
 end
 
 
@@ -82,9 +104,136 @@ callback!(app,  Output("start_val", "value"),
    return retStart, retEnd
 end
 
+# add, remove or change profiles
+callback!(app,  Output("button-add-profile", "n_clicks"),
+                Output("selected_profile", "options"),
+                Input("button-add-profile", "n_clicks"),
+                Input("button-delete-profile", "n_clicks"),
+                Input("button-update-profile", "n_clicks"),
+                State("session-id","data"),
+                State("selected_profile", "value")
+                ) do n_add, n_del, n_up, session_id, selected_profile
+    
+    global AppData
+    AppDataUser = get_AppDataUser(AppData, session_id)
+
+    tr = callback_context().triggered;
+    trigger = []
+    if !isempty(tr)
+        trigger = callback_context().triggered[1]
+        trigger = split(trigger.prop_id,".")[1]
+    end
+    @show trigger
+
+    if hasfield(typeof(AppDataUser), :Profiles)
+        profile = deepcopy(AppDataUser.Profiles[1])         # retrieve profile
+        number_profiles =  get_number_profiles(AppDataUser.Profiles)    # get numbers
+    end
+
+    if trigger == "button-add-profile"
+        profile.number = maximum(number_profiles)+1         # new number
+        push!(AppDataUser.Profiles, profile)               # add to data structure 
+        @show AppDataUser.Profiles
+        AppData = set_AppDataUser(AppData, session_id, AppDataUser)
+        println("Added profile")
+    elseif trigger == "button-delete-profile"
+        @show selected_profile
+        if !isnothing(selected_profile) 
+            if selected_profile>0
+                id = findall(number_profiles .== selected_profile)
+                Profiles = AppDataUser.Profiles
+
+                deleteat!(Profiles, id)
+                number_profiles =  get_number_profiles(AppDataUser.Profiles)    # get numbers
+            end
+        end
+    elseif trigger == "button-update-profile"
+        @show selected_profile
+        if !isnothing(selected_profile) 
+            id = findall(number_profiles .== selected_profile)
+            profile = deepcopy(AppDataUser.Profiles[1])           # main profile
+            profile_selected = AppDataUser.Profiles[id[1]]        # profile to be updated
+
+            # update the coordinates (but leave polygons)
+            profile_selected.start_lonlat = profile.start_lonlat
+            profile_selected.end_lonlat   = profile.end_lonlat
+            profile_selected.start_cart   = profile.start_cart
+            profile_selected.end_cart     = profile.end_cart
+            profile_selected.vertical     = profile.vertical
+            profile_selected.depth        = profile.depth
+            
+            @show AppDataUser.Profiles
+        end
+
+    end
+
+    # Get options and values
+    if  hasfield(typeof(AppDataUser), :Profiles)
+        options = get_profile_options(AppDataUser.Profiles)
+    else
+        options = [(label="default profile", value=0)] 
+    end
+    @show n_add options AppDataUser
+
+    return n_add, options
+end
+
 #=
+callback!(app,  Output("selected_profile", "value"),
+                Input("selected_profile", "value"),
+                State("session-id","data"),
+                ) do selected_profile, session_id
+        
+    global AppData
+    AppDataUser = get_AppDataUser(AppData, session_id)
+
+    if !isnothing(selected_profile)
+        @show selected_profile
+        Profiles = AppDataUser.Profiles
+                number_profiles =  get_number_profiles(AppDataUser.Profiles)    # get numbers
 
 
+        profile = deepcopy(AppDataUser.Profiles[selected_profile])
+        profile.number = 0
+        AppDataUser.Profiles[1] = profile
+    end
+
+    return selected_profile
+end
+=#
+
+# open/close Curve interpretation box
+callback!(app,
+    Output("collapse", "is_open"),
+    [Input("button-curve-interpretation", "n_clicks")],
+    [State("collapse", "is_open")], ) do  n, is_open
+    
+    if isnothing(n); n=0 end
+
+    if n>0
+        if is_open==1
+            is_open = 0
+        elseif is_open==0
+            is_open = 1
+        end
+    end
+    return is_open 
+        
+end
+
+# open/close Curve interpretation box
+callback!(app,
+    Output("input-depth", "disabled"),
+    [Input("checklist_orientation", "value")] ) do  vertical
+    
+    if isnothing(vertical); vertical=true; end
+    
+    return vertical 
+end
+
+
+
+#=
 
 # Updates the topography plot if we change the numerical start/end values or if we push the plot topo button
 callback!(app,  Output("mapview", "figure"),
@@ -184,24 +333,7 @@ callback!(app,  Output("cross_section", "figure"),
     return fig_cross
 end
 
-# open/close Curve interpretation box
-callback!(app,
-    Output("collapse", "is_open"),
-    [Input("button-curve-interpretation", "n_clicks")],
-    [State("collapse", "is_open")], ) do  n, is_open
-    
-    if isnothing(n); n=0 end
 
-    if n>0
-        if is_open==1
-            is_open = 0
-        elseif is_open==0
-            is_open = 1
-        end
-    end
-    return is_open 
-        
-end
 
 callback!(app,  Output("relayout-data", "children"), 
                 Input("button-update-curve","n_clicks"),
