@@ -46,17 +46,20 @@ options_fields = [(label = String(f), value="$f" ) for f in data_fields]
 function main_layout()
     session_id = UUIDs.uuid4()
     dbc_container([
-        dbc_col(dbc_row(
+        dbc_col(dbc_row([
                 dbc_dropdownmenu(
                         [dbc_dropdownmenuitem("Load", disabled=true),
                         dbc_dropdownmenuitem("Save", disabled=true),
                         dbc_dropdownmenuitem(divider=true),
                         ],
                         label="File",
-                        id="id-dropdown-file")),
-                        width=2),
+                        id="id-dropdown-file"),
 
-            html_h1("GMG Data Picker v0.1", style = Dict("margin-top" => 50, "textAlign" => "center")),
+                        html_h1("GMG Data Picker v0.1", style = Dict("margin-top" => 50, "textAlign" => "center")),
+                        
+                        ]),
+                        ),
+
             dbc_tabs(
                 [
                     dbc_tab(label="Setup",             children = [Tab_Data()]),

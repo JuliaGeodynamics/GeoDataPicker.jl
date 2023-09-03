@@ -251,6 +251,42 @@ callback!(app,
         
 end
 
+# open/close EQ interpretation box
+callback!(app,
+    Output("collapse-EQ", "is_open"),
+    [Input("button-EQ", "n_clicks")],
+    [State("collapse-EQ", "is_open")], ) do  n, is_open
+    
+    if isnothing(n); n=0 end
+
+    if n>0
+        if is_open==1
+            is_open = 0
+        elseif is_open==0
+            is_open = 1
+        end
+    end
+    return is_open    
+end
+
+# open/close EQ interpretation box
+callback!(app,
+    Output("collapse-Surfaces", "is_open"),
+    [Input("button-Surfaces", "n_clicks")],
+    [State("collapse-Surfaces", "is_open")], ) do  n, is_open
+    
+    if isnothing(n); n=0 end
+
+    if n>0
+        if is_open==1
+            is_open = 0
+        elseif is_open==0
+            is_open = 1
+        end
+    end
+    return is_open    
+end
+
 # open/close Curve interpretation box
 callback!(app,
     Output("input-depth", "disabled"),

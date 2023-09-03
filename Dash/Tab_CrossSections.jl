@@ -29,11 +29,34 @@ function Tab_CrossSection()
                                                     dbc_button("Clear all curves",id="button-clear-curve"),
                                                     
                                                 ])
+                                                
                                                 ])),
                                              id="collapse",
                                              is_open=false,
                                          ),
-                                         dbc_button("Plot cross-section",id="button-plot-cross_section")
+                                         dbc_button("Earthquakes",id="button-EQ"),
+                                         dbc_collapse(
+                                            dbc_card(dbc_cardbody([
+                                               dbc_row([
+                                                   dbc_row(dbc_switch(label="Display", id="EQ-display", value=false),justify="center"),
+                                                ])
+                                                ])),
+                                                id="collapse-EQ",
+                                                is_open=false,
+                                                ),
+                                        dbc_button("Surfaces",id="button-Surfaces"),
+                                        dbc_collapse(
+                                           dbc_card(dbc_cardbody([
+                                              dbc_row([
+                                                  dbc_row(dbc_switch(label="Display", id="Surfaces-display", value=false),justify="center"),
+                                               ])
+                                               ])),
+                                               id="collapse-Surfaces",
+                                               is_open=false,
+                                               ),
+                                                       
+                                        dbc_button("Plot cross-section",id="button-plot-cross_section"),
+                                            
                                 ])
 
                         
@@ -80,7 +103,7 @@ function Tab_CrossSection()
                                               dbc_button("delete", id="button-delete-profile", disabled=true)])]),
                     #dbc_row([dcc_dropdown(options=["none"], id="dropdown-profiles", placeholder="Select profile", disabled=true)]),
                     #dbc_row([dcc_dropdown(options=["none"], id="dropdown-profiles", placeholder="Select profile", disabled=true)]),
-                    dbc_row(dbc_radioitems(id="selected_profile",options=[(label="Profile 0", value="Profile 0")]))
+                    dbc_row( dbc_card(dbc_radioitems(id="selected_profile",options=[(label="Profile 0", value="Profile 0")])))
 
                 ], align="center", width=3)
                 #dbc_col([
