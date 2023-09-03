@@ -28,11 +28,7 @@ callback!(app,  Output("setup-button", "n_clicks"),
 
         # Initial cross-section
         start_val, end_val = extract_start_end_values(start_value, end_value)
-        @show start_val, end_val
-
         profile = ProfileUser(start_lonlat=start_val, end_lonlat=end_val)
-        
-       # cross = get_cross_section(DataTomo, start_val, end_val)
 
         # User data that results from all GUI interactions
         # This should also hold info onm which data sets were loaded

@@ -49,6 +49,8 @@ function ProfileUser(;  number=0,
     end
     if !isnothing(depth)
         vertical = false
+        #av = (start_lonlat .+ end_lonlat)./2 
+        end_lonlat = deepcopy(start_lonlat)
     end
 
     return ProfileUser(number,name,vertical,Float64.(start_lonlat), Float64.(end_lonlat), depth, start_cart, end_cart, Polygons)
@@ -370,6 +372,16 @@ end
 
 
 function get_profile_options(Profiles)
-   options =  [(label="profile $(prof.number)", value=prof.number) for prof in Profiles]
+   options = [(label="default profile", value=0)]
+   for i=2:length(Profiles) 
+        prof = Profiles[i]
+        if prof.vertical
+            val  = (label="profile $(prof.number)", value=prof.number) 
+        else
+            val  = (label="profile $(prof.number) (z=$(prof.depth))", value=prof.number) 
+        end
+        push!(options,val)
+   end
+
    return options
 end

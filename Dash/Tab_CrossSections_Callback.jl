@@ -1,126 +1,5 @@
 # callbacks for the cross-sections tab
 
-
-# Main feedback that updates the topography plot
-callback!(app,  Output("mapview", "figure"),
-                Output("button-add-profile","disabled"),
-                Output("button-update-profile","disabled"),
-                Output("button-delete-profile","disabled"),
-                Input("button-plot-topography","n_clicks"),
-                Input("start_val", "value"),
-                Input("end_val", "value"),
-                Input("input-depth","value"),
-                Input("selected_profile","options"),
-                State("selected_profile","value"),
-                State("session-id","data"),
-                State("checklist_orientation", "value")
-                ) do n_clicks, start_value, end_value, depth, selected_profile_options, selected_profile, session_id, vertical
-    global AppData
-    AppDataLocal = get_AppData(AppData, session_id)
-
-    trigger        = callback_context().triggered;
-    if !isnothing(trigger)
-        trigger = trigger[1]
-    end
-
-    if !isnothing(n_clicks)  
-        AppDataUser  = AppDataLocal.AppDataUser
-
-        # extract numerical values of start & end
-        start_val, end_val = extract_start_end_values(start_value, end_value)
-        orient_prof = true
-        if vertical==true
-            depth  = nothing
-        end
-
-
-        profile = ProfileUser(start_lonlat=start_val, end_lonlat=end_val, vertical=orient_prof, depth=depth)
-        
-        if !isnothing(selected_profile)
-            if selected_profile>0
-                if hasfield(typeof(AppDataUser),:Profiles)
-                    number_profiles =  get_number_profiles(AppDataUser.Profiles)    # get numbers
-                    id = findall(number_profiles .== selected_profile)
-                    if !isempty(id)
-                        profile = deepcopy(AppDataUser.Profiles[id[1]])
-                        profile.number = 0
-                        AppDataUser.Profiles[1] = profile
-                        AppData = set_AppDataUser(AppData, session_id, AppDataUser)
-                    end
-                end
-            end
-        end
-        AppDataLocal   = get_AppData(AppData, session_id)
-        AppDataLocal = update_profile(AppDataLocal, profile, num=0)
-        AppData = add_AppData(AppData, session_id, AppDataLocal)
-
-        fig_topo       = plot_topo(AppDataLocal)
-        but_add_prof_disabled=false
-        but_up_prof_disabled=false
-        but_del_prof_disabled=false
-        
-    else
-        fig_topo = [];
-        but_add_prof_disabled = true 
-        but_up_prof_disabled  = true
-        but_del_prof_disabled = true
-    end
- 
-    return fig_topo, but_add_prof_disabled, but_up_prof_disabled, but_del_prof_disabled
-end
-
-
-# this is the callback that is invoked if the line on the topography map is changed
-callback!(app,  Output("start_val", "value"),
-                Output("end_val", "value"),
-                Input("mapview", "relayoutData"),
-                Input("mapview", "clickData"),
-                State("session-id","data"),
-                State("start_val", "value"),
-                State("end_val", "value")
-                ) do value, clickData, session_id, retStart, retEnd
-    global AppData
-    AppDataLocal = get_AppData(AppData, session_id)
-
-    #trigger        = callback_context().triggered;
-    #if !isnothing(trigger)
-    #    @show trigger
-    #    trigger = trigger[1]
-    #    @show trigger, value
-    #end
-
-    # if we move the line value on the cross-section it will update this here:
-    start_val, end_val = get_startend_cross_section(value)
-    
-    if isnothing(start_val)
-        if !isnothing(AppDataLocal)
-            if hasfield(typeof(AppDataLocal), :Profiles)
-                start_val = AppDataLocal.Profiles[1].start_lonlat
-            end
-        end
-    end
-    if isnothing(end_val)
-        if !isnothing(AppDataLocal)
-            if hasfield(typeof(AppDataLocal), :Profiles)
-                end_val = AppDataLocal.Profiles[1].end_lonlat
-            end
-        end
-    end
- 
-    # Update textbox values
-    if !isnothing(start_val)
-        retStart = "start: $(@sprintf("%.2f", start_val[1])),$(@sprintf("%.2f", start_val[2]))"
-        retEnd   = "end: $(@sprintf("%.2f", end_val[1])),$(@sprintf("%.2f", end_val[2]))"
-
-        # Update the active cross-section (number 0) accordingly
-        profile = ProfileUser(number=0, start_lonlat=start_val, end_lonlat=end_val)
-        AppDataLocal = update_profile(AppDataLocal, profile, num=0)
-        AppData = add_AppData(AppData, session_id, AppDataLocal)
-    end
-
-   return retStart, retEnd
-end
-
 # add, remove or change profiles
 callback!(app,  Output("button-add-profile", "n_clicks"),
                 Output("selected_profile", "options"),
@@ -140,13 +19,12 @@ callback!(app,  Output("button-add-profile", "n_clicks"),
         trigger = callback_context().triggered[1]
         trigger = split(trigger.prop_id,".")[1]
     end
-    @show trigger
 
     if hasfield(typeof(AppDataUser), :Profiles)
         profile = deepcopy(AppDataUser.Profiles[1])         # retrieve profile
         number_profiles =  get_number_profiles(AppDataUser.Profiles)    # get numbers
     end
-
+    
     if trigger == "button-add-profile"
         profile.number = maximum(number_profiles)+1         # new number
         push!(AppDataUser.Profiles, profile)               # add to data structure 
@@ -189,6 +67,146 @@ callback!(app,  Output("button-add-profile", "n_clicks"),
 
     return n_add, options
 end
+
+# Main feedback that updates the topography plot
+callback!(app,  Output("mapview", "figure"),
+                Output("button-add-profile","disabled"),
+                Output("button-update-profile","disabled"),
+                Output("button-delete-profile","disabled"),
+                Output("selected_profile","value"),
+                Input("button-plot-topography","n_clicks"),
+                Input("selected_profile","value"),
+                Input("selected_profile","options"),
+                Input("start_val","n_submit"), 
+                Input("end_val","n_submit"), 
+                Input("input-depth","n_submit"), 
+                State("start_val", "value"),
+                State("end_val", "value"),
+                State("input-depth","value"),
+                State("session-id","data"),
+                State("checklist_orientation", "value")
+                ) do n_clicks, selected_profile, selected_profile_options, n_start_value, n_end_value, n_depth, start_value, end_value, depth, session_id, vertical
+    global AppData
+    AppDataLocal = get_AppData(AppData, session_id)
+
+    trigger        = callback_context().triggered;
+    if !isnothing(trigger)
+        trigger = trigger[1]
+    end
+
+    if !isnothing(n_clicks) 
+        AppDataUser = get_AppDataUser(AppData, session_id)
+
+        # extract numerical values of start & end
+        start_val, end_val = extract_start_end_values(start_value, end_value)
+        orient_prof = true
+        if vertical==true
+            depth  = nothing
+        end
+
+
+        profile = ProfileUser(start_lonlat=start_val, end_lonlat=end_val, vertical=orient_prof, depth=depth)
+        if !isnothing(selected_profile)
+            if selected_profile>0
+                if hasfield(typeof(AppDataUser),:Profiles)
+                    number_profiles =  get_number_profiles(AppDataUser.Profiles)    # get numbers
+                    id = findall(number_profiles .== selected_profile)
+                    if !isempty(id)
+                        profile = deepcopy(AppDataUser.Profiles[id[1]])
+                        profile.number = 0
+                        AppDataUser.Profiles[1] = profile
+                        AppData = set_AppDataUser(AppData, session_id, AppDataUser)
+                    end
+                end
+            end
+        end
+        AppDataLocal   = get_AppData(AppData, session_id)
+        AppDataLocal = update_profile(AppDataLocal, profile, num=0)
+        AppData = add_AppData(AppData, session_id, AppDataLocal)
+
+        fig_topo       = plot_topo(AppDataLocal)
+        but_add_prof_disabled=false
+        but_up_prof_disabled=false
+        but_del_prof_disabled=false
+        
+    else
+        fig_topo = [];
+        but_add_prof_disabled = true 
+        but_up_prof_disabled  = true
+        but_del_prof_disabled = true
+    end
+    
+    #selected_profile = 0
+    return fig_topo, but_add_prof_disabled, but_up_prof_disabled, but_del_prof_disabled, selected_profile
+end
+
+
+# this is the callback that is invoked if the line on the topography map is changed
+callback!(app,  Output("start_val", "value"),
+                Output("end_val", "value"),
+                Input("mapview", "relayoutData"),
+                Input("mapview", "clickData"),
+                Input("selected_profile","value"),
+                State("session-id","data"),
+                State("start_val", "value"),
+                State("end_val", "value")
+                ) do value, clickData, selected_profile, session_id, retStart, retEnd
+    global AppData
+    AppDataLocal = get_AppData(AppData, session_id)
+
+    trigger        = callback_context().triggered;
+    if !isnothing(trigger)
+        if length(trigger)>0
+            trigger = trigger[1]
+            trigger = split(trigger.prop_id,".")[1]
+        end
+    end
+
+    # if we move the line value on the cross-section it will update this here:
+    start_val, end_val = get_startend_cross_section(value)
+    if trigger == "selected_profile"
+        AppDataUser = get_AppDataUser(AppData, session_id)
+        if !isnothing(AppDataUser)
+            # don't use value from plot if this is the trigger
+            number_profiles =  get_number_profiles(AppDataUser.Profiles)    # get numbers
+            id = findall(number_profiles .== selected_profile)
+            if !isempty(id)
+                id = id[1]
+                start_val = AppDataLocal.AppDataUser.Profiles[id].start_lonlat
+                end_val   = AppDataLocal.AppDataUser.Profiles[id].end_lonlat
+            end
+        end
+    end
+    
+    if isnothing(start_val)
+        if !isnothing(AppDataLocal)
+            if hasfield(typeof(AppDataLocal), :Profiles)
+                start_val = AppDataLocal.Profiles[1].start_lonlat
+            end
+        end
+    end
+    if isnothing(end_val)
+        if !isnothing(AppDataLocal)
+            if hasfield(typeof(AppDataLocal), :Profiles)
+                end_val = AppDataLocal.Profiles[1].end_lonlat
+            end
+        end
+    end
+ 
+    # Update textbox values
+    if !isnothing(start_val)
+        retStart = "start: $(@sprintf("%.2f", start_val[1])),$(@sprintf("%.2f", start_val[2]))"
+        retEnd   = "end: $(@sprintf("%.2f", end_val[1])),$(@sprintf("%.2f", end_val[2]))"
+        # Update the active cross-section (number 0) accordingly
+        profile = ProfileUser(number=0, start_lonlat=start_val, end_lonlat=end_val)
+        AppDataLocal = update_profile(AppDataLocal, profile, num=0)
+        AppData = add_AppData(AppData, session_id, AppDataLocal)
+    end
+
+   return retStart, retEnd
+end
+
+
 
 #=
 callback!(app,  Output("selected_profile", "value"),
