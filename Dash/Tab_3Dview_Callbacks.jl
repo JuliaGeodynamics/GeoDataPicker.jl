@@ -3,14 +3,17 @@
 # Update the 3D plot
 callback!(app,  Output("3D-image","figure"),
                 Input("id-plot-3D","n_clicks"),
+                State("opacity-cross-3D","value"),
                 State("colorbar-slider", "value"),
                 State("id-3D-isosurface-slider","value"),
                 State("id-3D-topo","value"),
                 State("id-3D-volume","value"),
                 State("dropdown_field","value"), 
                 State("selected_cross-sections", "value"),
-                State("session-id","data")
-                ) do n_clicks, colorbar_value, colorbar_value_vol, val_topo, val_vol, field, selected_profiles, session_id 
+                State("3D-selected_curves","value"),
+                State("session-id","data"),
+                ) do n_clicks, opacity_cross, colorbar_value, colorbar_value_vol, 
+                     val_topo, val_vol, field, selected_profiles,  curve_select, session_id 
 
     global AppData
 
@@ -22,7 +25,9 @@ callback!(app,  Output("3D-image","figure"),
                         add_topo=Bool(val_topo),
                         cvals=colorbar_value,
                         field=Symbol(field),
-                        cvals_vol=colorbar_value_vol
+                        cvals_vol=colorbar_value_vol,
+                        opacity_cross=opacity_cross,
+                        curve_select=curve_select
                       )
 
     return pl

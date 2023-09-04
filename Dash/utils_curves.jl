@@ -34,7 +34,7 @@ function set_curve(shape, profile::ProfileUser; name="test", color="#000000", li
     x,y,closed = svg2vec(shape.data_curve)
 
     # convert profile to lon,lat,depth depending on profile orientation
-    lon,lat,depth = convert_curve_profile(x,y,profile)
+    lon,lat,depth = convert_curve_profile(x,y,profile, closed)
 
     return Curve(name, color,linewidth,  type, shape, shape.data_curve, lon, lat, depth, closed)
 end
@@ -44,10 +44,10 @@ end
 
 Converts picture coordinates of curve to real coordinates
 """
-function convert_curve_profile(x,y,profile)
+function convert_curve_profile(x,y,profile,closed=false)
     if profile.vertical==false
         # horizontal depth slice; in this case x,y correspond to lon,lat
-        lon,lat,depth = x, y, ones(size(x))*profile.depth
+        lon,lat,depth = x, y, -ones(size(x))*profile.depth
     else
         Δ_lonlat =  profile.end_lonlat .- profile.start_lonlat
         Δ_cart   =  profile.end_cart - profile.start_cart 
@@ -55,6 +55,12 @@ function convert_curve_profile(x,y,profile)
         lat      =  (x .- profile.start_cart)./Δ_cart .*  Δ_lonlat[2] .+ profile.start_lonlat[2]
         depth    =  y;
     end
+    if closed
+        push!(lon,lon[1])
+        push!(lat,lat[1])
+        push!(depth,depth[1])
+    end
+
     return lon,lat,depth
 end
 
@@ -184,4 +190,18 @@ function get_current_shapes(fig_cross)
         end
     end
     return shapes
+end
+
+"""
+    names = get_curve_names(Profiles)
+returns a list with unique names of all curves
+"""
+function get_curve_names(Profiles)
+    names = []
+    for prof in Profiles
+        for curv in prof.Polygons
+            push!(names,curv.name)
+        end
+    end
+    return unique(names)
 end

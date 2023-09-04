@@ -17,13 +17,17 @@ function Tab_3Dview()
                                         allowCross=false,
                                     )
                                 ]), 
-                            ], width=4), 
+                            ], width=3), 
                             
-                            dbc_col(dbc_card([dbc_label("cross-sections"),
-                                            dbc_checklist(id="selected_cross-sections",options=[(label="",)])
-                                    ]), width=4),
+                            dbc_col(dbc_card([dbc_label("cross-sections:"),
+                                            dbc_checklist(id="selected_cross-sections",options=[(label="",)]),
+                                            dbc_col([dbc_col(dbc_label("opacity:")),dbc_col(dcc_slider(id="opacity-cross-3D",min=0,max=1,value=1))])
+                                    ]), width=3),
 
-    
+                            dbc_col(dbc_card([dbc_label("curves:"),
+                                    dcc_dropdown(id="3D-selected_curves",options=[("",)],multi=true),
+                            ]), width=3)
+
 
                 ])
 

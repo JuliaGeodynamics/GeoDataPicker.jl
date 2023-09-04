@@ -152,9 +152,7 @@ callback!(app,  Output("mapview", "figure"),
             depth  = nothing
         end
 
-
         profile = ProfileUser(number=0, start_lonlat=start_val, end_lonlat=end_val, vertical=vertical, depth=depth)
-
         
         if !isnothing(selected_profile)
             if selected_profile>0
@@ -181,7 +179,6 @@ callback!(app,  Output("mapview", "figure"),
         but_add_prof_disabled=false
         but_up_prof_disabled=false
         but_del_prof_disabled=false
-        
     else
         fig_topo = [];
         but_add_prof_disabled = true 
@@ -266,6 +263,7 @@ callback!(app,
 end
 
 callback!(app,  Output("cross_section", "figure"), 
+                Output("3D-selected_curves","options"),
                 Input("button-plot-cross_section","n_clicks"),
                 State("dropdown_field","value"),
                 State("colorbar-slider", "value"),
@@ -280,11 +278,15 @@ callback!(app,  Output("cross_section", "figure"),
     if (n_clicks>0) && !isnothing(profile)
         @show profile
         fig_cross = plot_cross(AppDataLocal, profile, zmin=colorbar_value[1], zmax=colorbar_value[2], field=Symbol(field)) 
+        
+        curve_names = get_curve_names(AppDataLocal.AppDataUser.Profiles)
+
     else
         fig_cross = []
+        curve_names = []
     end
 
-    return fig_cross
+    return fig_cross, curve_names
 end
 
 

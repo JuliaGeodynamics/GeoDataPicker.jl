@@ -154,7 +154,9 @@ function plot_3D_data(AppData;
                         add_volumetric=false, 
                         add_topo=true,
                         cvals=[-4,4],
-                        cvals_vol=[1,3])
+                        cvals_vol=[1,3],
+                        opacity_cross=1,
+                        curve_select=nothing)
     if hasfield(typeof(AppData),:DataTomo)
         DataTomo = AppData.DataTomo
         DataTopo = AppData.DataTopo
@@ -194,7 +196,26 @@ function plot_3D_data(AppData;
                                 contours = attr(x=attr(highlight=false),y=attr(highlight=false), z=attr(highlight=false)),
                                 colorscale = color_seismic,
                                 hoverinfo  = false,
-                                showscale  = false,  reversescale=false))
+                                showscale  = true, 
+                                colorbar = attr(thickness=5, title=String(field)),
+                                cmin = cvals[1], cmax=cvals[2],
+                                opacity = opacity_cross))
+            end
+        end
+
+        if !isnothing(curve_select)
+            Profiles = AppData.AppDataUser.Profiles
+            @show curve_select
+            for prof in Profiles
+                for curve in prof.Polygons
+                    if !isnothing(curve_select)
+                        if any(contains.(curve_select,curve.name))
+                            push!(data_plot,
+                                scatter3d( x=curve.lon, y=curve.lat, z=curve.depth, mode="lines",
+                                        color=curve.color, showlegend=false, label=curve.name))
+                        end
+                    end
+                end
             end
         end
         
