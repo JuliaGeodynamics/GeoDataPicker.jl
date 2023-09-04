@@ -12,6 +12,7 @@ mutable struct Curve
     lon      :: Vector
     lat      :: Vector
     depth    :: Vector
+    closed   :: Bool
 end
 
 
@@ -29,8 +30,32 @@ function set_curve(shape, profile::ProfileUser; name="test", color="#000000", li
         color = "#000000"
     end
     type = shape.type
+    
+    x,y,closed = svg2vec(shape.data_curve)
 
-    return Curve(name, color,linewidth,  type, shape, shape.data_curve, lon, lat, depth)
+    # convert profile to lon,lat,depth depending on profile orientation
+    lon,lat,depth = convert_curve_profile(x,y,profile)
+
+    return Curve(name, color,linewidth,  type, shape, shape.data_curve, lon, lat, depth, closed)
+end
+
+"""
+    lon,lat,depth = convert_curve_profile(x,y,profile)
+
+Converts picture coordinates of curve to real coordinates
+"""
+function convert_curve_profile(x,y,profile)
+    if profile.vertical==false
+        # horizontal depth slice; in this case x,y correspond to lon,lat
+        lon,lat,depth = x, y, ones(size(x))*profile.depth
+    else
+        Δ_lonlat =  profile.end_lonlat .- profile.start_lonlat
+        Δ_cart   =  profile.end_cart - profile.start_cart 
+        lon      =  (x .- profile.start_cart)./Δ_cart .*  Δ_lonlat[1] .+ profile.start_lonlat[1]
+        lat      =  (x .- profile.start_cart)./Δ_cart .*  Δ_lonlat[2] .+ profile.start_lonlat[2]
+        depth    =  y;
+    end
+    return lon,lat,depth
 end
 
 
@@ -82,6 +107,31 @@ end
 
 interpret_drawn_curve(data::Nothing) = []
 
+"""
+    x,y,closed = svg2vec(path)
+Takes an SVG path & transfers it to 2 vectors with `x,y` coordinates & whether the curve is closed or not
+"""
+function svg2vec(path)
+    closed = false
+    if  path[1]=='M'
+        if path[end] == 'Z'
+            closed = true
+            path = path[1:end-1]
+        end
+
+        path_coords = split(path[2:end], "L") 
+        n = length(path_coords)
+        x = zeros(n)
+        y = zeros(n)
+        for i = 1:n
+            x[i], y[i] =  parse.(Float64,split(path_coords[i],","))
+        end
+    else
+        x,y=[],[]
+    end
+
+    return  x,y, closed
+end
 
 """
 helper function to retrieve the polygon names 

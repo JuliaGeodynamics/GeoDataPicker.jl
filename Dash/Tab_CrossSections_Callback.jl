@@ -20,7 +20,6 @@ callback!(app,  Output("start_val", "value"),
     # if we move the line value on the cross-section it will update this here:
     start_val, end_val = get_startend_cross_section(value)
     if !isempty(trigger)
-        @show trigger
         AppDataUser = get_AppDataUser(AppData, session_id)
   
         # Update textbox values
@@ -31,18 +30,16 @@ callback!(app,  Output("start_val", "value"),
                
         # Update the active cross-section (number 0) accordingly
         if !isnothing(start_val)
-            @show start_val, depth, vertical
             profile = ProfileUser(number=0, start_lonlat=start_val, end_lonlat=end_val, vertical=vertical, depth=depth)
-            @show profile vertical profile.vertical depth start_val
             AppDataLocal = update_profile(AppDataLocal, profile, num=0)
             AppData = add_AppData(AppData, session_id, AppDataLocal)
         end
 
     else
-        retStart = "start: 5,45"
-        retEnd   = "end: 15,40"
+        # set the initial cross-section
+        retStart = "start: 5.0,46.0"
+        retEnd   = "end: 12.0,44.0"
     end
-    @show retStart, retEnd
 
    return retStart, retEnd
 end
@@ -75,7 +72,6 @@ callback!(app,  Output("button-add-profile", "n_clicks"),
     if trigger == "button-add-profile"
         profile = deepcopy(AppDataUser.Profiles[1])    
         profile.number = maximum(number_profiles)+1         # new number
-        @show profile
         push!(AppDataUser.Profiles, profile)               # add to data structure 
         AppData = set_AppDataUser(AppData, session_id, AppDataUser)
         println("Added profile: vertical=$(profile.vertical)")
@@ -148,7 +144,6 @@ callback!(app,  Output("mapview", "figure"),
 
     if !isnothing(n_clicks) 
         AppDataUser = get_AppDataUser(AppData, session_id)
-        @show vertical
 
         # extract numerical values of start & end
         start_val, end_val = extract_start_end_values(start_value, end_value)

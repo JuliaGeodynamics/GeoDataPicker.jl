@@ -54,7 +54,6 @@ function ProfileUser(;  number=0,
     end
 
     if !(start_lonlat == ()) & !isnothing(start_lonlat)
-        @show start_lonlat
         start_lonlat = Float64.(start_lonlat)
     end
     if !(end_lonlat == ()) & !isnothing(end_lonlat)

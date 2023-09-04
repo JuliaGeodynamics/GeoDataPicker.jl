@@ -14,13 +14,12 @@ function Tab_CrossSection()
                                                    # dbc_checkbox(label="lock curve", id="lock-curve"),
 
                                                      dbc_row([dbc_col(dbc_input(placeholder="Name",   id="shape-name")),
-                                                              dbc_col(dbc_input(id="shape-color",        type="color"), width=4)
-                                                                ])
+                                                              dbc_col(dbc_input(id="shape-color",     type="color"), width=4) ])
                                                              ]),
                                                     dbc_row( dbc_card(dbc_radioitems(id="selected_curves",options=[(label="",)]))),
 
                                                     dbc_row(dbc_buttongroup([   dbc_button(" - ",id="button-clear-curve"),
-                                                                                dbc_button("update",id="button-update-curve"),
+                                                                                dbc_button("up",id="button-update-curve"),
                                                                                 dbc_button(" + ",id="button-add-curve")]), justify="center"),
 
                                                     dbc_row(dbc_buttongroup([   dbc_button("copy",id="button-copy-curve"),
@@ -96,10 +95,11 @@ function Tab_CrossSection()
                     dbc_row(dbc_col(dcc_markdown("Profile options")),justify="center"),
                     dbc_row(dbc_radioitems(id="checklist_orientation",options=[(label="vertical", value=true),(label="horizontal", value=false)], inline=true, value=true)),
                     dbc_row([dbc_col(dbc_label("depth [km]")), dbc_col(dbc_input(value=100,type="number",id="input-depth", disabled=true))]),
-                    dbc_row([dbc_button("Plot topography", id="button-plot-topography", disabled=true)]),
-                    dbc_row([dbc_buttongroup([dbc_button("add", id="button-add-profile", disabled=true),
+                    dbc_row([dbc_button("Plot profile location", id="button-plot-topography", disabled=true)]),
+                    dbc_row(dbc_buttongroup([dbc_button(" - ", id="button-delete-profile", disabled=true),
                                               dbc_button("update", id="button-update-profile", disabled=true),
-                                              dbc_button("delete", id="button-delete-profile", disabled=true)])]),
+                                              dbc_button(" + ", id="button-add-profile", disabled=true)]), justify="center"),
+
                     #dbc_row([dcc_dropdown(options=["none"], id="dropdown-profiles", placeholder="Select profile", disabled=true)]),
                     #dbc_row([dcc_dropdown(options=["none"], id="dropdown-profiles", placeholder="Select profile", disabled=true)]),
                     dbc_row( dbc_card(dbc_radioitems(id="selected_profile",options=[(label="Profile 0", value="Profile 0")])))
