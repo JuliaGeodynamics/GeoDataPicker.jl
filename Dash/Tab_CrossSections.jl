@@ -13,24 +13,23 @@ function Tab_CrossSection()
                                                     dbc_row(dbc_label("Options"),justify="center"),
                                                    # dbc_checkbox(label="lock curve", id="lock-curve"),
 
-                                                     dbc_row([dbc_col(dbc_label("Name:"),align="center", width=5),
-                                                             dbc_col(dbc_input(placeholder="Name of curve",id="shape-name"), width=6)]),
+                                                     dbc_row([dbc_col(dbc_input(placeholder="Name",   id="shape-name")),
+                                                              dbc_col(dbc_input(id="shape-color",        type="color"), width=4)
+                                                                ])
+                                                             ]),
+                                                    dbc_row( dbc_card(dbc_radioitems(id="selected_curves",options=[(label="",)]))),
 
-                                                    dbc_row([dbc_col(dbc_label("Linewidth:"),align="center", width=5),
-                                                             dbc_col(dbc_input(placeholder="Linewidth",id="shape-linewidth", value="1", type="number"))
-                                                            ]),
+                                                    dbc_row(dbc_buttongroup([   dbc_button(" - ",id="button-clear-curve"),
+                                                                                dbc_button("update",id="button-update-curve"),
+                                                                                dbc_button(" + ",id="button-add-curve")]), justify="center"),
 
-                                                    dbc_row([dbc_col(dbc_label("Colors:"),align="center", width=5),
-                                                            dbc_col(dcc_dropdown(options=colornames,id="shape-color", value="black", clearable=false))
-                                                           ]),
-
-                                                    dbc_button("Update props of last curve",id="button-update-curve"),
-                                                    dbc_button("Add all curves to profile",id="button-add-curve"),
-                                                    dbc_button("Clear all curves",id="button-clear-curve"),
+                                                    dbc_row(dbc_buttongroup([   dbc_button("copy",id="button-copy-curve"),
+                                                                                dbc_button("paste",id="button-paste-curve")
+                                                                                ]), justify="center")          
                                                     
                                                 ])
                                                 
-                                                ])),
+                                              ),
                                              id="collapse",
                                              is_open=false,
                                          ),
@@ -55,7 +54,7 @@ function Tab_CrossSection()
                                                is_open=false,
                                                ),
                                                        
-                                        dbc_button("Plot cross-section",id="button-plot-cross_section"),
+                                        dbc_button("Plot cross-section",id="button-plot-cross_section")
                                             
                                 ])
 

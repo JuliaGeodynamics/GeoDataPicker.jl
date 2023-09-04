@@ -7,6 +7,7 @@ using UUIDs
 
 # include helper functions
 include("utils.jl")  # tomographic dataset
+include("utils_curves.jl")
 include("GMG_TomoData_Plots.jl")
 include("Tab_CrossSections.jl")
 include("Tab_3Dview.jl")
@@ -48,8 +49,8 @@ function main_layout()
     dbc_container([
         dbc_col(dbc_row([
                 dbc_dropdownmenu(
-                        [dbc_dropdownmenuitem("Load", disabled=true),
-                        dbc_dropdownmenuitem("Save", disabled=true),
+                        [dbc_dropdownmenuitem("Load state", disabled=true),
+                        dbc_dropdownmenuitem("Save state", disabled=true),
                         dbc_dropdownmenuitem(divider=true),
                         ],
                         label="File",
@@ -62,11 +63,11 @@ function main_layout()
 
             dbc_tabs(
                 [
-                    dbc_tab(label="Setup",             children = [Tab_Data()]),
-                    dbc_tab(label="Cross-sections",    children = [Tab_CrossSection()]),
-                    dbc_tab(label="3D view",           children = [Tab_3Dview()])
-                ]
-
+                    dbc_tab(tab_id="tab-setup",label="Setup",             children = [Tab_Data()]),
+                    dbc_tab(tab_id="tab-cross", label="Cross-sections",    children = [Tab_CrossSection()]),
+                    dbc_tab(tab_id="tab-3D", label="3D view",           children = [Tab_3Dview()])
+                ],
+            id = "tabs", active_tab="tab-setup",
         ),
             
         dcc_store(id="id-topo", data=DataTopo.lat),              

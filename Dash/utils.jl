@@ -95,32 +95,43 @@ end
 
 Extracts a cross-section from a tomographic dataset and returns this as cartesian values (x,z) formatted for the Plotly heatmap format
 """
-function get_cross_section(DataAlps::GeoData, start_value=(10,41), end_value=(10,49), field=:dVp_paf21)
+function get_cross_section(AppData::NamedTuple, profile::ProfileUser, field=:dVp_paf21)
 
     # retrieve the cross-section in GeoData format
-    cross   =   CrossSection(DataAlps, Start=start_value, End=end_value, Interpolate=true)
+    if profile.vertical == true
+        # extract vertical profile
+        cross   =   CrossSection(AppData.DataTomo, Start=profile.start_lonlat, End=profile.end_lonlat, Interpolate=true)
 
-    # transfer it to cartesian data
-    p           = ProjectionPoint(Lon=minimum(cross.lon.val),Lat=minimum(cross.lat.val));
-    cross_cart  = Convert2CartData(cross,p)
-    x_cross     = FlattenCrossSection(cross_cart);
-    x_cart      = x_cross[:,1];
+        # transfer it to cartesian data
+        p           = ProjectionPoint(Lon=minimum(cross.lon.val),Lat=minimum(cross.lat.val));
+        cross_cart  = Convert2CartData(cross,p)
+        x_cross     = FlattenCrossSection(cross_cart);
+        x_cart      = x_cross[:,1,1];
+        z_cart      = cross_cart.z.val[1,:,1]
+        profile.start_cart = x_cart[1]
+        profile.end_cart   = x_cart[end]
 
-    if !hasfield(typeof(cross.fields), field)
-        error("The dataset does not have field $field")
+        if !hasfield(typeof(cross.fields), field)
+            error("The dataset does not have field $field")
+        end
+    
+        data = cross_cart.fields[field][:,:,1]'
+    else
+        cross_cart  = CrossSection(AppData.DataTomo,  Depth_level=-profile.depth, Interpolate=true)
+        x_cart      = cross_cart.lon.val[:,1]
+        z_cart      = cross_cart.lat.val[1,:]
+        
+        if !hasfield(typeof(cross_cart.fields), field)
+            error("The dataset does not have field $field")
+        end
+    
+        data = cross_cart.fields[field][:,:,1]'
     end
 
-    # add this to the profile structure
-    start_lonlat = Float64.(start_value)
-    end_lonlat   = Float64.(end_value)
-    
-    start_cart   = minimum(x_cart)         
-    end_cart     = maximum(x_cart)         
-  
-    profile = Profile(  start_lonlat=start_lonlat,  end_lonlat=end_lonlat, 
-                        start_cart=start_cart,      end_cart=end_cart)
 
-    return profile
+    # add this to the profile structure
+
+    return x_cart,z_cart,data,cross_cart
 end
 
 
@@ -147,55 +158,6 @@ end
 
 get_startend_cross_section(value::Any) = nothing,nothing
 
-
-"""
-    This interprets a curve that is drawn on the figure; can be a line or path
-"""
-function interpret_drawn_curve(data::JSON3.Object)
-    type=nothing
-    data_curve=nothing
-    
-    shapes_vec = []
-    fieldnames_data = keys(data)
-
-    if any(fieldnames_data .== Symbol("shapes"))
-        shapes = data.shapes
-
-        for shape in shapes
-
-            if !isempty(shape)
-                data_curve  = []
-                type        = shape.type
-                label_text  = shape.label.text 
-                
-                line_color = "#444"
-                line_width  = "4"
-
-                names = keys(shape)
-                if any(names.==:line)
-                    line_color  = shape.line.color
-                    line_width  = shape.line.width
-                end
-
-                if type=="path" 
-                    data_curve = shape.path        # this is in SVG format
-                elseif type=="line"
-                    data_curve = [shape.x0, shape.y0, shape.x1, shape.y1]
-                else
-                    error("unknown curve shape")    
-                end
-
-                dat = (type=type, data_curve=data_curve, label_text=label_text, line_color=line_color, line_width=line_width)
-                push!(shapes_vec, dat)
-            end  
-        end
-
-    end
-
-    return shapes_vec
-end
-
-interpret_drawn_curve(data::Nothing) = []
 
 
 function extract_start_end_values(start_value, end_value)
@@ -384,4 +346,21 @@ function get_profile_options(Profiles)
    end
 
    return options
+end
+
+
+"""
+    trigger::String = get_trigger()
+
+returns the trigger callback (simplifies code)
+"""
+function get_trigger()
+
+    tr = callback_context().triggered;
+    trigger = []
+    if !isempty(tr)
+        trigger = callback_context().triggered[1]
+        trigger = trigger[1]
+    end
+    return trigger
 end

@@ -64,35 +64,40 @@ function plot_topo(AppData)
     return pl
 end
 
-#=
 """
-Creates topo plot & line that shows the cross-section
+Creates a plot of the cross-section with all requested options
 """
-function plot_cross(Cross::Profile; zmax=nothing, zmin=nothing, shapes=[])
+function plot_cross(AppData, profile; zmax=nothing, zmin=nothing, shapes=[], field=:dVp_paf21)
+    AppDataUser = AppData.AppDataUser
+
+    # Compute the cross-section.
+    # NOTE: this routine will be replaces with the one of marcel
+    x_cart, z_cart, data, cross = get_cross_section(AppData, profile, field)    
+
     colorscale = "Rgb";
-    reversescale = true;
+    reversescale = false;       # we'll need to add a direct colormap (as reverse does not work in 3D)
     println("updating cross section")
-    data = Cross.data';
+#    data = Cross.data';
     if isnothing(zmax)
         zmin, zmax = extrema(data)
     end
-    shapes = Cross.Polygons
+    curves = profile.Polygons
 
     shapes_data = [];
-    if !isempty(shapes)
+    if !isempty(curves)
         # a shape was added to the plot; add it again
-        for shape in shapes
+        for  curve in curves
             
-            if shape.type=="line"
-                line = shape.data_curve
+            if curve.type=="line"
+                line = curve.data
                 val  = (type = "line",   x0=line[1], x1=line[3], y0=line[2], y1=line[4], editable = true,
-                            label = (text=shape.label_text,),
-                            line  = (color=shape.line_color, width=shape.line_width))
+                            label = (text=curve.name,),
+                            line  = (color=curve.color, width=curve.linewidth))
                     
-            elseif shape.type=="path"
-                val =  (type = "path", path=shape.data_curve, editable = true,
-                            label = (text=shape.label_text,),
-                            line  = (color=shape.line_color, width=shape.line_width))
+            elseif curve.type=="path"
+                val =  (type = "path", path=curve.data, editable = true,
+                            label = (text=curve.name,),
+                            line  = (color=curve.color, width=curve.linewidth))
                                 
             end
             push!(shapes_data, val)
@@ -100,8 +105,8 @@ function plot_cross(Cross::Profile; zmax=nothing, zmin=nothing, shapes=[])
     end
 
     pl = (  id = "fig_cross",
-            data = [heatmap(x = Cross.x_cart, 
-                            y = Cross.z_cart, 
+            data = [heatmap(x = x_cart, 
+                            y = z_cart, 
                             z = collect(eachcol(data)),
                             colorscale   = colorscale,
                             reversescale = reversescale,
@@ -125,17 +130,18 @@ function plot_cross(Cross::Profile; zmax=nothing, zmin=nothing, shapes=[])
                         ),
             config = (edits    = (shapePosition =  true,)),  
         )
+    
     return pl
 end
-=#
 
-function plot_cross(cross::Nothing) 
-    println("default cross section")
-    cross = get_cross_section(DataTomo, (10.0,41.0), (10.0,49.0))
-    pl = plot_cross(cross)
-    return pl
-end
-plot_cross() = plot_cross(nothing)  
+
+#function plot_cross(cross::Nothing) 
+#    println("default cross section")
+#    cross = get_cross_section(DataTomo, (10.0,41.0), (10.0,49.0))
+#    pl = plot_cross(cross)
+#    return pl
+#end
+#plot_cross() = plot_cross(nothing)  
 
 
 """
@@ -264,7 +270,7 @@ function cross_section_plot()
         figure = [], #plot_cross(), 
         animate = false,
         responsive=false,
-        config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["drawline","drawopenpath","eraseshape","drawclosedpath"],displaylogo=false))
+        config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["drawopenpath","eraseshape","drawclosedpath"],displaylogo=false))
         
 end
 

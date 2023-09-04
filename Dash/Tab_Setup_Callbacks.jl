@@ -15,6 +15,7 @@ end
 callback!(app,  Output("setup-button", "n_clicks"),
                 Output("button-plot-topography", "n_clicks"),
                 Output("button-plot-topography", "disabled"),
+                Output("tabs","activ_tab"),
                 Input("setup-button", "n_clicks"),
                 State("session-id", "data"),
                 State("button-plot-topography", "n_clicks"),
@@ -32,7 +33,7 @@ callback!(app,  Output("setup-button", "n_clicks"),
 
         # User data that results from all GUI interactions
         # This should also hold info onm which data sets were loaded
-        AppDataUser = (Profiles=[profile],)
+        AppDataUser = (Profiles=[profile], copy=[])
 
         # Add the data to a NamedTuple
         data = (DataTomo=DataTomo, DataTopo=DataTopo, CrossSections=[], AppDataUser=AppDataUser)
@@ -42,10 +43,13 @@ callback!(app,  Output("setup-button", "n_clicks"),
         n_topo = 0
 
         plot_button_topo_disabled = false
+        active_tab = "tab-cross"
+
     else
         plot_button_topo_disabled = true
         n=0
+        active_tab = "tab-setup"
     end
 
-    return n+1, n_topo, plot_button_topo_disabled
+    return n+1, n_topo, plot_button_topo_disabled, active_tab
 end
