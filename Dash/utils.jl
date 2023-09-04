@@ -47,13 +47,21 @@ function ProfileUser(;  number=0,
     if isnothing(name)
         name = "$number"
     end
-    if !isnothing(depth)
-        vertical = false
-        #av = (start_lonlat .+ end_lonlat)./2 
+    if vertical==true
+        depth  = nothing
+    else
         end_lonlat = deepcopy(start_lonlat)
     end
 
-    return ProfileUser(number,name,vertical,Float64.(start_lonlat), Float64.(end_lonlat), depth, start_cart, end_cart, Polygons)
+    if !(start_lonlat == ()) & !isnothing(start_lonlat)
+        @show start_lonlat
+        start_lonlat = Float64.(start_lonlat)
+    end
+    if !(end_lonlat == ()) & !isnothing(end_lonlat)
+        end_lonlat = Float64.(end_lonlat)
+    end
+
+    return ProfileUser(number,name,vertical, start_lonlat, end_lonlat, depth, start_cart, end_cart, Polygons)
 end
 
 # Print info 
