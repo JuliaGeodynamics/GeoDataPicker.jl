@@ -6,21 +6,18 @@ callback!(app,  Output("3D-image","figure"),
                 State("colorbar-slider", "value"),
                 State("id-3D-isosurface-slider","value"),
                 State("id-3D-topo","value"),
-                State("id-3D-cross","value"),
                 State("id-3D-volume","value"),
-                State("id-3D-cross-all","value"),
                 State("dropdown_field","value"), 
+                State("selected_cross-sections", "value"),
                 State("session-id","data")
-                ) do n_clicks, colorbar_value, colorbar_value_vol, val_topo, val_cross, val_vol, val_allcross, field, session_id 
+                ) do n_clicks, colorbar_value, colorbar_value_vol, val_topo, val_vol, field, selected_profiles, session_id 
 
     global AppData
 
     # compute profile
     AppDataLocal = get_AppData(AppData, session_id)
-
     pl = plot_3D_data(AppDataLocal, 
-                        add_currentcross=Bool(val_cross),
-                        add_allcross=Bool(val_allcross), 
+                        selected_cross=selected_profiles, 
                         add_volumetric=Bool(val_vol), 
                         add_topo=Bool(val_topo),
                         cvals=colorbar_value,

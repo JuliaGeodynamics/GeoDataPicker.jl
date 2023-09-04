@@ -47,6 +47,7 @@ end
 # add, remove or change profiles
 callback!(app,  Output("button-add-profile", "n_clicks"),
                 Output("selected_profile", "options"),
+                Output("selected_cross-sections","options"),
                 Input("button-add-profile", "n_clicks"),
                 Input("button-delete-profile", "n_clicks"),
                 Input("button-update-profile", "n_clicks"),
@@ -111,7 +112,7 @@ callback!(app,  Output("button-add-profile", "n_clicks"),
         options = [(label="default profile", value=0)] 
     end
     
-    return n_add, options
+    return n_add, options, options
 end
 
 # Main feedback that updates the topography plot

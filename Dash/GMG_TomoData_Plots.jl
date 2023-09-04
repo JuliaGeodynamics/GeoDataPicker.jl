@@ -150,8 +150,7 @@ this creates the 3D plot with topography and the cross-sections
 """
 function plot_3D_data(AppData; 
                         field=:dVp_paf21, 
-                        add_currentcross=true, 
-                        add_allcross=false, 
+                        selected_cross=[],
                         add_volumetric=false, 
                         add_topo=true,
                         cvals=[-4,4],
@@ -159,8 +158,6 @@ function plot_3D_data(AppData;
     if hasfield(typeof(AppData),:DataTomo)
         DataTomo = AppData.DataTomo
         DataTopo = AppData.DataTopo
-        profile  = AppData.AppDataUser.Profiles[1]
-
 
         data_plot = [];
         if add_topo 
@@ -186,23 +183,10 @@ function plot_3D_data(AppData;
                             showscale=false, colorscale = color_seismic)
                         )
         end
-        if add_currentcross
-            # add active cross section
-            _, _, _,_, cross = get_cross_section(AppData, profile, field)    
-
-            vol   = cross.fields[field]
-            push!(data_plot,
-                    surface( x=cross.lon.val[:,:], y=cross.lat.val[:,:], z=cross.depth.val[:,:,1], surfacecolor=vol[:,:,1], 
-                            contours = attr(x=attr(highlight=false),y=attr(highlight=false), z=attr(highlight=false)),
-                            colorscale = color_seismic,
-                            hoverinfo  = false,
-                            showscale  = true,  reversescale=false,
-                            colorbar=attr(thickness=5, title=String(field)),
-                            cmin=cvals[1], cmax=cvals[2]))
-        end
         
-        if add_allcross
-            for profile in AppData.AppDataUser.Profiles
+        if !isnothing(selected_cross)
+            for i in selected_cross
+                profile  = AppData.AppDataUser.Profiles[i+1]
                 _, _, _,_, cross = get_cross_section(AppData, profile, field)    
                 vol   = cross.fields[field]
                 push!(data_plot,

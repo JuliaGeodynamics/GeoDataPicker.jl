@@ -10,8 +10,6 @@ function Tab_3Dview()
         ),
         dbc_row([dbc_col([dbc_button("Plot 3D",id="id-plot-3D"),
                           dbc_checkbox(id="id-3D-topo",     label="topography",             value=true),
-                          dbc_checkbox(id="id-3D-cross",    label="active cross-section",   value=true),
-                          dbc_checkbox(id="id-3D-cross-all",label="all cross-sections",     value=false),
                           dbc_card([ 
                             dbc_checkbox(id="id-3D-volume",   label="volumetric date",        value=false),
                             dcc_rangeslider(id = "id-3D-isosurface-slider", 
@@ -19,7 +17,14 @@ function Tab_3Dview()
                                         allowCross=false,
                                     )
                                 ]), 
-                            ], width=4)
+                            ], width=4), 
+                            
+                            dbc_col(dbc_card([dbc_label("cross-sections"),
+                                            dbc_checklist(id="selected_cross-sections",options=[(label="",)])
+                                    ]), width=4),
+
+    
+
                 ])
 
     ])
