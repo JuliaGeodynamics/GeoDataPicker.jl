@@ -124,21 +124,22 @@ function get_cross_section(AppData::NamedTuple, profile::ProfileUser, field=:dVp
     
         data = cross_cart.fields[field][:,:,1]'
     else
-        cross_cart  = CrossSection(AppData.DataTomo,  Depth_level=-profile.depth, Interpolate=true)
+        cross       = CrossSection(AppData.DataTomo,  Depth_level=-profile.depth, Interpolate=true)
+        cross_cart  = cross;
         x_cart      = cross_cart.lon.val[:,1]
         z_cart      = cross_cart.lat.val[1,:]
         
         if !hasfield(typeof(cross_cart.fields), field)
             error("The dataset does not have field $field")
         end
-    
+        
         data = cross_cart.fields[field][:,:,1]'
     end
 
 
     # add this to the profile structure
 
-    return x_cart,z_cart,data,cross_cart
+    return x_cart,z_cart,data,cross_cart, cross
 end
 
 

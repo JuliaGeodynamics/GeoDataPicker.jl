@@ -1,5 +1,4 @@
 # Callbacks for this tab
-#=
 
 # Update the 3D plot
 callback!(app,  Output("3D-image","figure"),
@@ -19,7 +18,7 @@ callback!(app,  Output("3D-image","figure"),
     # compute profile
     AppDataLocal = get_AppData(AppData, session_id)
 
-    pl = plot_3D_data(AppDataLocal.DataTopo, AppDataLocal.DataTomo, AppDataLocal, 
+    pl = plot_3D_data(AppDataLocal, 
                         add_currentcross=Bool(val_cross),
                         add_allcross=Bool(val_allcross), 
                         add_volumetric=Bool(val_vol), 
@@ -31,5 +30,3 @@ callback!(app,  Output("3D-image","figure"),
 
     return pl
 end
-
-=#
