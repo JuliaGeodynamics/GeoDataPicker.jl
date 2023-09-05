@@ -9,7 +9,10 @@ function Tab_3Dview()
             config = PlotConfig(displayModeBar=true, scrollZoom = true)
         ),
         dbc_row([dbc_col([dbc_button("Plot 3D",id="id-plot-3D"),
-                          dbc_checkbox(id="id-3D-topo",     label="topography",             value=true),
+                        dbc_card([  dbc_checkbox(id="id-3D-topo",     label="topography",             value=true),
+                                    dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=0.7, id = "opacity-topography-3D", tooltip=attr(placement="bottom")),    
+                                ]),
+
                           dbc_card([ 
                             dbc_checkbox(id="id-3D-volume",   label="volumetric date",        value=false),
                             dcc_rangeslider(id = "id-3D-isosurface-slider", 
@@ -21,7 +24,10 @@ function Tab_3Dview()
                             
                             dbc_col(dbc_card([dbc_label("cross-sections:"),
                                             dbc_checklist(id="selected_cross-sections",options=[(label="",)]),
-                                            dbc_col([dbc_col(dbc_label("opacity:")),dbc_col(dcc_slider(id="opacity-cross-3D",min=0,max=1,value=1))])
+                                            dbc_col([
+                                                #dbc_col(dbc_label("opacity:")),dbc_col(dcc_slider(id="opacity-cross-3D",min=0,max=1,value=1))
+                                                dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=1.0, id = "opacity-cross-3D", tooltip=attr(placement="bottom")),    
+                                                ])
                                     ]), width=3),
 
                             dbc_col(dbc_card([dbc_label("curves:"),

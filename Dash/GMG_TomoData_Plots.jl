@@ -184,7 +184,8 @@ function plot_3D_data(AppData;
                         cvals_vol=[1,3],
                         opacity_cross=1,
                         curve_select=nothing,
-                        color="roma")
+                        color="roma",
+                        opacity_topography_3D=0.8)
     if hasfield(typeof(AppData),:DataTomo)
         DataTomo        = AppData.DataTomo
         DataTopo        = AppData.DataTopo
@@ -200,7 +201,7 @@ function plot_3D_data(AppData;
             ydata =  DataTopo.lat.val[:,:]
             zdata =  DataTopo.depth.val[:,:,1]
             push!(data_plot,
-                        surface(x = xdata, y = ydata, z = zdata,  opacity=0.8, hoverinfo="none", 
+                        surface(x = xdata, y = ydata, z = zdata,  opacity=opacity_topography_3D, hoverinfo="none", 
                                 contours = attr(x=attr(highlight=false, show=false, project=attr(x=false) ),y=attr(highlight=false), z=attr(highlight=false),   
                                 xaxis=attr(visible=false), yaxis=attr(visible=false, showspikes=false), zaxis=attr(visible=false, showspikes=false)),
                                 colorscale = colorscale_topo,  showscale=false,  cmin = -4, cmax = 4),
@@ -319,7 +320,7 @@ function cross_section_plot()
         figure = [], #plot_cross(), 
         animate = false,
         responsive=false,
-        config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["lasso","drawopenpath","eraseshape","drawclosedpath"],displaylogo=false))
+        config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["toimage","toImage","lasso","drawopenpath","eraseshape","drawclosedpath"],displaylogo=false))
         
 end
 

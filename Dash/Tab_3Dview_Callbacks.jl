@@ -12,9 +12,11 @@ callback!(app,  Output("3D-image","figure"),
                 State("selected_cross-sections", "value"),
                 State("3D-selected_curves","value"),
                 State("colormaps_cross","value"),
-                State("session-id","data"),
+                State("opacity-topography-3D","value"),
+                State("session-id","data")
                 ) do n_clicks, opacity_cross, colorbar_value, colorbar_value_vol, 
-                     val_topo, val_vol, field, selected_profiles,  curve_select, colormap_field, session_id 
+                     val_topo, val_vol, field, selected_profiles,  curve_select, colormap_field, 
+                     opacity_topography_3D, session_id 
 
     global AppData
 
@@ -29,7 +31,8 @@ callback!(app,  Output("3D-image","figure"),
                         cvals_vol=colorbar_value_vol,
                         opacity_cross=opacity_cross,
                         curve_select=curve_select,
-                        color=colormap_field
+                        color=colormap_field,
+                        opacity_topography_3D=opacity_topography_3D
                       )
 
     return pl

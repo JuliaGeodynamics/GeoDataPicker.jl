@@ -57,7 +57,7 @@ function Tab_CrossSection()
                                         dbc_collapse(
                                             dbc_card(dbc_cardbody([
                                                 dbc_col([dbc_switch(label="Display", id="screenshot-display", value=true),
-                                                         dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=1.0, id = "screenshot-opacity", tooltip=attr(plavement="bottom")),    
+                                                         dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=1.0, id = "screenshot-opacity", tooltip=attr(placement="bottom")),    
                                                         ]),
                                                 ])),
                                                 id="collapse-Screenshots",
@@ -68,7 +68,7 @@ function Tab_CrossSection()
                                         dbc_collapse(
                                             dbc_card(dbc_cardbody([
                                                 dbc_col([
-                                                         dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=0.9, id = "tomography-opacity", tooltip=attr(plavement="bottom")),    
+                                                         dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=0.9, id = "tomography-opacity", tooltip=attr(placement="bottom")),    
                                                          dcc_dropdown(id="colormaps_cross", options = [String.(keys(colormaps))...], value = "roma",clearable=false, placeholder="Colormap")
                                                         ]),
                                                 ])),
