@@ -269,7 +269,8 @@ callback!(app,  Output("cross_section", "figure"),
                 State("colorbar-slider", "value"),
                 State("session-id","data"),
                 State("selected_profile","value"),
-                ) do n_clicks, field, colorbar_value, session_id, selected_profile
+                State("colormaps_cross","value")
+                ) do n_clicks, field, colorbar_value, session_id, selected_profile, colormap_field
 
     AppDataLocal = get_AppData(AppData, session_id)
 
@@ -277,7 +278,7 @@ callback!(app,  Output("cross_section", "figure"),
 
     if (n_clicks>0) && !isnothing(profile)
         @show profile
-        fig_cross = plot_cross(AppDataLocal, profile, zmin=colorbar_value[1], zmax=colorbar_value[2], field=Symbol(field)) 
+        fig_cross = plot_cross(AppDataLocal, profile, zmin=colorbar_value[1], zmax=colorbar_value[2], field=Symbol(field), colormap=colormap_field) 
         
         curve_names = get_curve_names(AppDataLocal.AppDataUser.Profiles)
 

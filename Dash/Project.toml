@@ -1,6 +1,7 @@
 [deps]
 Dash = "1b08a953-4be3-4667-9a23-3db579824955"
 DashBootstrapComponents = "1b08a953-4be3-4667-9a23-fa6d05876a1e"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 GeophysicalModelGenerator = "3700c31b-fa53-48a6-808a-ef22d5a84742"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"

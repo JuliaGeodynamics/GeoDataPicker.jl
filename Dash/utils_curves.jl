@@ -30,6 +30,7 @@ function set_curve(shape, profile::ProfileUser; name="test", color="#000000", li
         color = "#000000"
     end
     type = shape.type
+    @show color
     
     x,y,closed = svg2vec(shape.data_curve)
 

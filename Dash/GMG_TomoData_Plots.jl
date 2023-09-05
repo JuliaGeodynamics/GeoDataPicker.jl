@@ -1,8 +1,5 @@
 # functions to create the various plots shown in the GUI
 
-colornames = ["red",    "green",    "blue",    "black", "white"]
-colorvalues= ["#F80038", "#00FF00", "#0000FF", "#000000","#FFFFFF"]
-
 """
 Creates a topo plot & line that shows the cross-section
 """
@@ -12,21 +9,30 @@ function plot_topo(AppData)
     zdata =  AppData.DataTopo.depth.val[:,:,1]'
     start_val, end_val = get_start_end_profile(AppData.AppDataUser)
 
-    colorscale = "Viridis";
-    reversescale = false;
+    colormaps       = AppData.AppDataUser.colormaps
+    colorscale_topo = colormaps[:oleron];
+
+    colorline_selected = "#000000"      # black
+    colorline_crosssections =  "#fffb00" #"#0000FF"
+
+    color_font = "#0000FF"
+    color_font = "#fffb00"  # yellow
+    size_font  = 15
+
     shapes = [ (   type = "line",   x0=start_val[1], x1=end_val[1], 
                                     y0=start_val[2], y1=end_val[2],
                                     editable = true,
-                                    line  = (color="#000000", width=4),
-                                    label = (text="",))] 
+                                    line  = (color=colorline_selected, width=4),
+                                    label = (text="",font=(color=color_font,size=size_font)))] 
                                     
     for i = 2:length(AppData.AppDataUser.Profiles)
         cr = AppData.AppDataUser.Profiles[i]
         shape = (   type = "line",    x0=cr.start_lonlat[1], x1=cr.end_lonlat[1], 
                                       y0=cr.start_lonlat[2], y1=cr.end_lonlat[2],
                                       editable = false,
-                                      line  = (color="#0000FF", width=1),
-                                      label=(text="$(cr.number)",))
+                                      line  = (color=colorline_crosssections, width=1),
+                                      label = (text="$(cr.number)",font=(color=color_font,size=size_font)), 
+                                      )
         push!(shapes, shape)
     end
 
@@ -35,7 +41,7 @@ function plot_topo(AppData)
         data = [heatmap(x = xdata, 
                         y = ydata, 
                         z = collect(eachcol(zdata)),
-                        colorscale = colorscale,reversescale=reversescale,
+                        colorscale = colorscale_topo,
                         zmin = -4, 
                         zmax = 4,
                         colorbar=attr(thickness=5)
@@ -67,17 +73,17 @@ end
 """
 Creates a plot of the cross-section with all requested options
 """
-function plot_cross(AppData, profile; zmax=nothing, zmin=nothing, shapes=[], field=:dVp_paf21)
+function plot_cross(AppData, profile; zmax=nothing, zmin=nothing, shapes=[], field=:dVp_paf21, colormap="vik_reverse")
     AppDataUser = AppData.AppDataUser
-
+    colormaps   = AppDataUser.colormaps
+   
     # Compute the cross-section.
     # NOTE: this routine will be replaces with the one of marcel
     x_cart, z_cart, data, cross = get_cross_section(AppData, profile, field)    
 
-    colorscale = "Rgb";
-    reversescale = false;       # we'll need to add a direct colormap (as reverse does not work in 3D)
+    colorscale = colormaps[Symbol(colormap)];
+
     println("updating cross section")
-#    data = Cross.data';
     if isnothing(zmax)
         zmin, zmax = extrema(data)
     end
@@ -109,7 +115,6 @@ function plot_cross(AppData, profile; zmax=nothing, zmin=nothing, shapes=[], fie
                             y = z_cart, 
                             z = collect(eachcol(data)),
                             colorscale   = colorscale,
-                            reversescale = reversescale,
                             colorbar=attr(thickness=5),
                             zmin=zmin, zmax=zmax
                             )
@@ -156,14 +161,18 @@ function plot_3D_data(AppData;
                         cvals=[-4,4],
                         cvals_vol=[1,3],
                         opacity_cross=1,
-                        curve_select=nothing)
+                        curve_select=nothing,
+                        color="roma")
     if hasfield(typeof(AppData),:DataTomo)
-        DataTomo = AppData.DataTomo
-        DataTopo = AppData.DataTopo
+        DataTomo        = AppData.DataTomo
+        DataTopo        = AppData.DataTopo
+        AppDataUser     = AppData.AppDataUser
+        colormaps       = AppDataUser.colormaps
+        colorscale_topo = colormaps[:oleron];
+        color_seismic   = colormaps[Symbol(color)];
 
         data_plot = [];
         if add_topo 
-            color_topo = "Viridis";
             # topography surface plot
             xdata =  DataTopo.lon.val[:,:]
             ydata =  DataTopo.lat.val[:,:]
@@ -172,10 +181,11 @@ function plot_3D_data(AppData;
                         surface(x = xdata, y = ydata, z = zdata,  opacity=0.8, hoverinfo="none", 
                                 contours = attr(x=attr(highlight=false, show=false, project=attr(x=false) ),y=attr(highlight=false), z=attr(highlight=false),   
                                 xaxis=attr(visible=false), yaxis=attr(visible=false, showspikes=false), zaxis=attr(visible=false, showspikes=false)),
-                                colorscale = color_topo,  showscale=false))
+                                colorscale = colorscale_topo,  showscale=false,  cmin = -4, cmax = 4),
+                                )
         end
 
-        color_seismic =  "Rgb"
+       
         if add_volumetric
             # add volume plot if requested
             vol = DataTomo.fields[field]
@@ -205,14 +215,14 @@ function plot_3D_data(AppData;
 
         if !isnothing(curve_select)
             Profiles = AppData.AppDataUser.Profiles
-            @show curve_select
             for prof in Profiles
                 for curve in prof.Polygons
                     if !isnothing(curve_select)
                         if any(contains.(curve_select,curve.name))
                             push!(data_plot,
                                 scatter3d( x=curve.lon, y=curve.lat, z=curve.depth, mode="lines",
-                                        color=curve.color, showlegend=false, label=curve.name))
+                                        line=attr(color=curve.color, width=2),
+                                        showlegend=false, label=curve.name))
                         end
                     end
                 end

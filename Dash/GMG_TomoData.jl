@@ -6,6 +6,7 @@ using PlotlyJS, JSON3, Printf, Statistics
 using UUIDs
 
 # include helper functions
+include("GMG_colormaps.jl")
 include("utils.jl")  # tomographic dataset
 include("utils_curves.jl")
 include("GMG_TomoData_Plots.jl")
@@ -25,6 +26,9 @@ data_fields =  keys(DataTomo.fields)
 start_val = (5.0,46.0)
 end_val = (12.0,44.0) 
 
+# read available colormaps
+colormaps=read_colormaps()  # colormaps
+
 # Create a global variable with the data structure. Note that we will 
 global AppData
 AppData=NamedTuple()
@@ -34,6 +38,7 @@ app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callba
 
 app.title = "GMG Data Picker"
 options_fields = [(label = String(f), value="$f" ) for f in data_fields]
+
 
 # Create the layout of the main GUI. Note that the layout of the different tabs is specified in separate routines
 #app.layout = dbc_container(className = "mxy-auto") do

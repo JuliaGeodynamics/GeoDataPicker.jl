@@ -31,9 +31,12 @@ callback!(app,  Output("setup-button", "n_clicks"),
         start_val, end_val = extract_start_end_values(start_value, end_value)
         profile = ProfileUser(start_lonlat=start_val, end_lonlat=end_val)
 
+        # load colormaps
+        colormaps = read_colormaps()
+
         # User data that results from all GUI interactions
         # This should also hold info onm which data sets were loaded
-        AppDataUser = (Profiles=[profile], copy=[])
+        AppDataUser = (Profiles=[profile], copy=[], colormaps=colormaps)
 
         # Add the data to a NamedTuple
         data = (DataTomo=DataTomo, DataTopo=DataTopo, CrossSections=[], AppDataUser=AppDataUser)

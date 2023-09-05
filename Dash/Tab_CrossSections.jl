@@ -71,6 +71,14 @@ function Tab_CrossSection()
                                     clearable=false, placeholder="Select Dataset",
                                 ),
                                 ]),
+                    dbc_col([dcc_dropdown(
+                                    id="colormaps_cross",
+                                    options = [String.(keys(colormaps))...],
+                                    value = "roma",
+                                    clearable=false, placeholder="Select Dataset",
+                                ),
+                                ]),
+
                     dbc_col([ dcc_rangeslider(
                                     id = "colorbar-slider",
                                     min = -5.,
@@ -88,7 +96,7 @@ function Tab_CrossSection()
             # lower row | topography plot & buttons
             dbc_row([
                 # plot topography
-                dbc_col([create_topo_plot(AppData)]),
+                dbc_col([create_topo_plot(AppData)], width=10),
                 
                 # various menus @ lower right
                 dbc_col([
@@ -104,7 +112,7 @@ function Tab_CrossSection()
                     #dbc_row([dcc_dropdown(options=["none"], id="dropdown-profiles", placeholder="Select profile", disabled=true)]),
                     dbc_row( dbc_card(dbc_radioitems(id="selected_profile",options=[(label="Profile 0", value="Profile 0")])))
 
-                ], align="center", width=3)
+                ], align="center")
                 #dbc_col([
                 #    dbc_row([html_button(id="button-select", name="select", n_clicks=0, contentEditable=true)])
                 #])
