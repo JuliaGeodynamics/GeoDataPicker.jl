@@ -8,18 +8,20 @@ import Base:show
     Note that we do not store actual data here, but only things that can be changed by the user from the GUI 
 """
 mutable struct ProfileUser
-    number   :: Int64                   # Number of the profile
-    name     :: Union{Nothing,String}   # optional name
-    vertical :: Bool                    # vertical profile or not?
+    number   :: Int64                           # Number of the profile
+    name     :: Union{Nothing,String}           # optional name
+    vertical :: Bool                            # vertical profile or not?
     
-    start_lonlat::NTuple                # start of profile in lon/lat
-    end_lonlat::NTuple                  # end of profile in lon/lat
+    start_lonlat::NTuple                        # start of profile in lon/lat
+    end_lonlat::NTuple                          # end of profile in lon/lat
 
-    depth :: Union{Nothing, Float64}    # depth (only active if vertical == false)
-    start_cart::Number                  # start of profile in cartesian coords
-    end_cart::Union{Nothing, Float64}   # end of profile in cartesian coords
+    depth :: Union{Nothing, Float64}            # depth (only active if vertical == false)
+    start_cart::Number                          # start of profile in cartesian coords
+    end_cart::Union{Nothing, Float64}           # end of profile in cartesian coords
 
-    Polygons::Vector                    # Interpreted polygons along this profile         
+    Polygons    ::  Vector                      # Interpreted polygons along this profile         
+    
+    screenshot  :: Union{Nothing, Symbol}       # is there a screenshot along this profile & if yes: which one?
 end
 
 """
@@ -31,7 +33,8 @@ end
         depth=nothing,
         start_cart=0,
         end_cart = nothing,
-        Polygons=[])
+        Polygons=[],
+        screenshot::Union{Nothing,Symbol} = nothing)
 
 Create a user profile with keywords
 """
@@ -43,7 +46,8 @@ function ProfileUser(;  number=0,
                         depth=nothing,
                         start_cart=0,
                         end_cart = nothing,
-                        Polygons=[])
+                        Polygons=[],
+                        screenshot = nothing)
     if isnothing(name)
         name = "$number"
     end
@@ -60,7 +64,7 @@ function ProfileUser(;  number=0,
         end_lonlat = Float64.(end_lonlat)
     end
 
-    return ProfileUser(number,name,vertical, start_lonlat, end_lonlat, depth, start_cart, end_cart, Polygons)
+    return ProfileUser(number,name,vertical, start_lonlat, end_lonlat, depth, start_cart, end_cart, Polygons, screenshot)
 end
 
 # Print info 
@@ -73,7 +77,9 @@ function show(io::IO, g::ProfileUser)
         println(io, "  depth     : $(g.depth) ")
     end
     println(io, "  # polygons: $(length(g.Polygons)) ")
-
+    if !isnothing(g.screenshot)
+        println(io, "  screenshot: $(g.screenshot) ")
+    end
     return nothing
 end
 
@@ -93,7 +99,13 @@ function load_dataset(fname::String="AlpsModels.jld2"; topo_name="AlpsTopo.jld2"
     #DataTopo = ImportTopo(lat=[lat...], lon=[lon...],file=grid_name)
     DataTopo = load_object(topo_name)
     
-    return DataTomo, DataTopo
+    # 
+    DataPoints = []
+    DataSurfaces = []
+
+    DataScreenshots = (Handy_etal_SE_ProfileA=load_object("Handy_etal_SE_ProfileA.jld2"),)
+
+    return DataTomo, DataTopo, DataPoints, DataSurfaces, DataScreenshots
 end
 
 
@@ -345,11 +357,18 @@ function get_profile_options(Profiles)
    options = [(label="default profile", value=0)]
    for i=2:length(Profiles) 
         prof = Profiles[i]
-        if prof.vertical
-            val  = (label="profile $(prof.number)", value=prof.number) 
+
+        if !isnothing(prof.screenshot)
+            str = "screenshot $(prof.number) - $(prof.screenshot) "
         else
-            val  = (label="profile $(prof.number) (z=$(prof.depth))", value=prof.number) 
+            str = "profile $(prof.number)"
         end
+     
+       if !(prof.vertical)
+            str = str*"(z=$(prof.depth))"
+        end
+ 
+        val  = (label=str, value=prof.number) 
         push!(options,val)
    end
 
@@ -371,4 +390,63 @@ function get_trigger()
         trigger = trigger[1]
     end
     return trigger
+end
+
+"""
+
+This creates PlotlyJS image data from a GMG Screenshot object 
+"""
+function image_from_screenshot(screenshot::GeoData)
+
+    # Transfer 2 cartesian data
+    p           = ProjectionPoint(Lon=minimum(screenshot.lon.val),Lat=minimum(screenshot.lat.val));
+    ss_cart     = Convert2CartData(screenshot,p)
+    x_ss        = FlattenCrossSection(ss_cart);
+    x_cart      = x_ss[1,:];
+    z_cart      = ss_cart.z.val[:,1]
+
+    if !hasfield(typeof(screenshot.fields),:colors)
+        error("This doesn't seem to be a valid GMG screenshot!")
+    end
+
+    # we need to have the colors in a specific format
+    siz  =  size(screenshot.fields[:colors][1])
+    siz  =  siz[2:-1:1]
+    dat  =  zeros(3,siz...);
+
+    for i=1:3
+        dat[i,:,:] = screenshot.fields[:colors][i][:,:,1]'
+    end
+    dat=Int64.(dat*255)
+
+    x0 = x_cart[1]
+    y0 = z_cart[1]
+    dx = (x_cart[end]-x0)/siz[1]
+    dy = (z_cart[end]-y0)/siz[2]
+    
+    return (x0=x0,dx=dx, y0=y0, dy=dy, z=dat)
+end
+
+
+"""
+Takes a GeoData screenshot & adds it to a profile
+"""
+function screenshot_2_profile(cross::GeoData, number::Int64, screenshot::Symbol)
+
+    name = String(screenshot)
+    start_lonlat = (cross.lon.val[1],   cross.lat.val[1])
+    end_lonlat   = (cross.lon.val[end], cross.lat.val[end])
+    if abs( diff([extrema(cross.depth.val)...])[1])>1e-10
+        vertical = true
+        depth = nothing
+    else
+        vertical = false
+        depth = cross.depth.val[1]
+    end
+    start_cart = 0
+    end_cart   = nothing
+    Polygons   = []
+
+    return ProfileUser(number,name,vertical, start_lonlat, end_lonlat, depth, start_cart, end_cart, Polygons, screenshot)
+
 end

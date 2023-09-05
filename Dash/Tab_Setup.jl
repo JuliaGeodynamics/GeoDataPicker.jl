@@ -14,7 +14,7 @@ function Tab_Data()
                                         dbc_checklist(options=["test"], id="data-surfaces")
                                         ])),
                     dbc_col(dbc_card([dbc_label("Screenshots", align="center", color="secondary", check=true),
-                                        dbc_checklist(options=["test"], id="data-screenshots")
+                                        dbc_checklist(options=["Handy_etal_SE_ProfileA"], id="data-screenshots")
                                         ])),
             ]),
         

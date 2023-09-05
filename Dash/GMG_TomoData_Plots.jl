@@ -73,7 +73,8 @@ end
 """
 Creates a plot of the cross-section with all requested options
 """
-function plot_cross(AppData, profile; zmax=nothing, zmin=nothing, shapes=[], field=:dVp_paf21, colormap="vik_reverse")
+function plot_cross(AppData, profile; zmax=nothing, zmin=nothing, shapes=[], field=:dVp_paf21, colormap="vik_reverse",
+                    screenshot_opacity=0.5, screenshot_display=true, cross_section_opacity=1.0)
     AppDataUser = AppData.AppDataUser
     colormaps   = AppDataUser.colormaps
    
@@ -110,15 +111,36 @@ function plot_cross(AppData, profile; zmax=nothing, zmin=nothing, shapes=[], fie
         end
     end
 
+
+    data_plots = []
+    
+    # add tomographic cross-section
+    push!(data_plots, heatmap(x = x_cart, 
+                              y = z_cart, 
+                              z = collect(eachcol(data)),
+                              colorscale   = colorscale,
+                              colorbar=attr(thickness=5),
+                              zmin=zmin, zmax=zmax, 
+                              opacity = cross_section_opacity
+                              ))
+
+    if screenshot_display==true
+      # Note: the name of the profile should be listed in the profuile struct
+      screenshot_selected = profile.screenshot
+      if !isnothing(screenshot_selected)
+          if hasfield(typeof(AppData.DataScreenshots), screenshot_selected)
+              screenshot  = AppData.DataScreenshots[screenshot_selected]
+              ss          = image_from_screenshot(screenshot)
+              push!(data_plots, image(x0=ss.x0,dx=ss.dx, y0=ss.y0, dy=ss.dy, 
+                                      z=ss.z, 
+                                      opacity=screenshot_opacity
+                                      ))
+          end
+      end                                                    
+    end
+
     pl = (  id = "fig_cross",
-            data = [heatmap(x = x_cart, 
-                            y = z_cart, 
-                            z = collect(eachcol(data)),
-                            colorscale   = colorscale,
-                            colorbar=attr(thickness=5),
-                            zmin=zmin, zmax=zmax
-                            )
-                    ],                            
+            data = data_plots,                            
             colorbar=Dict("orientation"=>"v", "len"=>0.5, "thickness"=>10,"title"=>"elevat"),
             layout = (  title = "Cross-section",
                         xaxis=attr(
@@ -129,7 +151,8 @@ function plot_cross(AppData, profile; zmax=nothing, zmin=nothing, shapes=[], fie
                         yaxis=attr(
                             title="Depth [km]",
                             tickfont_size= 14,
-                            tickfont_color="rgb(10, 10, 10)"
+                            tickfont_color="rgb(10, 10, 10)",
+                            autorange=true
                         ),
                         shapes = shapes_data,
                         ),
@@ -138,7 +161,6 @@ function plot_cross(AppData, profile; zmax=nothing, zmin=nothing, shapes=[], fie
     
     return pl
 end
-
 
 #function plot_cross(cross::Nothing) 
 #    println("default cross section")

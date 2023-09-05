@@ -47,12 +47,35 @@ function Tab_CrossSection()
                                            dbc_card(dbc_cardbody([
                                               dbc_row([
                                                   dbc_row(dbc_switch(label="Display", id="Surfaces-display", value=false),justify="center"),
-                                               ])
-                                               ])),
-                                               id="collapse-Surfaces",
-                                               is_open=false,
-                                               ),
-                                                       
+                                                ])
+                                                ])),
+                                                id="collapse-Surfaces",
+                                                is_open=false,
+                                                ),
+
+                                        dbc_button("Screenshots",id="button-Screenshots"),
+                                        dbc_collapse(
+                                            dbc_card(dbc_cardbody([
+                                                dbc_col([dbc_switch(label="Display", id="screenshot-display", value=true),
+                                                         dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=1.0, id = "screenshot-opacity", tooltip=attr(plavement="bottom")),    
+                                                        ]),
+                                                ])),
+                                                id="collapse-Screenshots",
+                                                is_open=false,
+                                                ),
+                                               
+                                        dbc_button("Tomographic data",id="button-Tomography"),
+                                        dbc_collapse(
+                                            dbc_card(dbc_cardbody([
+                                                dbc_col([
+                                                         dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=0.9, id = "tomography-opacity", tooltip=attr(plavement="bottom")),    
+                                                         dcc_dropdown(id="colormaps_cross", options = [String.(keys(colormaps))...], value = "roma",clearable=false, placeholder="Colormap")
+                                                        ]),
+                                                ])),
+                                                id="collapse-Tomography",
+                                                is_open=false,
+                                                ),
+
                                         dbc_button("Plot cross-section",id="button-plot-cross_section")
                                             
                                 ])
@@ -71,14 +94,6 @@ function Tab_CrossSection()
                                     clearable=false, placeholder="Select Dataset",
                                 ),
                                 ]),
-                    dbc_col([dcc_dropdown(
-                                    id="colormaps_cross",
-                                    options = [String.(keys(colormaps))...],
-                                    value = "roma",
-                                    clearable=false, placeholder="Select Dataset",
-                                ),
-                                ]),
-
                     dbc_col([ dcc_rangeslider(
                                     id = "colorbar-slider",
                                     min = -5.,

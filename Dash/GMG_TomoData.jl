@@ -44,13 +44,12 @@ options_fields = [(label = String(f), value="$f" ) for f in data_fields]
 #app.layout = dbc_container(className = "mxy-auto") do
     
 function main_layout()
-    session_id = UUIDs.uuid4()
     dbc_container([
         dbc_col(dbc_row([
                 dbc_dropdownmenu(
                         [dbc_dropdownmenuitem("Load state", disabled=true),
-                        dbc_dropdownmenuitem("Save state", disabled=true),
-                        dbc_dropdownmenuitem(divider=true),
+                         dbc_dropdownmenuitem("Save state", disabled=true),
+                         dbc_dropdownmenuitem(divider=true),
                         ],
                         label="File",
                         id="id-dropdown-file"),

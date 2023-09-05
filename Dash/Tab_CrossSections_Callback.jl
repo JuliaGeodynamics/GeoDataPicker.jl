@@ -51,9 +51,10 @@ callback!(app,  Output("button-add-profile", "n_clicks"),
                 Input("button-add-profile", "n_clicks"),
                 Input("button-delete-profile", "n_clicks"),
                 Input("button-update-profile", "n_clicks"),
+                Input("setup-button", "n_clicks"),
                 State("session-id","data"),
                 State("selected_profile", "value"),
-                ) do n_add, n_del, n_up, session_id, selected_profile
+                ) do n_add, n_del, n_up, n_setup, session_id, selected_profile
     
     global AppData
     AppDataUser = get_AppDataUser(AppData, session_id)
@@ -234,11 +235,47 @@ callback!(app,
     return is_open    
 end
 
-# open/close EQ interpretation box
+# open/close Surfaces box
 callback!(app,
     Output("collapse-Surfaces", "is_open"),
     [Input("button-Surfaces", "n_clicks")],
     [State("collapse-Surfaces", "is_open")], ) do  n, is_open
+    
+    if isnothing(n); n=0 end
+
+    if n>0
+        if is_open==1
+            is_open = 0
+        elseif is_open==0
+            is_open = 1
+        end
+    end
+    return is_open    
+end
+
+# open/close screenshot box
+callback!(app,
+    Output("collapse-Screenshots", "is_open"),
+    [Input("button-Screenshots", "n_clicks")],
+    [State("collapse-Screenshots", "is_open")], ) do  n, is_open
+    
+    if isnothing(n); n=0 end
+
+    if n>0
+        if is_open==1
+            is_open = 0
+        elseif is_open==0
+            is_open = 1
+        end
+    end
+    return is_open    
+end
+
+# open/close tomography box
+callback!(app,
+    Output("collapse-Tomography", "is_open"),
+    [Input("button-Tomography", "n_clicks")],
+    [State("collapse-Tomography", "is_open")], ) do  n, is_open
     
     if isnothing(n); n=0 end
 
@@ -269,8 +306,11 @@ callback!(app,  Output("cross_section", "figure"),
                 State("colorbar-slider", "value"),
                 State("session-id","data"),
                 State("selected_profile","value"),
-                State("colormaps_cross","value")
-                ) do n_clicks, field, colorbar_value, session_id, selected_profile, colormap_field
+                State("colormaps_cross","value"),
+                State("screenshot-display","value"),
+                State("screenshot-opacity","value"),
+                State("tomography-opacity","value")
+                ) do n_clicks, field, colorbar_value, session_id, selected_profile, colormap_field, screenshot_display, screenshot_opacity, cross_section_opacity
 
     AppDataLocal = get_AppData(AppData, session_id)
 
@@ -278,7 +318,8 @@ callback!(app,  Output("cross_section", "figure"),
 
     if (n_clicks>0) && !isnothing(profile)
         @show profile
-        fig_cross = plot_cross(AppDataLocal, profile, zmin=colorbar_value[1], zmax=colorbar_value[2], field=Symbol(field), colormap=colormap_field) 
+        fig_cross = plot_cross(AppDataLocal, profile, zmin=colorbar_value[1], zmax=colorbar_value[2], field=Symbol(field), colormap=colormap_field,
+                                screenshot_display=screenshot_display, screenshot_opacity=screenshot_opacity, cross_section_opacity=cross_section_opacity) 
         
         curve_names = get_curve_names(AppDataLocal.AppDataUser.Profiles)
 
