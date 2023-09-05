@@ -500,3 +500,18 @@ function screenshot_2_profile(cross::GeoData, number::Int64, screenshot::Symbol)
     return ProfileUser(number,name,vertical, start_lonlat, end_lonlat, depth, start_cart, end_cart, Polygons, screenshot)
 
 end
+
+
+function dataset_options(Datasets::Vector{GMG_Dataset}, Type::String)
+    options = Vector{String}()
+    values  = Vector{String}()
+    for data in Datasets
+        if data.Type==Type
+            push!(options,data.Name)
+            if data.active
+                push!(values,data.Name)
+            end
+        end
+    end
+    return options, values
+end

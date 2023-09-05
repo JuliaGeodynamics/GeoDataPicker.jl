@@ -4,9 +4,14 @@ callback!(app,  Output("session-id", "data"),
                 Output("label-id","children"),
                 Input("session-id", "data")
                 ) do session_id
-
+    
     session_id = UUIDs.uuid4()
     str = "id=$(session_id)"
+    
+    # Save default Datasets to global struct
+    global AppData
+    AppData = add_AppData(AppData, str, (Datasets=Datasets,))
+
     return String("$(session_id)"), str
 end
 
@@ -16,6 +21,7 @@ callback!(app,  Output("setup-button", "n_clicks"),
                 Output("button-plot-topography", "n_clicks"),
                 Output("button-plot-topography", "disabled"),
                 Output("tabs","activ_tab"),
+                Output("dropdown_field","options"),
                 Input("setup-button", "n_clicks"),
                 State("session-id", "data"),
                 State("button-plot-topography", "n_clicks"),
@@ -30,6 +36,9 @@ callback!(app,  Output("setup-button", "n_clicks"),
         if isnothing(selected_screenshots)      # quick hack for now
             DataScreenshots = [];
         end
+
+        # Data sets present in the 3D tomographic data
+        options_fields = [(label = String(f), value="$f" ) for f in keys(DataTomo.fields)]
 
         # Initial cross-section
         start_val, end_val = extract_start_end_values(start_value, end_value)
@@ -69,7 +78,8 @@ callback!(app,  Output("setup-button", "n_clicks"),
         plot_button_topo_disabled = true
         n=0
         active_tab = "tab-setup"
+        options_fields = []
     end
 
-    return n+1, n_topo, plot_button_topo_disabled, active_tab
+    return n+1, n_topo, plot_button_topo_disabled, active_tab, options_fields
 end

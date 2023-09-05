@@ -15,22 +15,14 @@ include("Tab_3Dview.jl")
 include("Tab_Setup.jl")
 
 # Specify datasets (will later be read in from ascii file)
-Datasets = Vector{GMG_Dataset}()
-push!(Datasets, GMG_Dataset("TomoAlps","Volumetric","AlpsModels.jld2", true))
-push!(Datasets, GMG_Dataset("AlpsTopo","Topography","AlpsTopo.jld2", true))
-push!(Datasets, GMG_Dataset("Handy_etal_SE_ProfileA","Screenshot","Handy_etal_SE_ProfileA.jld2", false))
-push!(Datasets, GMG_Dataset("Mrozek_Moho_Grid_AD","Surface","https://seafile.rlp.net/f/12c120c5724745e2b27b/?dl=1", false))
-push!(Datasets, GMG_Dataset("Mrozek_Moho_Grid_EU","Surface","https://seafile.rlp.net/f/483d9c7c808a4087ba9e/?dl=1", false))
-push!(Datasets, GMG_Dataset("Mrozek_Moho_Grid_PA","Surface","https://seafile.rlp.net/f/217eaf5c87d14adcb9c9/?dl=1", false))
-push!(Datasets, GMG_Dataset("AlpArraySeis","Point","https://seafile.rlp.net/f/87d565882eda40689666/?dl=1", false))
-
+include("Default_datasets.jl")
 
 # set the initial cross-section
 start_val = (5.0,46.0)
 end_val = (12.0,44.0) 
 
 # read available colormaps
-#colormaps=read_colormaps()  # colormaps
+colormaps=read_colormaps()  # colormaps
 
 # Create a global variable with the data structure. Note that we will 
 global AppData
@@ -40,6 +32,7 @@ AppData=NamedTuple()
 app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=false)
 
 app.title = "GMG Data Picker"
+#data_fields = keys(DataTomo.fields)
 #options_fields = [(label = String(f), value="$f" ) for f in data_fields]
 
 
@@ -71,7 +64,6 @@ function main_layout()
             id = "tabs", active_tab="tab-setup",
         ),
             
-        dcc_store(id="id-topo", data=DataTopo.lat),              
         dcc_store(id="session-id", data =  "")     # gives a unique number of our session
     ])
 
