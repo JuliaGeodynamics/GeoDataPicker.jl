@@ -89,7 +89,7 @@ function Tab_CrossSection()
                     dbc_col([dcc_input(id="start_val", name="start_val", type="text", value="start: 5,46",style = Dict(:width => "100%"), debounce=true)]),
                     dbc_col([dcc_dropdown(
                                     id="dropdown_field",
-                                    options = options_fields,
+                                    options = [],
                                     value = "dVp_paf21",
                                     clearable=false, placeholder="Select Dataset",
                                 ),

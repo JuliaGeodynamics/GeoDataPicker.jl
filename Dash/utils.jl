@@ -2,6 +2,56 @@
 using GeophysicalModelGenerator, JLD2
 #using GMT
 import Base:show 
+import GeophysicalModelGenerator: load_GMG
+
+"""
+Stores info about the dataset
+"""
+mutable struct GMG_Dataset
+    Name    :: String          # Name of the dataset
+    Type    :: String          # Volumetric, Surface, Point, Screenshot    
+    DirName :: String          # Directory name or url of dataset 
+    active  :: Bool            # active in the GUI or not?
+
+    function GMG_Dataset(Name::String,Type::String,DirName::String,active::Bool=false) 
+        if !any(occursin.(Type,["Volumetric","Surface","Point","Screenshot","Topography"]))
+            error("Type should be either: Volumetric,Surface,Point,Topography or Screenshot")
+        end
+    
+        if DirName[end-4:end] == ".jld2"
+            DirName = DirName[1:end-5]
+        end
+        new(Name,Type,DirName,active)
+    end
+
+end
+
+
+# Print info 
+function show(io::IO, g::GMG_Dataset)
+    if g.active
+        str_act = "(active)  :"
+    else
+        str_act = "(inactive):"
+    end    
+    print(io, "GMG $(g.Type) Dataset $str_act $(g.Name) @ $(g.DirName)")
+    
+    return nothing
+end
+
+
+"""
+    data::NamedTuple = load_GMG(data::GMG_Dataset)
+
+Loads a dataset specified in `data` and returns it as a named tuple
+"""
+function load_GMG(data_input::GMG_Dataset)
+    data = load_GMG(data_input.DirName)
+    name = Symbol(data_input.Name)
+    return NamedTuple{(name,)}((data,))
+end
+
+
 
 """
     Structure that holds info about the profiles within the project. 
