@@ -37,7 +37,7 @@ callback!(app,  Output("setup-button", "n_clicks"),
 
         # Add screenshots to profile if requested
         Profiles=[profile]
-        num = 1;
+        num = 0;
         if !isempty(DataScreenshots)
             names = keys(DataScreenshots)
             for i=1:length(DataScreenshots)

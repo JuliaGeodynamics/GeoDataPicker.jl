@@ -220,6 +220,7 @@ function plot_3D_data(AppData;
         
         if !isnothing(selected_cross)
             for i in selected_cross
+                @show selected_cross
                 profile  = AppData.AppDataUser.Profiles[i+1]
                 _, _, _,_, cross = get_cross_section(AppData, profile, field)    
                 vol   = cross.fields[field]
@@ -318,7 +319,7 @@ function cross_section_plot()
         figure = [], #plot_cross(), 
         animate = false,
         responsive=false,
-        config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["drawopenpath","eraseshape","drawclosedpath"],displaylogo=false))
+        config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["lasso","drawopenpath","eraseshape","drawclosedpath"],displaylogo=false))
         
 end
 
