@@ -10,10 +10,12 @@ callback!(app,  Output("session-id", "data"),
     
     # Save default Datasets to global struct
     global AppData
-    AppData = add_AppData(AppData, str, (Datasets=Datasets,))
+    AppData = add_AppData(AppData, "$session_id", (Datasets=Datasets,))
 
     return String("$(session_id)"), str
 end
+
+
 
 
 # Load the data from the app
@@ -27,15 +29,23 @@ callback!(app,  Output("setup-button", "n_clicks"),
                 State("button-plot-topography", "n_clicks"),
                 State("start_val", "value"),
                 State("end_val", "value"),
-                State("data-screenshots","value")
-                ) do n,  session_id, n_topo, start_value, end_value, selected_screenshots
+                State("data-screenshots","value"),
+                State("data-tomo","value"),
+                State("data-EQ","value"),
+                State("data-surfaces","value"),
+                State("data-screenshots","value"),
+                ) do n,  session_id, n_topo, start_value, end_value, selected_screenshots,
+                    active_tomo, active_EQ, active_surf, active_screenshots
     global AppData 
+    AppDataLocal    = get_AppData(AppData, session_id)
+    
     if !isnothing(n)
-        # This is some vanilla data
-        DataTomo, DataTopo, DataPoints, DataSurfaces, DataScreenshots = load_dataset();
-        if isnothing(selected_screenshots)      # quick hack for now
-            DataScreenshots = [];
-        end
+        println("Loading data")
+        # We should really retrieve the active ones from the GUI
+        Datasets = get_active_datasets(AppDataLocal.Datasets, active_tomo, active_EQ, active_surf, active_screenshots)
+
+        # Load data
+        DataTomo, DataTopo, DataPoints, DataSurfaces, DataScreenshots = load_dataset(Datasets);
 
         # Data sets present in the 3D tomographic data
         options_fields = [(label = String(f), value="$f" ) for f in keys(DataTomo.fields)]
@@ -65,7 +75,8 @@ callback!(app,  Output("setup-button", "n_clicks"),
 
         # Add the data to a NamedTuple
         data = (DataTomo=DataTomo, DataTopo=DataTopo, DataPoints=DataPoints, DataSurfaces=DataSurfaces,
-                DataScreenshots=DataScreenshots, AppDataUser=AppDataUser)
+                DataScreenshots=DataScreenshots, AppDataUser=AppDataUser,
+                Datasets = Datasets)
 
         # Store it within the AppData global struct
         AppData = add_AppData(AppData, session_id, data)
@@ -73,6 +84,8 @@ callback!(app,  Output("setup-button", "n_clicks"),
 
         plot_button_topo_disabled = false
         active_tab = "tab-cross"
+
+        println("Finished loading data")
 
     else
         plot_button_topo_disabled = true

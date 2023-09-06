@@ -141,19 +141,43 @@ This loads a 3D tomographic dataset from the file `fname` (prepared with the Geo
 It also uses GMT to download the corresponding topographic map for the region
 
 """
-function load_dataset(fname::String="AlpsModels.jld2"; topo_name="AlpsTopo.jld2", grid_name="@earth_relief_02m.grd")
-    DataTomo = load_object(fname)
-    lon = extrema(DataTomo.lon.val)
-    lat = extrema(DataTomo.lat.val)
+function load_dataset(Datasets; fname::String="AlpsModels.jld2", topo_name="AlpsTopo.jld2", grid_name="@earth_relief_02m.grd")
     
-    #DataTopo = ImportTopo(lat=[lat...], lon=[lon...],file=grid_name)
-    DataTopo = load_object(topo_name)
-    
-    # 
-    DataPoints = []
-    DataSurfaces = []
+    DataPoints      =   NamedTuple();
+    DataSurfaces    =   NamedTuple();
+    DataScreenshots =   NamedTuple();
+    DataTomo        =   NamedTuple();
+    DataTopo        =   NamedTuple();
+    for data in Datasets
+        if data.active
+            @show data
+            # load into NamedTuple
+            loaded_data = load_GMG(data)   
+            if data.Type=="Volumetric"
+                DataTomo = merge(DataTomo,loaded_data)
+            elseif data.Type=="Screenshot"
+                DataScreenshots =   merge(DataScreenshots,loaded_data)
+            elseif data.Type=="Surface"
+                DataSurfaces    =   merge(DataSurfaces,loaded_data)
+            elseif data.Type=="Point"
+                DataPoints      =   merge(DataPoints,loaded_data)
+            elseif data.Type=="Topography"
+                DataTopo        =   merge(DataTopo,loaded_data)
+            end
 
-    DataScreenshots = (Handy_etal_SE_ProfileA=load_object("Handy_etal_SE_ProfileA.jld2"),)
+        end
+    end
+
+    # all Data has been loaded into NamedTuples @ this stage
+    # Next, we will combine volumetric tomographic data into one
+    DataTomo = DataTomo[1]  # Hack, to be fixed
+    if isempty(DataTopo)
+        # use 
+    else
+        DataTopo = DataTopo[1]
+    end
+
+
 
     return DataTomo, DataTopo, DataPoints, DataSurfaces, DataScreenshots
 end
@@ -288,7 +312,7 @@ end
 """
     data = get_AppData(AppData::NamedTuple, session_id::String)
 
-Retrieves data from the global data set if it exists; other
+Retrieves data from the global data set if it exists; otherwise returns nothing
 """
 function get_AppData(AppData::NamedTuple, session_id::String)
   
@@ -409,7 +433,7 @@ function get_profile_options(Profiles)
         prof = Profiles[i]
 
         if !isnothing(prof.screenshot)
-            str = "screenshot $(prof.number) - $(prof.screenshot) "
+            str = "$(prof.number) - $(prof.screenshot) "
         else
             str = "profile $(prof.number)"
         end
@@ -514,4 +538,22 @@ function dataset_options(Datasets::Vector{GMG_Dataset}, Type::String)
         end
     end
     return options, values
+end
+
+
+""" 
+    Dataset = get_active_datasets(Dataset, active_tomo, active_EQ, active_surf, active_screenshots)
+
+This changes the value of datasets in `Dataset` based on whether they are activated in the GUI or not
+"""
+function get_active_datasets(Datasets, active_tomo, active_EQ, active_surf, active_screenshots)
+
+    active = [active_tomo...,active_EQ..., active_surf..., active_screenshots...]
+    for (i,data) in enumerate(Datasets)
+        if any( active .== data.Name)
+            Datasets[i].active = true
+        end
+    end
+    return Datasets
+
 end
