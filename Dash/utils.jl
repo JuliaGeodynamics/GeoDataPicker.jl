@@ -150,7 +150,6 @@ function load_dataset(Datasets; fname::String="AlpsModels.jld2", topo_name="Alps
     DataTopo        =   NamedTuple();
     for data in Datasets
         if data.active
-            @show data
             # load into NamedTuple
             loaded_data = load_GMG(data)   
             if data.Type=="Volumetric"
@@ -556,4 +555,27 @@ function get_active_datasets(Datasets, active_tomo, active_EQ, active_surf, acti
     end
     return Datasets
 
+end
+
+
+"""
+    filename_dir = parse_uploaded_jld2_file(contents, filename, dir="uploaded_data")
+
+    This parses the data uploaded and saves it to `filename` in directory `dir` (created if necessary).
+    It returns the directory and name of the file, so we can load it easily 
+"""
+function parse_uploaded_jld2_file(contents, filename, dir="uploaded_data")
+    if !occursin("jld2", filename)
+        error("You need to upload a *.jld2 file!")
+    end
+    mkpath(dir) # create if needed
+
+    content_type, content_string = split(contents, ',')
+    decoded = base64decode(content_string)
+    str = String(decoded)       # decode
+
+    save_name = joinpath(dir, filename)
+    write(save_name, str)        # write to file
+
+    return save_name
 end

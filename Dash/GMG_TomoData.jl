@@ -4,6 +4,11 @@ using Dash
 using DashBootstrapComponents
 using PlotlyJS, JSON3, Printf, Statistics
 using UUIDs
+using JLD2
+using Base64
+
+# The version of this GUI (to be saved in statefiles)
+GUI_version = "0.1.0"
 
 # include helper functions
 include("GMG_colormaps.jl")
@@ -21,12 +26,13 @@ include("Default_datasets.jl")
 start_val = (5.0,46.0)
 end_val = (12.0,44.0) 
 
+
 # read available colormaps
 colormaps=read_colormaps()  # colormaps
 
 # Create a global variable with the data structure. Note that we will 
 global AppData
-AppData=NamedTuple()
+AppData = NamedTuple()
 
 # Sets some defaults for the layout of webpage
 app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=false)
@@ -43,9 +49,10 @@ function main_layout()
     dbc_container([
         dbc_col(dbc_row([
                 dbc_dropdownmenu(
-                        [dbc_dropdownmenuitem("Load state", disabled=true),
-                         dbc_dropdownmenuitem("Save state", disabled=true),
-                         dbc_dropdownmenuitem(divider=true),
+                        [dcc_upload(dbc_dropdownmenuitem("Upload state",   disabled=false,  id="load-state", n_clicks=0), id="upload-state"), 
+                         dbc_dropdownmenuitem("Download state", disabled=false, id="save-state", n_clicks=0),
+                         dcc_download(id="download-state", base64=true),
+                         #dbc_dropdownmenuitem(divider=true),
                         ],
                         label="File",
                         id="id-dropdown-file"),
@@ -62,7 +69,8 @@ function main_layout()
                     dbc_tab(tab_id="tab-3D", label="3D view",           children = [Tab_3Dview()])
                 ],
             id = "tabs", active_tab="tab-setup",
-        ),
+
+            ),
             
         dcc_store(id="session-id", data =  "")     # gives a unique number of our session
     ])

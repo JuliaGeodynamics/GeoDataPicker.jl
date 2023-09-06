@@ -52,32 +52,27 @@ callback!(app,  Output("button-add-profile", "n_clicks"),
                 Input("button-delete-profile", "n_clicks"),
                 Input("button-update-profile", "n_clicks"),
                 Input("setup-button", "n_clicks"),
+                Input("output-upload_state", "children"),
                 State("session-id","data"),
                 State("selected_profile", "value"),
-                ) do n_add, n_del, n_up, n_setup, session_id, selected_profile
+                ) do n_add, n_del, n_up, n_setup, upload_state, session_id, selected_profile
     
     global AppData
     AppDataUser = get_AppDataUser(AppData, session_id)
-
-    tr = callback_context().triggered;
-    trigger = []
-    if !isempty(tr)
-        trigger = callback_context().triggered[1]
-        trigger = split(trigger.prop_id,".")[1]
-    end
+    trigger = get_trigger()
 
     if hasfield(typeof(AppDataUser), :Profiles)
         profile = deepcopy(AppDataUser.Profiles[1])         # retrieve profile
         number_profiles =  get_number_profiles(AppDataUser.Profiles)    # get numbers
     end
     
-    if trigger == "button-add-profile"
+    if trigger == "button-add-profile.n_clicks"
         profile = deepcopy(AppDataUser.Profiles[1])    
         profile.number = maximum(number_profiles)+1         # new number
         push!(AppDataUser.Profiles, profile)               # add to data structure 
         AppData = set_AppDataUser(AppData, session_id, AppDataUser)
         println("Added profile: vertical=$(profile.vertical)")
-    elseif trigger == "button-delete-profile"
+    elseif trigger == "button-delete-profile.n_clicks"
         if !isnothing(selected_profile) 
             if selected_profile>0
                 id = findall(number_profiles .== selected_profile)
@@ -87,7 +82,7 @@ callback!(app,  Output("button-add-profile", "n_clicks"),
                 number_profiles =  get_number_profiles(AppDataUser.Profiles)    # get numbers
             end
         end
-    elseif trigger == "button-update-profile"
+    elseif trigger == "button-update-profile.n_clicks"
         if !isnothing(selected_profile) 
             id = findall(number_profiles .== selected_profile)
             profile = deepcopy(AppDataUser.Profiles[1])           # main profile
@@ -102,13 +97,13 @@ callback!(app,  Output("button-add-profile", "n_clicks"),
             profile_selected.depth        = profile.depth
             
         end
+    elseif trigger=="output-upload_state.children"
 
     end
 
     # Get options and values
     if  hasfield(typeof(AppDataUser), :Profiles)
         options = get_profile_options(AppDataUser.Profiles)
-        
     else
         options = [(label="default profile", value=0)] 
     end
@@ -129,22 +124,20 @@ callback!(app,  Output("mapview", "figure"),
                 Input("start_val","n_submit"), 
                 Input("end_val","n_submit"), 
                 Input("input-depth","n_submit"), 
+                Input("output-upload_state", "children"),
                 State("checklist_orientation", "value"),
                 State("start_val", "value"),
                 State("end_val", "value"),
                 State("input-depth","value"),
                 State("session-id","data"),
                 State("button-plot-cross_section","n_clicks"),
-                ) do n_clicks, selected_profile, selected_profile_options, n_start_value, n_end_value, n_depth, vertical, start_value, end_value, depth, session_id, n_clicks_cross
+                prevent_initial_call=true
+                ) do n_clicks, selected_profile, selected_profile_options, n_start_value, n_end_value, n_depth, upload_state, vertical, start_value, end_value, depth, session_id, n_clicks_cross
     global AppData
     AppDataLocal = get_AppData(AppData, session_id)
 
-    trigger        = callback_context().triggered;
-    if !isnothing(trigger)
-        trigger = trigger[1]
-    end
-
-    if !isnothing(n_clicks) 
+    trigger = get_trigger()
+    if (!isnothing(n_clicks))  
         AppDataUser = get_AppDataUser(AppData, session_id)
 
         # extract numerical values of start & end
@@ -180,6 +173,7 @@ callback!(app,  Output("mapview", "figure"),
         but_add_prof_disabled=false
         but_up_prof_disabled=false
         but_del_prof_disabled=false
+
     else
         fig_topo = [];
         but_add_prof_disabled = true 
