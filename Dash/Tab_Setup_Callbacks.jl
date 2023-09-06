@@ -24,6 +24,7 @@ callback!(app,  Output("setup-button", "n_clicks"),
                 Output("button-plot-topography", "disabled"),
                 Output("tabs","activ_tab"),
                 Output("dropdown_field","options"),
+                Output("loading-output-1", "children"), 
                 Input("setup-button", "n_clicks"),
                 State("session-id", "data"),
                 State("button-plot-topography", "n_clicks"),
@@ -40,7 +41,7 @@ callback!(app,  Output("setup-button", "n_clicks"),
     AppDataLocal    = get_AppData(AppData, session_id)
     
     if !isnothing(n)
-        println("Loading data")
+        println("Loading data ...")
         # We should really retrieve the active ones from the GUI
         Datasets = get_active_datasets(AppDataLocal.Datasets, active_tomo, active_EQ, active_surf, active_screenshots)
 
@@ -86,13 +87,27 @@ callback!(app,  Output("setup-button", "n_clicks"),
         active_tab = "tab-cross"
 
         println("Finished loading data")
+        load_output=""
 
     else
         plot_button_topo_disabled = true
         n=0
         active_tab = "tab-setup"
         options_fields = []
+        load_output=""
+
     end
 
-    return n+1, n_topo, plot_button_topo_disabled, active_tab, options_fields
+    return n+1, n_topo, plot_button_topo_disabled, active_tab, options_fields, ""
 end
+
+
+#=
+callback!(app,
+    Output("loading-output-1", "children"), 
+    Input("setup-button", "n_clicks")
+) do value
+    sleep(1)
+    return value
+end
+=#

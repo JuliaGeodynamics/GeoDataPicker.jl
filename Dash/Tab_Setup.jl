@@ -26,7 +26,9 @@ function Tab_Data()
                                         ])),
             ]),
         
-        dbc_col(dbc_row([dbc_button("Load Setup",id="setup-button", color="success")],justify="right"), width=3),
+        dbc_col(dbc_row(dbc_col([ dbc_col(dbc_button("Load Setup",id="setup-button", color="success"), width=3),
+                                  dbc_col(dcc_loading(id="loading-1",type="default", children=html_div(id="loading-output-1"), color="green"), width=3)
+                                ]), justify="end")),
         ])
         
     
