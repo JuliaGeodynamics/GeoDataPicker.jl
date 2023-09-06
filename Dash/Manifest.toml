@@ -437,11 +437,11 @@ version = "0.4.9"
 
 [[deps.GeophysicalModelGenerator]]
 deps = ["Colors", "DelimitedFiles", "Downloads", "FileIO", "GMT", "GeoParams", "Geodesy", "GeometryBasics", "Glob", "ImageIO", "Interpolations", "JLD2", "LinearAlgebra", "MeshIO", "NearestNeighbors", "Parameters", "Printf", "Requires", "SpecialFunctions", "Statistics", "WriteVTK"]
-git-tree-sha1 = "d5163b966fdafa11fb89d13d9fb8b07ef3bfe07f"
-repo-rev = "main"
+git-tree-sha1 = "4de09a39fe24795a31436c3b8481d8b87947348c"
+repo-rev = "profile_processing_fix"
 repo-url = "https://github.com/JuliaGeodynamics/GeophysicalModelGenerator.jl.git"
 uuid = "3700c31b-fa53-48a6-808a-ef22d5a84742"
-version = "0.5.5"
+version = "0.5.4"
 
 [[deps.Gettext_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "XML2_jll"]

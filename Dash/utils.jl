@@ -4,6 +4,7 @@ using GeophysicalModelGenerator, JLD2
 import Base:show 
 import GeophysicalModelGenerator: load_GMG
 
+#=
 """
 Stores info about the dataset
 """
@@ -50,7 +51,7 @@ function load_GMG(data_input::GMG_Dataset)
     name = Symbol(data_input.Name)
     return NamedTuple{(name,)}((data,))
 end
-
+=#
 
 
 """
@@ -58,7 +59,7 @@ end
     Note that we do not store actual data here, but only things that can be changed by the user from the GUI 
 """
 mutable struct ProfileUser
-    number   :: Int64                           # Number of the profile
+    number   :: Int64                           # Number of the profile within the GUI
     name     :: Union{Nothing,String}           # optional name
     vertical :: Bool                            # vertical profile or not?
     
@@ -133,7 +134,7 @@ function show(io::IO, g::ProfileUser)
     return nothing
 end
 
-
+#=
 """
     DataTomo, DataTopo =  load_dataset(fname::String="AlpsModels.jld2"; grid_name="@earth_relief_02m.grd")
 
@@ -141,19 +142,19 @@ This loads a 3D tomographic dataset from the file `fname` (prepared with the Geo
 It also uses GMT to download the corresponding topographic map for the region
 
 """
-function load_dataset(Datasets; fname::String="AlpsModels.jld2", topo_name="AlpsTopo.jld2", grid_name="@earth_relief_02m.grd")
+function load_dataset(Datasets)
     
     DataPoints      =   NamedTuple();
     DataSurfaces    =   NamedTuple();
     DataScreenshots =   NamedTuple();
-    DataTomo        =   NamedTuple();
+    DataVol         =   NamedTuple();
     DataTopo        =   NamedTuple();
     for data in Datasets
         if data.active
-            # load into NamedTuple
+            # load into NamedTuple (I'm sure this can be done more compact somehow..)
             loaded_data = load_GMG(data)   
-            if data.Type=="Volumetric"
-                DataTomo = merge(DataTomo,loaded_data)
+            if data.Type=="Volume"
+                DataVol         =   merge(DataVol,loaded_data)
             elseif data.Type=="Screenshot"
                 DataScreenshots =   merge(DataScreenshots,loaded_data)
             elseif data.Type=="Surface"
@@ -167,27 +168,16 @@ function load_dataset(Datasets; fname::String="AlpsModels.jld2", topo_name="Alps
         end
     end
 
-    # all Data has been loaded into NamedTuples @ this stage
-    # Next, we will combine volumetric tomographic data into one
-    DataTomo = DataTomo[1]  # Hack, to be fixed
-    if isempty(DataTopo)
-        # use 
-    else
-        DataTopo = DataTopo[1]
-    end
-
-
-
-    return DataTomo, DataTopo, DataPoints, DataSurfaces, DataScreenshots
+    return DataVol, DataTopo, DataPoints, DataSurfaces, DataScreenshots
 end
-
+=#
 
 """
     x,z,data = get_cross_section(DataAlps, start_value=(10,41), end_value=(10,49), field=:dVp_paf21)
 
 Extracts a cross-section from a tomographic dataset and returns this as cartesian values (x,z) formatted for the Plotly heatmap format
 """
-function get_cross_section(AppData::NamedTuple, profile::ProfileUser, field=:dVp_paf21)
+function get_cross_section(AppData::NamedTuple, profile::ProfileUser, field=:DataTomo_dVp_hua)
 
     # retrieve the cross-section in GeoData format
     if profile.vertical == true

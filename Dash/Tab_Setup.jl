@@ -5,8 +5,8 @@ function Tab_Data()
         dbc_row([dbc_label("id=",id="label-id")]),
 
         dbc_row([   dbc_col(dbc_card([dbc_label("Tomograpy datasets", align="center", color="secondary", check=true),
-                                        dbc_checklist(options=dataset_options(Datasets, "Volumetric")[1], 
-                                                      value=dataset_options(Datasets, "Volumetric")[2],
+                                        dbc_checklist(options=dataset_options(Datasets, "Volume")[1], 
+                                                      value=dataset_options(Datasets, "Volume")[2],
                                                       id="data-tomo")
                                         ])),
                     dbc_col(dbc_card([dbc_label("EQ datasets", align="center", color="secondary", check=true),

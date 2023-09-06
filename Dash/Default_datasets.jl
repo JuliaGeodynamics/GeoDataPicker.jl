@@ -5,7 +5,7 @@
 Datasets = Vector{GMG_Dataset}()
 
 # Volumetric (tomographic) data
-push!(Datasets, GMG_Dataset("DataTomo","Volumetric","AlpsModels.jld2", true))
+push!(Datasets, GMG_Dataset("DataTomo","Volume","AlpsModels.jld2", true))
 
 # Topography
 push!(Datasets, GMG_Dataset("AlpsTopo","Topography","AlpsTopo.jld2", true))

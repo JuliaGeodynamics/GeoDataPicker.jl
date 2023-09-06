@@ -45,7 +45,13 @@ callback!(app,  Output("setup-button", "n_clicks"),
         Datasets = get_active_datasets(AppDataLocal.Datasets, active_tomo, active_EQ, active_surf, active_screenshots)
 
         # Load data
-        DataTomo, DataTopo, DataPoints, DataSurfaces, DataScreenshots = load_dataset(Datasets);
+        #DataTomo, DataTopo, DataPoints, DataSurfaces, DataScreenshots = load_dataset(Datasets);
+        DataVol, DataSurfaces, DataPoints, DataScreenshots, DataTopo = load_GMG(Datasets)
+        
+        # Combine volumetric data into 1 dataset
+        DataTomo = combine_VolData(DataVol; lat=nothing, lon=nothing, depth=nothing, dims=(100,100,100), dataset_preferred = 1)
+        DataTopo = DataTopo[1] # We can only have one
+        
 
         # Data sets present in the 3D tomographic data
         options_fields = [(label = String(f), value="$f" ) for f in keys(DataTomo.fields)]
@@ -176,8 +182,8 @@ callback!(app,
     AppDataLocal    = get_AppData(AppData, session_id)
 
     # update menus in Setup Tab_Setup_Callbacks
-    options_vol     = dataset_options(AppDataLocal.Datasets, "Volumetric")[1]
-    values_vol      = dataset_options(AppDataLocal.Datasets, "Volumetric")[2]
+    options_vol     = dataset_options(AppDataLocal.Datasets, "Volume")[1]
+    values_vol      = dataset_options(AppDataLocal.Datasets, "Volume")[2]
     options_point   = dataset_options(AppDataLocal.Datasets, "Point")[1]
     values_point    = dataset_options(AppDataLocal.Datasets, "Point")[2]
     options_surface = dataset_options(AppDataLocal.Datasets, "Surface")[1]

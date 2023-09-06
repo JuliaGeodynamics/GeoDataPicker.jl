@@ -90,7 +90,7 @@ function Tab_CrossSection()
                     dbc_col([dcc_dropdown(
                                     id="dropdown_field",
                                     options = [],
-                                    value = "dVp_paf21",
+                                    value = "DataTomo_dVp_paf21",
                                     clearable=false, placeholder="Select Dataset",
                                 ),
                                 ]),
