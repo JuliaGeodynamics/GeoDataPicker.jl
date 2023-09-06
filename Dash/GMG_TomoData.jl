@@ -8,7 +8,7 @@ using JLD2
 using Base64
 
 # The version of this GUI (to be saved in statefiles)
-GUI_version = "0.1.0"
+GUI_version = "0.1.1"
 
 # include helper functions
 include("GMG_colormaps.jl")
