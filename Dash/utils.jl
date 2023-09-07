@@ -2,56 +2,7 @@
 using GeophysicalModelGenerator, JLD2
 #using GMT
 import Base:show 
-import GeophysicalModelGenerator: load_GMG
-
-#=
-"""
-Stores info about the dataset
-"""
-mutable struct GMG_Dataset
-    Name    :: String          # Name of the dataset
-    Type    :: String          # Volumetric, Surface, Point, Screenshot    
-    DirName :: String          # Directory name or url of dataset 
-    active  :: Bool            # active in the GUI or not?
-
-    function GMG_Dataset(Name::String,Type::String,DirName::String,active::Bool=false) 
-        if !any(occursin.(Type,["Volumetric","Surface","Point","Screenshot","Topography"]))
-            error("Type should be either: Volumetric,Surface,Point,Topography or Screenshot")
-        end
-    
-        if DirName[end-4:end] == ".jld2"
-            DirName = DirName[1:end-5]
-        end
-        new(Name,Type,DirName,active)
-    end
-
-end
-
-
-# Print info 
-function show(io::IO, g::GMG_Dataset)
-    if g.active
-        str_act = "(active)  :"
-    else
-        str_act = "(inactive):"
-    end    
-    print(io, "GMG $(g.Type) Dataset $str_act $(g.Name) @ $(g.DirName)")
-    
-    return nothing
-end
-
-
-"""
-    data::NamedTuple = load_GMG(data::GMG_Dataset)
-
-Loads a dataset specified in `data` and returns it as a named tuple
-"""
-function load_GMG(data_input::GMG_Dataset)
-    data = load_GMG(data_input.DirName)
-    name = Symbol(data_input.Name)
-    return NamedTuple{(name,)}((data,))
-end
-=#
+import GeophysicalModelGenerator: load_GMG, ProfileData, ExtractProfileData
 
 
 """
@@ -96,7 +47,6 @@ function ProfileUser(;  number=0,
                         end_lonlat=(), 
                         depth=nothing,
                         start_cart=0,
-                        end_cart = nothing,
                         Polygons=[],
                         screenshot = nothing)
     if isnothing(name)
@@ -115,8 +65,29 @@ function ProfileUser(;  number=0,
         end_lonlat = Float64.(end_lonlat)
     end
 
+    if vertical 
+        # Vertical cross-sections in GMG  are given in GeoData format (lon/lat). 
+        # For visualisation purposes, we transfer that to cartesian data.
+        # For some functions we need to know the start & end points of this cartesian cross-section (for example to tranfer curves from cartesian -> lonlat )
+        # That's why we store start_cart & end_cart here. 
+        #
+        # Here, we precompute this with a low resolution grid.
+        lon = sort([start_lonlat[1], end_lonlat[1]])
+        lat = sort([start_lonlat[2], end_lonlat[2]])
+        
+        Lon,Lat,Depth = XYZGrid(range(lon...,10), range(lat...,10), range(-100,0,10))
+        FakeData  = GeoData(Lon,Lat,Depth, (Data=Depth,))
+        CrossFake = CrossSection(FakeData, Start=start_lonlat, End=end_lonlat, dims=(10,10))  
+        x_cart    = FlattenCrossSection(CrossFake)
+
+        end_cart  = x_cart[end]
+    else
+        end_cart = nothing
+    end
+
     return ProfileUser(number,name,vertical, start_lonlat, end_lonlat, depth, start_cart, end_cart, Polygons, screenshot)
 end
+
 
 # Print info 
 function show(io::IO, g::ProfileUser)
@@ -133,6 +104,43 @@ function show(io::IO, g::ProfileUser)
     end
     return nothing
 end
+
+
+"""
+    P = ProfileData(prof::ProfileUser)
+Helper function to convert a `ProfileUser` dataset to a `ProfileData` dataset (as defined in GMG)
+"""
+function  ProfileData(prof::ProfileUser)
+    if prof.vertical
+        P = ProfileData(start_lonlat=prof.start_lonlat, end_lonlat=prof.end_lonlat)
+    else
+        P = ProfileData(depth=prof.depth)
+    end
+    return P
+end
+
+"""
+    Prof, PlotData = ExtractProfileData(Prof::ProfileData, AppData::NamedTuple, field; section_width=50km)
+
+Helper function to project data onto the profile `Prof`. Also returns the data to plot this cross-section
+"""
+function  ExtractProfileData(Prof::ProfileData, AppData::NamedTuple, field::Symbol; section_width=50km)
+
+    ExtractProfileData!(Prof, AppData.DataTomo, AppData.DataPoints, AppData.DataSurfaces, section_width=section_width)
+    if Profile.vertical
+        PlotData = (x_cart = Profile.VolData.fields.x_profile[:,1], z_cart=Profile.VolData.depth.val[1,:])
+    else
+        PlotData = (x_cart = Profile.VolData.lon.val[:,1], z_cart=Profile.VolData.lat.val[1,:])
+    end
+    PlotData = merge(PlotData, (data=Prof.VolData.fields[field][:,:,1]',))
+
+    return Prof, PlotData
+end
+
+
+
+
+
 
 #=
 """
@@ -173,7 +181,7 @@ end
 =#
 
 """
-    x,z,data = get_cross_section(DataAlps, start_value=(10,41), end_value=(10,49), field=:dVp_paf21)
+    x,z,data = get_cross_section(DataAlps, profile::ProfileUser, field=:DataTomo_dVp_hua)
 
 Extracts a cross-section from a tomographic dataset and returns this as cartesian values (x,z) formatted for the Plotly heatmap format
 """

@@ -20,7 +20,7 @@ callback!(app,  Output("setup-button", "n_clicks"),
                 Output("button-plot-topography", "n_clicks"),
                 Output("button-plot-topography", "disabled"),
                 Output("tabs","activ_tab"),
-                Output("loading-output-1", "children"), 
+                Output("dropdown_field", "options"), 
                 Input("setup-button", "n_clicks"),
                 Input("output-upload_state", "children"),
                 State("session-id", "data"),
@@ -50,9 +50,9 @@ callback!(app,  Output("setup-button", "n_clicks"),
         
         # Combine volumetric data into 1 dataset
         DataTomo = combine_VolData(DataVol; lat=nothing, lon=nothing, depth=nothing, dims=(100,100,100), dataset_preferred = 1)
-        DataTopo = DataTopo[1] # We can only have one
         
-
+        DataTopo = DataTopo[1] # We can only have one topo datasets
+        
         # Data sets present in the 3D tomographic data
         options_fields = [(label = String(f), value="$f" ) for f in keys(DataTomo.fields)]
 

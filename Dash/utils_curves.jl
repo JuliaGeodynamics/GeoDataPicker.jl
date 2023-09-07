@@ -17,7 +17,7 @@ end
 
 
 """
-This creates a Curve structure, that holds info about hand-drawn curves on profiles 
+    This creates a Curve structure, that holds info about hand-drawn curves on profiles 
 """
 function set_curve(shape, profile::ProfileUser; name="test", color="#000000", linewidth=1)
 
@@ -39,6 +39,27 @@ function set_curve(shape, profile::ProfileUser; name="test", color="#000000", li
     return Curve(name, color,linewidth,  type, shape, shape.data_curve, lon, lat, depth, closed)
 end
 
+
+"""
+    update_curve!(curve::Curve, profile::ProfileUser)
+
+If a curve is copied from one profile to another one, the x/y coordinates are still ok, but the lon/lat/depth not necessarily.
+This routine updates those
+"""
+function update_curve!(curve::Curve, profile::ProfileUser)
+
+    x,y,closed = svg2vec(curve.shape.data_curve)
+    lon,lat,depth = convert_curve_profile(x,y,profile, closed)
+    
+    # update
+    curve.lon   = lon
+    curve.lat   = lat
+    curve.depth = depth
+    
+    return nothing
+end
+
+
 """
     lon,lat,depth = convert_curve_profile(x,y,profile)
 
@@ -50,6 +71,7 @@ function convert_curve_profile(x,y,profile,closed=false)
         lon,lat,depth = x, y, -ones(size(x))*profile.depth
     else
         Δ_lonlat =  profile.end_lonlat .- profile.start_lonlat
+        @show profile.end_cart profile.start_cart 
         Δ_cart   =  profile.end_cart - profile.start_cart 
         lon      =  (x .- profile.start_cart)./Δ_cart .*  Δ_lonlat[1] .+ profile.start_lonlat[1]
         lat      =  (x .- profile.start_cart)./Δ_cart .*  Δ_lonlat[2] .+ profile.start_lonlat[2]

@@ -405,6 +405,8 @@ callback!(app,  Output("button-add-curve","n_clicks"),
             profile = get_active_profile(AppData, session_id, selected_profile)
             if AppDataUser.copy != []
                 curve = AppDataUser.copy
+                update_curve!(curve, profile)   # update lon/lat/depth
+
                 push!(profile.Polygons, curve)
                 println("pasted curve: $selected_curves")
             end

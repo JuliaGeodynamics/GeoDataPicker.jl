@@ -73,14 +73,23 @@ end
 """
 Creates a plot of the cross-section with all requested options
 """
-function plot_cross(AppData, profile; zmax=nothing, zmin=nothing, shapes=[], field=:dVp_paf21, colormap="vik_reverse",
-                    screenshot_opacity=0.5, screenshot_display=true, cross_section_opacity=1.0)
+function plot_cross(AppData, profile; zmax=nothing, zmin=nothing, shapes=[], 
+                    field=:dVp_paf21, 
+                    colormap="vik_reverse",
+                    screenshot_opacity=0.5, 
+                    screenshot_display=true, 
+                    cross_section_opacity=1.0
+                    )
     AppDataUser = AppData.AppDataUser
     colormaps   = AppDataUser.colormaps
-   
+    section_width = 50km;
+    
+    Profile             =  ProfileData(profile);                         # create a GMG structure for the profile 
+    Profile, PlotCross  =  ExtractProfileData(Profile, AppData, field; section_width=section_width)   # project data onto the profile
+
     # Compute the cross-section.
     # NOTE: this routine will be replaces with the one of marcel
-    x_cart, z_cart, data, cross = get_cross_section(AppData, profile, field)    
+    #x_cart, z_cart, data, cross = get_cross_section(AppData, profile, field)    
 
     colorscale = colormaps[Symbol(colormap)];
 
@@ -111,13 +120,12 @@ function plot_cross(AppData, profile; zmax=nothing, zmin=nothing, shapes=[], fie
         end
     end
 
-
     data_plots = []
     
     # add tomographic cross-section
-    push!(data_plots, heatmap(x = x_cart, 
-                              y = z_cart, 
-                              z = collect(eachcol(data)),
+    push!(data_plots, heatmap(x = PlotCross.x_cart, 
+                              y = PlotCross.z_cart, 
+                              z = collect(eachcol(PlotCross.data)),
                               colorscale   = colorscale,
                               colorbar=attr(thickness=5),
                               zmin=zmin, zmax=zmax, 
@@ -193,6 +201,8 @@ function plot_3D_data(AppData;
         colormaps       = AppDataUser.colormaps
         colorscale_topo = colormaps[:oleron];
         color_seismic   = colormaps[Symbol(color)];
+        section_width   = 50km
+
 
         data_plot = [];
         if add_topo 
@@ -223,9 +233,13 @@ function plot_3D_data(AppData;
             for i in selected_cross
                 profile  = AppData.AppDataUser.Profiles[i+1]
                 _, _, _,_, cross = get_cross_section(AppData, profile, field)    
-                vol   = cross.fields[field]
+
+                Profile     = ProfileData(profile);                                                      # create a GMG structure for the profile 
+                Profile, _  = ExtractProfileData(Profile, AppData, field; section_width=section_width)   # project data onto the profile
+                
+                vol   = Profile.VolData.fields[field]
                 push!(data_plot,
-                        surface( x=cross.lon.val[:,:], y=cross.lat.val[:,:], z=cross.depth.val[:,:,1], surfacecolor=vol[:,:,1], 
+                        surface( x=Profile.VolData.lon.val[:,:], y=Profile.VolData.lat.val[:,:], z=Profile.VolData.depth.val[:,:,1], surfacecolor=vol[:,:,1], 
                                 contours = attr(x=attr(highlight=false),y=attr(highlight=false), z=attr(highlight=false)),
                                 colorscale = color_seismic,
                                 hoverinfo  = false,
