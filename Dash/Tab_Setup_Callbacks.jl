@@ -45,8 +45,12 @@ callback!(app,  Output("setup-button", "n_clicks"),
         Datasets = get_active_datasets(AppDataLocal.Datasets, active_tomo, active_EQ, active_surf, active_screenshots)
 
         # Load data
-        #DataTomo, DataTopo, DataPoints, DataSurfaces, DataScreenshots = load_dataset(Datasets);
-        DataVol, DataSurfaces, DataPoints, DataScreenshots, DataTopo = load_GMG(Datasets)
+        DATA = load_GMG(Datasets)
+        DataVol         = DATA.Volume 
+        DataSurfaces    = DATA.Surface
+        DataPoints      = DATA.Point
+        DataScreenshots = DATA.Screenshot
+        DataTopo        = DATA.Topography
         
         # Combine volumetric data into 1 dataset
         DataTomo = combine_VolData(DataVol; lat=nothing, lon=nothing, depth=nothing, dims=(100,100,100), dataset_preferred = 1)

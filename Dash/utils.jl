@@ -124,17 +124,17 @@ end
 
 Helper function to project data onto the profile `Prof`. Also returns the data to plot this cross-section
 """
-function  ExtractProfileData(Prof::ProfileData, AppData::NamedTuple, field::Symbol; section_width=50km)
+function  ExtractProfileData(Profile::ProfileData, AppData::NamedTuple, field::Symbol; section_width=50km)
 
-    ExtractProfileData!(Prof, AppData.DataTomo, AppData.DataPoints, AppData.DataSurfaces, section_width=section_width)
+    ExtractProfileData!(Profile, AppData.DataTomo, AppData.DataSurfaces, AppData.DataPoints, section_width=section_width)
     if Profile.vertical
         PlotData = (x_cart = Profile.VolData.fields.x_profile[:,1], z_cart=Profile.VolData.depth.val[1,:])
     else
         PlotData = (x_cart = Profile.VolData.lon.val[:,1], z_cart=Profile.VolData.lat.val[1,:])
     end
-    PlotData = merge(PlotData, (data=Prof.VolData.fields[field][:,:,1]',))
+    PlotData = merge(PlotData, (data=Profile.VolData.fields[field][:,:,1]',))
 
-    return Prof, PlotData
+    return Profile, PlotData
 end
 
 
