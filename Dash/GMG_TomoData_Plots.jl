@@ -217,7 +217,10 @@ function plot_3D_data(AppData;
                         opacity_cross=1,
                         curve_select=nothing,
                         color="roma",
-                        opacity_topography_3D=0.8)
+                        opacity_topography_3D=0.8,
+                        selected_surfaces_data=[""], opacity_surfaces_data=1.0,
+                        selected_EQ_data=[""])
+
     if hasfield(typeof(AppData),:DataTomo)
         DataTomo        = AppData.DataTomo
         DataTopo        = AppData.DataTopo
@@ -233,7 +236,7 @@ function plot_3D_data(AppData;
             # topography surface plot
             xdata =  DataTopo.lon.val[:,:]
             ydata =  DataTopo.lat.val[:,:]
-            zdata =  DataTopo.depth.val[:,:,1]
+            zdata =  ustrip.(DataTopo.depth.val[:,:,1])
             push!(data_plot,
                         surface(x = xdata, y = ydata, z = zdata,  opacity=opacity_topography_3D, hoverinfo="none", 
                                 contours = attr(x=attr(highlight=false, show=false, project=attr(x=false) ),y=attr(highlight=false), z=attr(highlight=false),   
@@ -290,7 +293,25 @@ function plot_3D_data(AppData;
             end
         end
         
-
+        # surfaces
+        Names = String.(keys(AppData.DataSurfaces))
+        for (i,Surface) in enumerate(AppData.DataSurfaces)
+            if any(selected_surfaces_data .== Names[i])
+                
+                # topography surface plot
+                xdata =  Surface.lon.val[:,:]
+                ydata =  Surface.lat.val[:,:]
+                zdata =  ustrip.(Surface.depth.val[:,:,1])
+                
+                push!(data_plot,
+                            surface(x = xdata, y = ydata, z = zdata,  opacity=opacity_surfaces_data, hoverinfo="none", 
+                                    contours = attr(x=attr(highlight=false, show=false, project=attr(x=false) ),y=attr(highlight=false), z=attr(highlight=false),   
+                                    xaxis=attr(visible=false), yaxis=attr(visible=false, showspikes=false), zaxis=attr(visible=false, showspikes=false)),
+                                    color=zdata
+                                   ),
+                                    )
+            end
+        end
 
         # create actual figure
         pl = (

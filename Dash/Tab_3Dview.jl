@@ -20,19 +20,34 @@ function Tab_3Dview()
                                         allowCross=false,
                                     )
                                 ]), 
+
+                           dbc_col(dbc_card([dbc_label("curves:"),
+                                    dcc_dropdown(id="3D-selected_curves",options=[("",)],multi=true),
+                                ]))
+
                             ], width=3), 
                             
-                            dbc_col(dbc_card([dbc_label("cross-sections:"),
+                            dbc_col([dbc_card([dbc_label("cross-sections:"),
                                             dbc_checklist(id="selected_cross-sections",options=[(label="",)]),
-                                            dbc_col([
-                                                #dbc_col(dbc_label("opacity:")),dbc_col(dcc_slider(id="opacity-cross-3D",min=0,max=1,value=1))
-                                                dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=1.0, id = "opacity-cross-3D", tooltip=attr(placement="bottom")),    
-                                                ])
-                                    ]), width=3),
+                                            dbc_col(dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=1.0, id = "opacity-cross-3D", tooltip=attr(placement="bottom")))
+                                        ]),
+                            dbc_col(dbc_card([dbc_label("Earthquakes:"),
+                                        dcc_dropdown(id="3D-selected_EQ_data",options=[("",)],multi=true),
+                                        dcc_rangeslider(id = "id-3D-EQ_magnitude-slider", 
+                                                            min = 0.1, max = 9, value=[0.2, 2.0],
+                                                            allowCross=false,
+                                                        )
+                                                        
+                                        ])),
+                            dbc_col(dbc_card([dbc_label("Surfaces:"),
+                                        dcc_dropdown(id="3D-selected_surfaces_data",options=[("",)],multi=true),
+                                        dbc_col(dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=1.0, id = "opacity-surfaces-3D", tooltip=attr(placement="bottom")))
+                                        ]))
 
-                            dbc_col(dbc_card([dbc_label("curves:"),
-                                    dcc_dropdown(id="3D-selected_curves",options=[("",)],multi=true),
-                            ]), width=3)
+                                    ]
+                                    , width=3),
+
+                        
 
 
                 ])

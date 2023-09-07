@@ -24,6 +24,8 @@ callback!(app,  Output("setup-button", "n_clicks"),
                 Output("loading-output-1","children"),
                 Output("selected_EQ-data", "options"), 
                 Output("selected_Surface-data", "options"), 
+                Output("3D-selected_EQ_data","options"),
+                Output("3D-selected_surfaces_data","options"),
                 Input("setup-button", "n_clicks"),
                 Input("output-upload_state", "children"),
                 State("session-id", "data"),
@@ -118,7 +120,7 @@ callback!(app,  Output("setup-button", "n_clicks"),
         options_fields      = get_options_vector(AppDataLocal.DataTomo.fields)
         options_EQ_fields   = get_options_vector(AppDataLocal.DataPoints)
         options_Surf_fields = get_options_vector(AppDataLocal.DataSurfaces)
-      
+        
     else
         plot_button_topo_disabled = true
         n=0
@@ -131,7 +133,7 @@ callback!(app,  Output("setup-button", "n_clicks"),
     end
 
     return n+1, n_topo, plot_button_topo_disabled, active_tab, options_fields, "", 
-           options_EQ_fields, options_Surf_fields
+           options_EQ_fields, options_Surf_fields,options_EQ_fields, options_Surf_fields
 end
 
 

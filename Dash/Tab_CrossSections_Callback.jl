@@ -327,7 +327,8 @@ callback!(app,  Output("cross_section", "figure"),
                                 cross_section_opacity=cross_section_opacity,
                                 plot_surfaces = plot_surfaces, selected_surf_data= selected_surf_data,
                                 plot_earthquakes=plot_earthquakes,selected_EQ_data=selected_EQ_data,
-                                section_width=section_width, EQmag = (EQ_minMag,EQ_maxMag)) 
+                                section_width=section_width, EQmag = (EQ_minMag,EQ_maxMag),
+                                ) 
         
         curve_names = get_curve_names(AppDataLocal.AppDataUser.Profiles)
 
@@ -355,7 +356,8 @@ callback!(app,  Output("button-add-curve","n_clicks"),
                 State("shape-name", "value"), 
                 State("shape-color","value"),
                 State("selected_curves","value")
-                ) do n_add, n_del, n_update, n_copy, n_paste, fig_cross, fig_selected_data, session_id, selected_profile, curve_names, name, color, selected_curves
+                ) do n_add, n_del, n_update, n_copy, n_paste, fig_cross, fig_selected_data, session_id, selected_profile, curve_names, name, 
+                    color, selected_curves
     global AppData
     AppDataLocal = get_AppData(AppData, session_id)
     
