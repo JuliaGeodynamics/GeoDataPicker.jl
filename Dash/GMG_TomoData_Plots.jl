@@ -188,6 +188,15 @@ function plot_cross(AppData, profile;
                             autorange=true
                         ),
                         shapes = shapes_data,
+                        showlegend=true, 
+                        legend=attr(orientation="h", x=0, y=0, yanchor="top",xanchor="left")
+        #x=1,
+        #y=1.02,
+        #yanchor="bottom",
+        #xanchor="right",
+   
+    #),
+
                         ),
             config = (edits    = (shapePosition =  true,)),  
         )
