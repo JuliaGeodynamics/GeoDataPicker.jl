@@ -73,12 +73,15 @@ end
 """
 Creates a plot of the cross-section with all requested options
 """
-function plot_cross(AppData, profile; zmax=nothing, zmin=nothing, shapes=[], 
+function plot_cross(AppData, profile; 
+                    zmax=nothing, zmin=nothing,
                     field=:dVp_paf21, 
                     colormap="vik_reverse",
                     screenshot_opacity=0.5, 
                     screenshot_display=true, 
-                    cross_section_opacity=1.0
+                    cross_section_opacity=1.0,
+                    plot_surfaces   =   false,
+                    plot_earthquakes=   false
                     )
     AppDataUser = AppData.AppDataUser
     colormaps   = AppDataUser.colormaps
@@ -145,6 +148,28 @@ function plot_cross(AppData, profile; zmax=nothing, zmin=nothing, shapes=[],
                                       ))
           end
       end                                                    
+    end
+
+    if plot_surfaces 
+        Names = String.(keys(Profile.SurfData))
+        for (i,Surf) in enumerate(Profile.SurfData)
+            x_surf = Surf.fields.x_profile
+            z_surf = ustrip.(Surf.fields.MohoDepth)
+            push!(data_plots, scatter(x = x_surf, y = z_surf, mode="lines",  name=Names[i]))
+        end
+    end
+
+    if plot_earthquakes
+        Names = String.(keys(Profile.PointData))
+        for (i,Points) in enumerate(Profile.PointData)
+            # Filter the earthquakes
+            x_EQ = Points.fields.x_profile
+            z_EQ = Points.depth.val
+            ind = findall(x_EQ .< profile.end_cart)
+
+            push!(data_plots, scatter(x = x_EQ[ind], y = z_EQ[ind], mode="markers", name=Names[i]))
+                    
+        end
     end
 
     pl = (  id = "fig_cross",

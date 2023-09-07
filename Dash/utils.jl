@@ -137,49 +137,6 @@ function  ExtractProfileData(Profile::ProfileData, AppData::NamedTuple, field::S
     return Profile, PlotData
 end
 
-
-
-
-
-
-#=
-"""
-    DataTomo, DataTopo =  load_dataset(fname::String="AlpsModels.jld2"; grid_name="@earth_relief_02m.grd")
-
-This loads a 3D tomographic dataset from the file `fname` (prepared with the GeophysicalModelGenerator and saves as `*.jld2` format).
-It also uses GMT to download the corresponding topographic map for the region
-
-"""
-function load_dataset(Datasets)
-    
-    DataPoints      =   NamedTuple();
-    DataSurfaces    =   NamedTuple();
-    DataScreenshots =   NamedTuple();
-    DataVol         =   NamedTuple();
-    DataTopo        =   NamedTuple();
-    for data in Datasets
-        if data.active
-            # load into NamedTuple (I'm sure this can be done more compact somehow..)
-            loaded_data = load_GMG(data)   
-            if data.Type=="Volume"
-                DataVol         =   merge(DataVol,loaded_data)
-            elseif data.Type=="Screenshot"
-                DataScreenshots =   merge(DataScreenshots,loaded_data)
-            elseif data.Type=="Surface"
-                DataSurfaces    =   merge(DataSurfaces,loaded_data)
-            elseif data.Type=="Point"
-                DataPoints      =   merge(DataPoints,loaded_data)
-            elseif data.Type=="Topography"
-                DataTopo        =   merge(DataTopo,loaded_data)
-            end
-
-        end
-    end
-
-    return DataVol, DataTopo, DataPoints, DataSurfaces, DataScreenshots
-end
-=#
-
 """
     x,z,data = get_cross_section(DataAlps, profile::ProfileUser, field=:DataTomo_dVp_hua)
 

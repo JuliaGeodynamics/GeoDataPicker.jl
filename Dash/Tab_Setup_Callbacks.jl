@@ -21,6 +21,7 @@ callback!(app,  Output("setup-button", "n_clicks"),
                 Output("button-plot-topography", "disabled"),
                 Output("tabs","activ_tab"),
                 Output("dropdown_field", "options"), 
+                Output("loading-output-1","children"),
                 Input("setup-button", "n_clicks"),
                 Input("output-upload_state", "children"),
                 State("session-id", "data"),
@@ -51,11 +52,13 @@ callback!(app,  Output("setup-button", "n_clicks"),
         DataPoints      = DATA.Point
         DataScreenshots = DATA.Screenshot
         DataTopo        = DATA.Topography
-        
+        DataTopo        = DataTopo[1] # We can only have one topo datasets
+
         # Combine volumetric data into 1 dataset
-        DataTomo = combine_VolData(DataVol; lat=nothing, lon=nothing, depth=nothing, dims=(100,100,100), dataset_preferred = 1)
-        
-        DataTopo = DataTopo[1] # We can only have one topo datasets
+        lat     =  extrema(DataTopo.lat.val)
+        lon     =  extrema(DataTopo.lon.val)
+        depth   =  (-500,0)
+        DataTomo = combine_VolData(DataVol; lat=lat, lon=lon, depth=depth, dims=(100,100,100))
         
         # Data sets present in the 3D tomographic data
         options_fields = [(label = String(f), value="$f" ) for f in keys(DataTomo.fields)]
@@ -116,7 +119,7 @@ callback!(app,  Output("setup-button", "n_clicks"),
         load_output=""
     end
 
-    return n+1, n_topo, plot_button_topo_disabled, active_tab, options_fields #, ""
+    return n+1, n_topo, plot_button_topo_disabled, active_tab, options_fields, ""
 end
 
 
