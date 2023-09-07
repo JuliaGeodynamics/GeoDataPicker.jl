@@ -306,9 +306,15 @@ callback!(app,  Output("cross_section", "figure"),
                 State("tomography-opacity","value"),
                 State("EQ-display","value"),
                 State("Surfaces-display","value"),
+                State("selected_Surface-data","value"),
+                State("selected_EQ-data","value"),
+                State("EQ-section_width","value"),
+                State("EQ-minMag","value"),
+                State("EQ-maxMag","value"),
                 
                 ) do n_clicks, field, colorbar_value, session_id, selected_profile, colormap_field, screenshot_display, screenshot_opacity, cross_section_opacity,
-                    plot_earthquakes, plot_surfaces
+                    plot_earthquakes, plot_surfaces, selected_surf_data, selected_EQ_data, section_width,
+                    EQ_minMag, EQ_maxMag
 
     AppDataLocal = get_AppData(AppData, session_id)
 
@@ -319,7 +325,9 @@ callback!(app,  Output("cross_section", "figure"),
         fig_cross = plot_cross(AppDataLocal, profile, zmin=colorbar_value[1], zmax=colorbar_value[2], field=Symbol(field), colormap=colormap_field,
                                 screenshot_display=screenshot_display, screenshot_opacity=screenshot_opacity, 
                                 cross_section_opacity=cross_section_opacity,
-                                plot_surfaces = plot_surfaces, plot_earthquakes=plot_earthquakes) 
+                                plot_surfaces = plot_surfaces, selected_surf_data= selected_surf_data,
+                                plot_earthquakes=plot_earthquakes,selected_EQ_data=selected_EQ_data,
+                                section_width=section_width, EQmag = (EQ_minMag,EQ_maxMag)) 
         
         curve_names = get_curve_names(AppDataLocal.AppDataUser.Profiles)
 

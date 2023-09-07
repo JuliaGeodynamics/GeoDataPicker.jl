@@ -80,12 +80,12 @@ function plot_cross(AppData, profile;
                     screenshot_opacity=0.5, 
                     screenshot_display=true, 
                     cross_section_opacity=1.0,
-                    plot_surfaces   =   false,
-                    plot_earthquakes=   false
+                    plot_surfaces   =   false, selected_surf_data= [],EQmag=(0.1,9),
+                    plot_earthquakes=   false, selected_EQ_data= [], section_width=50,
                     )
     AppDataUser = AppData.AppDataUser
     colormaps   = AppDataUser.colormaps
-    section_width = 50km;
+    section_width = section_width*km;
     
     Profile             =  ProfileData(profile);                         # create a GMG structure for the profile 
     Profile, PlotCross  =  ExtractProfileData(Profile, AppData, field; section_width=section_width)   # project data onto the profile
@@ -153,22 +153,28 @@ function plot_cross(AppData, profile;
     if plot_surfaces 
         Names = String.(keys(Profile.SurfData))
         for (i,Surf) in enumerate(Profile.SurfData)
-            x_surf = Surf.fields.x_profile
-            z_surf = ustrip.(Surf.fields.MohoDepth)
-            push!(data_plots, scatter(x = x_surf, y = z_surf, mode="lines",  name=Names[i]))
+            if any(selected_surf_data .== Names[i])
+                x_surf = Surf.fields.x_profile
+                z_surf = ustrip.(Surf.fields.MohoDepth)
+                push!(data_plots, scatter(x = x_surf, y = z_surf, mode="lines",  name=Names[i]))
+            end
         end
     end
 
     if plot_earthquakes
         Names = String.(keys(Profile.PointData))
         for (i,Points) in enumerate(Profile.PointData)
-            # Filter the earthquakes
-            x_EQ = Points.fields.x_profile
-            z_EQ = Points.depth.val
-            ind = findall(x_EQ .< profile.end_cart)
+            if any(selected_EQ_data .== Names[i])
+            
+                # Filter the earthquakes 
+                # NOTE: we should later filter by magnitude as well
+                Magn = Points.fields.Magnitude
+                x_EQ = Points.fields.x_profile
+                z_EQ = Points.depth.val
+                ind = findall( (x_EQ .< profile.end_cart) .&& (Magn.>EQmag[1]) .&& (Magn.<EQmag[2]))
 
-            push!(data_plots, scatter(x = x_EQ[ind], y = z_EQ[ind], mode="markers", name=Names[i]))
-                    
+                push!(data_plots, scatter(x = x_EQ[ind], y = z_EQ[ind], mode="markers", name=Names[i]))
+            end        
         end
     end
 
@@ -190,28 +196,12 @@ function plot_cross(AppData, profile;
                         shapes = shapes_data,
                         showlegend=true, 
                         legend=attr(orientation="h", x=0, y=0, yanchor="top",xanchor="left")
-        #x=1,
-        #y=1.02,
-        #yanchor="bottom",
-        #xanchor="right",
-   
-    #),
-
                         ),
             config = (edits    = (shapePosition =  true,)),  
         )
     
     return pl
 end
-
-#function plot_cross(cross::Nothing) 
-#    println("default cross section")
-#    cross = get_cross_section(DataTomo, (10.0,41.0), (10.0,49.0))
-#    pl = plot_cross(cross)
-#    return pl
-#end
-#plot_cross() = plot_cross(nothing)  
-
 
 """
 

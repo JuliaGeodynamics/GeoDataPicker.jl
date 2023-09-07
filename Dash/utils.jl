@@ -534,3 +534,17 @@ function parse_uploaded_jld2_file(contents, filename, dir="uploaded_data")
 
     return save_name
 end
+
+
+"""
+    options = get_options_vector(DataFields::NamedTuple)
+
+Simple routine that helps to create the various dropdown menus we have in the GUI
+"""
+function get_options_vector(DataFields::NamedTuple)
+
+    options = [(label = String(f), value="$f" ) for f in keys(DataFields)]
+
+    return options
+end
+

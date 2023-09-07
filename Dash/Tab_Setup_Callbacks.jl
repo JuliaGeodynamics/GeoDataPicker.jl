@@ -22,6 +22,8 @@ callback!(app,  Output("setup-button", "n_clicks"),
                 Output("tabs","activ_tab"),
                 Output("dropdown_field", "options"), 
                 Output("loading-output-1","children"),
+                Output("selected_EQ-data", "options"), 
+                Output("selected_Surface-data", "options"), 
                 Input("setup-button", "n_clicks"),
                 Input("output-upload_state", "children"),
                 State("session-id", "data"),
@@ -60,9 +62,6 @@ callback!(app,  Output("setup-button", "n_clicks"),
         depth   =  (-500,0)
         DataTomo = combine_VolData(DataVol; lat=lat, lon=lon, depth=depth, dims=(100,100,100))
         
-        # Data sets present in the 3D tomographic data
-        options_fields = [(label = String(f), value="$f" ) for f in keys(DataTomo.fields)]
-
         # Initial cross-section
         start_val, end_val = extract_start_end_values(start_value, end_value)
         profile = ProfileUser(start_lonlat=start_val, end_lonlat=end_val)
@@ -98,8 +97,15 @@ callback!(app,  Output("setup-button", "n_clicks"),
         plot_button_topo_disabled = false
         active_tab = "tab-cross"
 
+        # Update dropdown menus
+        options_fields      = get_options_vector(DataTomo.fields)
+        options_EQ_fields   = get_options_vector(DataPoints)
+        options_Surf_fields = get_options_vector(DataSurfaces)
+        
         println("Finished loading data")
         load_output=""
+
+        
     elseif trigger=="output-upload_state.children"
         
         # we just uploaded a new state file
@@ -108,18 +114,24 @@ callback!(app,  Output("setup-button", "n_clicks"),
         active_tab = "tab-cross"
         n_topo = 0
 
-        # Data sets present in the 3D tomographic data
-        options_fields = [(label = String(f), value="$f" ) for f in keys(AppDataLocal.DataTomo.fields)]
-
+        # Update dropdown menus
+        options_fields      = get_options_vector(AppDataLocal.DataTomo.fields)
+        options_EQ_fields   = get_options_vector(AppDataLocal.DataPoints)
+        options_Surf_fields = get_options_vector(AppDataLocal.DataSurfaces)
+      
     else
         plot_button_topo_disabled = true
         n=0
         active_tab = "tab-setup"
         options_fields = []
+        options_EQ_fields = []
+        options_Surf_fields = []
         load_output=""
+
     end
 
-    return n+1, n_topo, plot_button_topo_disabled, active_tab, options_fields, ""
+    return n+1, n_topo, plot_button_topo_disabled, active_tab, options_fields, "", 
+           options_EQ_fields, options_Surf_fields
 end
 
 

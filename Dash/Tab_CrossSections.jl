@@ -11,15 +11,13 @@ function Tab_CrossSection()
                                              dbc_card(dbc_cardbody([
                                                 dbc_row([
                                                     dbc_row(dbc_label("Options"),justify="center"),
-                                                   # dbc_checkbox(label="lock curve", id="lock-curve"),
-
                                                      dbc_row([dbc_col(dbc_input(placeholder="Name",   id="shape-name")),
                                                               dbc_col(dbc_input(id="shape-color",     type="color"), width=4) ])
                                                              ]),
                                                     dbc_row( dbc_card(dbc_radioitems(id="selected_curves",options=[(label="",)]))),
 
                                                     dbc_row(dbc_buttongroup([   dbc_button(" - ",id="button-clear-curve"),
-                                                                                dbc_button("up",id="button-update-curve"),
+                                                                                dbc_button("update",id="button-update-curve"),
                                                                                 dbc_button(" + ",id="button-add-curve")]), justify="center"),
 
                                                     dbc_row(dbc_buttongroup([   dbc_button("copy",id="button-copy-curve"),
@@ -32,11 +30,16 @@ function Tab_CrossSection()
                                              id="collapse",
                                              is_open=false,
                                          ),
+
                                          dbc_button("Earthquakes",id="button-EQ"),
                                          dbc_collapse(
                                             dbc_card(dbc_cardbody([
                                                dbc_row([
                                                    dbc_row(dbc_switch(label="Display", id="EQ-display", value=false),justify="center"),
+                                                   dbc_row(dbc_inputgroup([dbc_inputgrouptext("width"),     dbc_input(id="EQ-section_width", value=50, type="number")])),
+                                                   dbc_row(dbc_inputgroup([dbc_inputgrouptext("max Mw"),    dbc_input(id="EQ-minMag", value=0.1, type="number")])),
+                                                   dbc_row(dbc_inputgroup([dbc_inputgrouptext("min Mw"),    dbc_input(id="EQ-maxMag", value=8, type="number")])),
+                                                   dbc_row( dbc_card(dbc_checklist(id="selected_EQ-data",options=[]))),
                                                 ])
                                                 ])),
                                                 id="collapse-EQ",
@@ -47,6 +50,7 @@ function Tab_CrossSection()
                                            dbc_card(dbc_cardbody([
                                               dbc_row([
                                                   dbc_row(dbc_switch(label="Display", id="Surfaces-display", value=false),justify="center"),
+                                                  dbc_row( dbc_card(dbc_checklist(id="selected_Surface-data",options=[]))),
                                                 ])
                                                 ])),
                                                 id="collapse-Surfaces",
