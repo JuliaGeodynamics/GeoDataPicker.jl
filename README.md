@@ -24,7 +24,7 @@ julia> Pkg.instantiate()
 ### Start the GUI
 ```julia
 julia> using DataPicker
-julia> GMG_TopoData()
+julia> GMG_TomoData()
 [ Info: Listening on: 127.0.0.1:8050, thread id: 1
 ```
 Now you can open the address `127.0.0.1:8050` in your favorite webbrowser (e.g., Safari), which should look something like:
