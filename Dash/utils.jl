@@ -77,7 +77,11 @@ function ProfileUser(;  number=0,
         
         Lon,Lat,Depth = XYZGrid(range(lon...,10), range(lat...,10), range(-100,0,10))
         FakeData  = GeoData(Lon,Lat,Depth, (Data=Depth,))
+        
+        @show lon,lat, start_lonlat, end_lonlat
         CrossFake = CrossSection(FakeData, Start=start_lonlat, End=end_lonlat, dims=(10,10))  
+        
+        
         x_cart    = FlattenCrossSection(CrossFake)
 
         end_cart  = x_cart[end]
@@ -472,11 +476,17 @@ function screenshot_2_profile(cross::GeoData, number::Int64, screenshot::Symbol)
         depth = cross.depth.val[1]
     end
     start_cart = 0
-    end_cart   = nothing
     Polygons   = []
 
-    return ProfileUser(number,name,vertical, start_lonlat, end_lonlat, depth, start_cart, end_cart, Polygons, screenshot)
 
+    Prof = ProfileUser(; number=number, name=name, vertical=vertical,
+                         start_lonlat=start_lonlat, end_lonlat=end_lonlat, 
+                         depth=depth,
+                         start_cart=start_cart,
+                         Polygons=Polygons,
+                         screenshot = screenshot);
+
+    return Prof
 end
 
 

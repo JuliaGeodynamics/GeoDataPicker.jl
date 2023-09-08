@@ -389,7 +389,6 @@ callback!(app,  Output("button-add-curve","n_clicks"),
             end
             
         elseif trigger == "button-update-curve.n_clicks"
-            println("to be added")
             id = findall(curve_names .== selected_curves)
             if !isempty(id)
                 curve_names_selected = String.(keys(fig_selected_data))
@@ -398,8 +397,13 @@ callback!(app,  Output("button-add-curve","n_clicks"),
                    # Update data & color
                    shape = fig_selected_data[Symbol(curve_names_selected[1])]
                    curve.data = shape
+                   curve.shape = merge(curve.shape, (data_curve=shape, ))
+                   update_curve!(curve, profile)   # update lon/lat/depth
+                   println("updated data on curve")
                 end
                 curve.color = color
+                
+                profile.Polygons[id[1]] = curve
                 println("updated curve: $selected_curves")
             end
 

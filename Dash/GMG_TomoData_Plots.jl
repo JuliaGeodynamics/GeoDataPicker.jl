@@ -106,17 +106,19 @@ function plot_cross(AppData, profile;
     if !isempty(curves)
         # a shape was added to the plot; add it again
         for  curve in curves
-            
+            x,y,closed = svg2vec(curve.data)
             if curve.type=="line"
                 line = curve.data
                 val  = (type = "line",   x0=line[1], x1=line[3], y0=line[2], y1=line[4], editable = true,
                             label = (text=curve.name,),
-                            line  = (color=curve.color, width=curve.linewidth))
+                            line  = (color=curve.color, width=curve.linewidth),
+                            name  = curve.name)
                     
             elseif curve.type=="path"
                 val =  (type = "path", path=curve.data, editable = true,
                             label = (text=curve.name,),
-                            line  = (color=curve.color, width=curve.linewidth))
+                            line  = (color=curve.color, width=curve.linewidth),
+                            name  = curve.name)
                                 
             end
             push!(shapes_data, val)
@@ -219,7 +221,7 @@ function plot_3D_data(AppData;
                         color="roma",
                         opacity_topography_3D=0.8,
                         selected_surfaces_data=[""], opacity_surfaces_data=1.0,
-                        selected_EQ_data=[""])
+                        selected_EQ_data=[""], EQmag=(0.1, 9))
 
     if hasfield(typeof(AppData),:DataTomo)
         DataTomo        = AppData.DataTomo
@@ -313,6 +315,24 @@ function plot_3D_data(AppData;
             end
         end
 
+        # EQ's
+        Names = String.(keys(AppData.DataPoints))
+        for (i,Points) in enumerate(AppData.DataPoints)
+            if any(selected_EQ_data .== Names[i])
+
+                # Filter the earthquakes 
+                # NOTE: we should later filter by magnitude as well
+                Magn = Points.fields.Magnitude
+                x_EQ = Points.lon.val
+                y_EQ = Points.lat.val
+                z_EQ = Points.depth.val
+                ind = findall( (Magn.>EQmag[1]) .&& (Magn.<EQmag[2]))
+
+                push!(data_plot, scatter3d(x = x_EQ[ind], y = y_EQ[ind], z = z_EQ[ind], mode="markers", name=Names[i], marker_size=5))
+
+            end
+        end
+
         # create actual figure
         pl = (
             id = "fig_3D",
@@ -342,7 +362,9 @@ function plot_3D_data(AppData;
                                     ),
                                     aspectmode="manual", 
                                     aspectratio=attr(x=3, y=3, z=1)
-                                    )
+                                    ),
+                        showlegend=true,
+                        legend=attr(orientation="h", x=0, y=0, z=0, yanchor="top",xanchor="left")
 
                         ),
             config = (edits    = (shapePosition =  true,)),                              

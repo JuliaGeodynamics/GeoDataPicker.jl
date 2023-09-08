@@ -33,8 +33,8 @@ function Tab_3Dview()
                                         ]),
                             dbc_col(dbc_card([dbc_label("Earthquakes:"),
                                         dcc_dropdown(id="3D-selected_EQ_data",options=[("",)],multi=true),
-                                        dcc_rangeslider(id = "id-3D-EQ_magnitude-slider", 
-                                                            min = 0.1, max = 9, value=[0.2, 2.0],
+                                        dcc_rangeslider(id = "3D-EQ_magnitude-slider", 
+                                                            min = 0.1, max = 9, value=[0.1, 9.0],
                                                             allowCross=false,
                                                         )
                                                         

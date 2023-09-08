@@ -16,11 +16,12 @@ callback!(app,  Output("3D-image","figure"),
                 State("3D-selected_EQ_data","value"),
                 State("3D-selected_surfaces_data","value"),
                 State("opacity-surfaces-3D","value"),
+                State("3D-EQ_magnitude-slider","value"),
                 State("session-id","data")
                 ) do n_clicks, opacity_cross, colorbar_value, colorbar_value_vol, 
                      val_topo, val_vol, field, selected_profiles,  curve_select, colormap_field, 
                      opacity_topography_3D, selected_EQ_data, selected_surfaces_data, 
-                     opacity_surfaces_data,
+                     opacity_surfaces_data, EQmag,
                      session_id 
 
     global AppData
@@ -39,7 +40,7 @@ callback!(app,  Output("3D-image","figure"),
                         color=colormap_field,
                         opacity_topography_3D=opacity_topography_3D,
                         selected_surfaces_data=selected_surfaces_data, opacity_surfaces_data=opacity_surfaces_data,
-                        selected_EQ_data=selected_EQ_data
+                        selected_EQ_data=selected_EQ_data, EQmag=EQmag
                       )
 
     return pl
