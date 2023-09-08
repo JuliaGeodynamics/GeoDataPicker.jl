@@ -11,16 +11,16 @@ using Base64
 GUI_version = "0.1.2"
 
 # include helper functions
-include("./GMG_Tomo/GMG_colormaps.jl")
-include("./GMG_Tomo/utils.jl")            
-include("./GMG_Tomo/utils_curves.jl")
-include("./GMG_Tomo/GMG_TomoData_Plots.jl")
-include("./GMG_Tomo/Tab_CrossSections.jl")
-include("./GMG_Tomo/Tab_3Dview.jl")
-include("./GMG_Tomo/Tab_Setup.jl")
+include("GMG_colormaps.jl")
+include("utils.jl")            
+include("utils_curves.jl")
+include("GMG_TomoData_Plots.jl")
+include("Tab_CrossSections.jl")
+include("Tab_3Dview.jl")
+include("Tab_Setup.jl")
 
 # Specify datasets (will later be read in from ascii file)
-include("./GMG_Tomo/Default_datasets.jl")
+include("Default_datasets.jl")
 
 # set the initial cross-section
 start_val = (5.0,46.0)
@@ -81,9 +81,9 @@ app.layout = main_layout()
     
 
 # Specify different callbacks for the different tabs:
-include("./GMG_Tomo/Tab_Setup_Callbacks.jl")    
-include("./GMG_Tomo/Tab_CrossSections_Callback.jl")    
-include("./GMG_Tomo/Tab_3Dview_Callbacks.jl")    
+include("Tab_Setup_Callbacks.jl")    
+include("Tab_CrossSections_Callback.jl")    
+include("Tab_3Dview_Callbacks.jl")    
 
 run_server(app, debug=false)
 

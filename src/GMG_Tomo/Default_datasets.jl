@@ -11,7 +11,7 @@ push!(Datasets, GMG_Dataset("DataTomo","Volume","src/AlpsModels.jld2", true))
 push!(Datasets, GMG_Dataset("AlpsTopo","Topography","src/AlpsTopo.jld2", true))
 
 # Screenshots
-push!(Datasets, GMG_Dataset("Handy_etal_SE_ProfileA","Screenshot","Handy_etal_SE_ProfileA.jld2", false))
+push!(Datasets, GMG_Dataset("Handy_etal_SE_ProfileA","Screenshot","https://seafile.rlp.net/f/516015cb6d6442bdb96c/?dl=1", false))
 push!(Datasets, GMG_Dataset("Handy_etal_SE_Profile1","Screenshot","https://seafile.rlp.net/f/5ffe580e765e4bd1bafe/?dl=1", false))
 push!(Datasets, GMG_Dataset("Handy_etal_SE_Profile2","Screenshot","https://seafile.rlp.net/f/c0c1746f307f4f81ace4/?dl=1", false))
 push!(Datasets, GMG_Dataset("Handy_etal_SE_Profile3","Screenshot","https://seafile.rlp.net/f/d5fa21f1586c4e99a7e8/?dl=1", false))

@@ -115,7 +115,7 @@ function Tab_CrossSection()
             # lower row | topography plot & buttons
             dbc_row([
                 # plot topography
-                dbc_col([create_topo_plot(AppData)], width=10),
+                dbc_col([create_topo_plot(AppData)], width=8),
                 
                 # various menus @ lower right
                 dbc_col([
