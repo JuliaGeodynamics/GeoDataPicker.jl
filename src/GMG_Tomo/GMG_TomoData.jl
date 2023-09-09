@@ -35,9 +35,7 @@ global AppData
 AppData = NamedTuple()
 
 # Sets some defaults for the layout of webpage
-app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=false)
 
-app.title = "GMG Data Picker"
 #data_fields = keys(DataTomo.fields)
 #options_fields = [(label = String(f), value="$f" ) for f in data_fields]
 
@@ -77,7 +75,11 @@ function main_layout()
 
 end
 
-app = dash(external_stylesheets=[dbc_themes.BOOTSTRAP])
+#app = dash(external_stylesheets=[dbc_themes.CYBORG])
+app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=false)
+
+app.title = "GMG Data Picker"
+
 app.layout = main_layout()
     
 

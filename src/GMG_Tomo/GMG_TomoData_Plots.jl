@@ -44,12 +44,11 @@ function plot_topo(AppData)
                         colorscale = colorscale_topo,
                         zmin = -4, 
                         zmax = 4,
-                        colorbar=attr(thickness=5),
-
+                        colorbar=attr(thickness=5, title="topography [km]", titleside="right"),
                         )
                 ],
-        colorbar=Dict("orientation"=>"v", "len"=>0.5, "thickness"=>10,"title"=>"elevat"),
-        layout = (  title = "topography [km]",
+        colorbar=Dict("orientation"=>"v", "len"=>0.5, "thickness"=>10),
+        layout = (  #title = "topography [km]",
                     yaxis=attr(
                         title="Latitude",
                         tickfont_size= 14,
@@ -138,7 +137,7 @@ function plot_cross(AppData, profile;
                               y = PlotCross.z_cart, 
                               z = collect(eachcol(PlotCross.data)),
                               colorscale   = colorscale,
-                              colorbar=attr(thickness=5),
+                              colorbar=attr(thickness=5, title=String(field), titleside="right"),
                               zmin=zmin, zmax=zmax, 
                               opacity = cross_section_opacity
                               ))
@@ -279,7 +278,7 @@ function plot_3D_data(AppData;
                                 contours = attr(x=attr(highlight=false),y=attr(highlight=false), z=attr(highlight=false)),
                                 colorscale = color_seismic,
                                 showscale  = true, 
-                                colorbar = attr(thickness=5, title=String(field)),
+                                colorbar = attr(thickness=5, title=String(field), titleside="right"),
                                 cmin = cvals[1], cmax=cvals[2],
                                 opacity = opacity_cross,
                                 name = "$(selected_cross[i])-$(profile.name)" , hoverinfo=("name",)))
@@ -319,7 +318,7 @@ function plot_3D_data(AppData;
                                     contours = attr(x=attr(highlight=false, show=false, project=attr(x=false) ),y=attr(highlight=false), z=attr(highlight=false),   
                                     xaxis=attr(visible=false), yaxis=attr(visible=false, showspikes=false), zaxis=attr(visible=false, showspikes=false)),
                                     color=zdata,
-                                    colorbar = attr(thickness=5, title=String(field), x=1.1),
+                                    colorbar = attr(thickness=5, title=String(field), x=1.1, titleside="right"),
                                    ),
                                     )
             end
@@ -391,16 +390,19 @@ end
 # This creates the topography (mapview) plot (lower left)
 function create_topo_plot(AppData)
    
-    dcc_graph(
-        id = "mapview",
-        figure    = [], #plot_topo(AppData),
-        #animate   = true,
-        #clickData = true,
-        animate   = false,
-        responsive=false,
-        #clickData = true,
-        config = PlotConfig(displayModeBar=false, scrollZoom = false),
-        style = attr(width="30vw", height="45vh",padding_left="10vw",)
+    html_div(
+        dcc_graph(
+            id = "mapview",
+            figure    = [], #plot_topo(AppData),
+            #animate   = true,
+            #clickData = true,
+            animate   = false,
+            responsive=false,
+            #clickData = true,
+            config = PlotConfig(displayModeBar=false, scrollZoom = false),
+            style = attr(width="30vw", height="45vh",padding_left="10vw",)
+        ),
+        style = attr(textalign="center")
     )
 
 end
