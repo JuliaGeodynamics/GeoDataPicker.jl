@@ -175,27 +175,44 @@ function plot_cross(AppData, profile;
             
                 # Filter the earthquakes 
                 # NOTE: we should later filter by magnitude as well
-                Magn = Points.fields.Magnitude
-                x_EQ = Points.fields.x_profile
-                z_EQ = Points.depth.val
-                ind = findall( (x_EQ .< profile.end_cart) .&& (Magn.>EQmag[1]) .&& (Magn.<EQmag[2]))
+                if !isnothing(Points)
+                    Magn = Points.fields.Magnitude
+                    if profile.vertical
+                        x_EQ = Points.fields.x_profile
+                        z_EQ = Points.depth.val
+                        ind = findall( (x_EQ .< profile.end_cart) .&& (Magn.>EQmag[1]) .&& (Magn.<EQmag[2]))
+                    else
+                        x_EQ = Points.lon.val
+                        z_EQ = Points.lat.val
+                        ind = findall( (Magn.>EQmag[1]) .&& (Magn.<EQmag[2]))
+                    end
+                   
 
-                push!(data_plots, scatter(x = x_EQ[ind], y = z_EQ[ind], mode="markers", name=Names[i]))
+                    push!(data_plots, scatter(x = x_EQ[ind], y = z_EQ[ind], mode="markers", name=Names[i]))
+                end
             end        
         end
     end
 
+    if profile.vertical
+        xlab = "Length along cross-section [km]"
+        ylab = "Depth [km]"
+    else
+        xlab = "Longitude"
+        ylab = "Latitude"
+    end
+    
     pl = (  id = "fig_cross",
             data = data_plots,                            
             colorbar=Dict("orientation"=>"v", "len"=>0.5, "thickness"=>10,"title"=>"elevat"),
             layout = (  title = "Cross-section",
                         xaxis=attr(
-                            title="Length along cross-section [km]",
+                            title=xlab,
                             tickfont_size= 14,
                             tickfont_color="rgb(100, 100, 100)"
                         ),
                         yaxis=attr(
-                            title="Depth [km]",
+                            title=ylab,
                             tickfont_size= 14,
                             tickfont_color="rgb(10, 10, 10)",
                             autorange=true

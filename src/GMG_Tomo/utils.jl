@@ -115,7 +115,7 @@ function  ProfileData(prof::ProfileUser)
     if prof.vertical
         P = ProfileData(start_lonlat=prof.start_lonlat, end_lonlat=prof.end_lonlat)
     else
-        P = ProfileData(depth=prof.depth)
+        P = ProfileData(depth=-prof.depth)
     end
     return P
 end
