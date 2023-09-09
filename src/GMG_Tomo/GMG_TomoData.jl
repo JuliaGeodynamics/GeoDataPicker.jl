@@ -46,7 +46,7 @@ app.title = "GMG Data Picker"
 #app.layout = dbc_container(className = "mxy-auto") do
     
 function main_layout()
-    dbc_container([
+    dbc_container(className = "mxy-auto", fluid=true, [
         dbc_col(dbc_row([
                 dbc_dropdownmenu(
                         [dcc_upload(dbc_dropdownmenuitem("Upload state",   disabled=false,  id="load-state", n_clicks=0), id="upload-state"), 
@@ -77,6 +77,7 @@ function main_layout()
 
 end
 
+app = dash(external_stylesheets=[dbc_themes.BOOTSTRAP])
 app.layout = main_layout()
     
 

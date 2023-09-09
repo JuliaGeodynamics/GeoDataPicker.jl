@@ -9,8 +9,6 @@ The main features are:
 - Interactively add your interpretation to profiles through the datasets (e.g. top of the European or Appenninic slabs).
 - Visualize your interpretations in 3D.
 
-
-
 ## 1. Getting started
 
 #### Install

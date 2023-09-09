@@ -6,7 +6,8 @@ function Tab_3Dview()
             figure    = [], #plot_3D_data(DataTopo, DataTomo, AppData),
             animate = false,
             responsive=false,
-            config = PlotConfig(displayModeBar=true, scrollZoom = true)
+            config = PlotConfig(displayModeBar=true, scrollZoom = true),
+            style = attr(width="95vw", height="60vh",padding_left="1vw")
         ),
         dbc_row([dbc_col([dbc_button("Plot 3D",id="id-plot-3D"),
                         dbc_card([  dbc_checkbox(id="id-3D-topo",     label="topography",             value=true),

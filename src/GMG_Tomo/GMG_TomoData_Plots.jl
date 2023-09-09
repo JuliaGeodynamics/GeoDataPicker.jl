@@ -44,7 +44,8 @@ function plot_topo(AppData)
                         colorscale = colorscale_topo,
                         zmin = -4, 
                         zmax = 4,
-                        colorbar=attr(thickness=5)
+                        colorbar=attr(thickness=5),
+
                         )
                 ],
         colorbar=Dict("orientation"=>"v", "len"=>0.5, "thickness"=>10,"title"=>"elevat"),
@@ -62,8 +63,13 @@ function plot_topo(AppData)
 
                     # once we save additional cross-sections, add them here
                     shapes = shapes,
-
                     ),
+
+                       
+        scene = attr( aspectmode="manual", 
+                      aspectratio=attr(x=1, y=1, z=1)
+                    ),
+        
         config = (edits    = (shapePosition =  true,)),                              
     )
 
@@ -196,8 +202,9 @@ function plot_cross(AppData, profile;
                             autorange=true
                         ),
                         shapes = shapes_data,
-                        showlegend=true, 
-                        legend=attr(orientation="h", x=0, y=0, yanchor="top",xanchor="left")
+                        aspectmode="manual", 
+                        aspectratio=attr(x=1, y=1, z=1)
+
                         ),
             config = (edits    = (shapePosition =  true,)),  
         )
@@ -345,8 +352,8 @@ function plot_3D_data(AppData;
             data = data_plot,
             
             colorbar=Dict("orientation"=>"h", "len"=>0.5, "thickness"=>10,"title"=>"elevat"),
-            layout = (  autosize=false,
-                        width=1000, height=500,                 # need to check that this works fine on different screens/OS
+            layout = (  #autosize=false,
+                        #width=1000, height=500,                 # need to check that this works fine on different screens/OS
                         scene = attr(  yaxis=attr(
                                         showspikes=false,
                                         title="Latitude",
@@ -392,7 +399,8 @@ function create_topo_plot(AppData)
         animate   = false,
         responsive=false,
         #clickData = true,
-        config = PlotConfig(displayModeBar=false, scrollZoom = false)
+        config = PlotConfig(displayModeBar=false, scrollZoom = false),
+        style = attr(width="30vw", height="45vh",padding_left="10vw",)
     )
 
 end
@@ -404,7 +412,9 @@ function cross_section_plot()
         figure = [], #plot_cross(), 
         animate = false,
         responsive=false,
-        config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["toimage","toImage","lasso","drawopenpath","eraseshape","drawclosedpath"],displaylogo=false))
+        config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["toimage","toImage","lasso","drawopenpath","eraseshape","drawclosedpath"],displaylogo=false),
+        style = attr(width="70vw", height="50vh"))
+
         
 end
 
