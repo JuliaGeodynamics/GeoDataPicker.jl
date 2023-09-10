@@ -46,7 +46,9 @@ function Tab_CrossSection()
                                                 dbc_button("update", id="button-update-profile", disabled=true),
                                                 dbc_button(" + ", id="button-add-profile", disabled=true)]), justify="center"),
                                                 
-                         dbc_card(dbc_radioitems(id="selected_profile",options=[(label="Profile 0", value="Profile 0")]))]), align="center", width=2),
+                         dbc_card(dbc_radioitems(id="selected_profile",options=[(label="Profile 0", value="Profile 0")]))]), align="center", 
+                         
+                         width=2),
                 
 
                     #])), align="center", width=2),

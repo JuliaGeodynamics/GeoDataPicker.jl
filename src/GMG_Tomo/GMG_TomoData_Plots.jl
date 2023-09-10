@@ -117,7 +117,8 @@ function plot_cross(AppData, profile;
                 val  = (type = "line",   x0=line[1], x1=line[3], y0=line[2], y1=line[4], editable = true,
                             label = (text=curve.name,),
                             line  = (color=curve.color, width=curve.linewidth),
-                            name  = curve.name)
+                            name  = curve.name,
+                            surfacecolor=curve.color)
                     
             elseif curve.type=="path"
                 val =  (type = "path", path=curve.data, editable = true,
@@ -201,7 +202,7 @@ function plot_cross(AppData, profile;
         xlab = "Longitude"
         ylab = "Latitude"
     end
-    
+
     pl = (  id = "fig_cross",
             data = data_plots,                            
             colorbar=Dict("orientation"=>"v", "len"=>0.5, "thickness"=>10,"title"=>"elevat"),
@@ -283,22 +284,25 @@ function plot_3D_data(AppData;
         
         if !isnothing(selected_cross)
             for i in selected_cross
-                profile  = AppData.AppDataUser.Profiles[i+1]
-                _, _, _,_, cross = get_cross_section(AppData, profile, field)    
-
+                profile     = AppData.AppDataUser.Profiles[i+1]
                 Profile     = ProfileData(profile);                                                      # create a GMG structure for the profile 
                 Profile, _  = ExtractProfileData(Profile, AppData, field; section_width=section_width)   # project data onto the profile
                 
                 vol   = Profile.VolData.fields[field]
+                x = Profile.VolData.lon.val[:,:]
+                y = Profile.VolData.lat.val[:,:]
+                z = Profile.VolData.depth.val[:,:]
+                col = vol[:,:]
+                z[isnan.(col)] .= NaN;      # make this transparent in 3D
                 push!(data_plot,
-                        surface( x=Profile.VolData.lon.val[:,:], y=Profile.VolData.lat.val[:,:], z=Profile.VolData.depth.val[:,:,1], surfacecolor=vol[:,:,1], 
+                        surface( x=x, y=y, z=z, surfacecolor=col, 
                                 contours = attr(x=attr(highlight=false),y=attr(highlight=false), z=attr(highlight=false)),
                                 colorscale = color_seismic,
                                 showscale  = true, 
                                 colorbar = attr(thickness=5, title=String(field), titleside="right"),
                                 cmin = cvals[1], cmax=cvals[2],
                                 opacity = opacity_cross,
-                                name = "$(selected_cross[i])-$(profile.name)" , hoverinfo=("name",)))
+                                name = "$i-$(profile.name)" , hoverinfo=("name",)))
             end
         end
 
@@ -313,7 +317,8 @@ function plot_3D_data(AppData;
                                         line=attr(color=curve.color, width=2),
                                         name = curve.name,
                                         showlegend=true,
-                                        hoverinfo=("name",)))
+                                        hoverinfo=("name",),
+                                        surfacecolor=curve.color))
                         end
                     end
                 end
@@ -417,7 +422,7 @@ function create_topo_plot(AppData)
             responsive=false,
             #clickData = true,
             config = PlotConfig(displayModeBar=false, scrollZoom = false),
-            style = attr(width="30vw", height="45vh",padding_left="10vw",)
+            style = attr(width="35vw", height="50vh",padding_left="0vw",)
         ),
         style = attr(textalign="center")
     )

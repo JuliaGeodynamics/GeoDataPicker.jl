@@ -388,7 +388,7 @@ function get_profile_options(Profiles)
         prof = Profiles[i]
 
         if !isnothing(prof.screenshot)
-            str = "$(prof.number) - $(prof.screenshot) "
+            str = "$(prof.number)-$(prof.screenshot) "
         else
             str = "profile $(prof.number)"
         end
