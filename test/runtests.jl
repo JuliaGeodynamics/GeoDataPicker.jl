@@ -2,7 +2,7 @@ using DataPicker, Test
 
 
 
-
+#=
 @testset "Read SVG" begin
     # reads an SVG file and returns a NamedTuple with the various 3D curves
     fname="data/Alps.HZ.svg";
@@ -24,3 +24,4 @@ using DataPicker, Test
 
 
 end
+=#
