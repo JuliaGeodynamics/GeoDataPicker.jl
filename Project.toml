@@ -1,4 +1,4 @@
-name = "DataPicker"
+name = "GMG_DataPicker"
 uuid = "ad26291b-5ad9-4b61-8cdb-f4ecfd1c1fc8"
 authors = ["Boris Kaus <kaus@uni-mainz.de>", "Marcel Thielmann <Marcel.Thielmann@uni-bayreuth.de>"]
 version = "0.1.0"
