@@ -1,4 +1,4 @@
-module DataPicker
+module GMG_DataPicker
 
 export GMG_TomoData, AppData
 
