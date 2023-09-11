@@ -1,6 +1,7 @@
 module GMG_DataPicker
 
 export GMG_TomoData, AppData
+using GeophysicalModelGenerator
 
 global AppData
 
@@ -13,8 +14,8 @@ global AppData
 Starts a GUI to interpret tomographic data; you can change the default dataset file
 """ 
 function GMG_TomoData(; default_datasets="src/GMG_Tomo/Default_datasets.jl")
-    include(default_datasets)
-    include("./src/GMG_Tomo/GMG_TomoData.jl")
+    include(pkgdir(GMG_DataPicker)*"/"*default_datasets)
+    include(pkgdir(GMG_DataPicker)*"/src/GMG_Tomo/GMG_TomoData.jl")
 end
 
 
