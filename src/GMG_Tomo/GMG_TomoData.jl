@@ -56,7 +56,8 @@ function main_layout()
                         label="File",
                         id="id-dropdown-file"),
 
-                        html_h1("GMG Data Picker v0.1", style = Dict("margin-top" => 50, "textAlign" => "center")),
+                        html_h1("Data Picker", style = Dict("margin-top" => 0, "textAlign" => "center")),
+                        html_h5("GeophysicalModelGenerator", style = Dict("margin-top" => 0, "textAlign" => "center")),
                         
                         ]),
                         ),

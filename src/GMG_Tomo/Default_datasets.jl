@@ -6,6 +6,22 @@ Datasets = Vector{GMG_Dataset}()
 
 # Volumetric (tomographic) data
 push!(Datasets, GMG_Dataset("DataTomo","Volume","src/AlpsModels.jld2", true))
+push!(Datasets, GMG_Dataset("Paffrath2021_Vp","Volume","https://seafile.rlp.net/f/5c8c851af6764b5db20d/?dl=1", false))
+push!(Datasets, GMG_Dataset("Hua2017_Vp","Volume","https://seafile.rlp.net/f/1fb68b74e5d742d39e62/?dl=1", false))
+push!(Datasets, GMG_Dataset("Koulakov2015_Vp","Volume","https://seafile.rlp.net/f/b45733b14b6d45c18035/?dl=1", false))
+push!(Datasets, GMG_Dataset("Lippitsch2003_Vp","Volume","https://seafile.rlp.net/f/30232fd6aceb452485c3/?dl=1", false))
+push!(Datasets, GMG_Dataset("Mitterbauer2011_Vp","Volume","https://seafile.rlp.net/f/ab41397ff00c4fcf858e/?dl=1", false))
+push!(Datasets, GMG_Dataset("Najafabadi2022_Vp","Volume","https://seafile.rlp.net/f/4483d252ee75486a80dc/?dl=1", false))
+push!(Datasets, GMG_Dataset("Piromallo2003_Vp","Volume","https://seafile.rlp.net/f/f3957e30ea4048ef94d7/?dl=1", false))
+push!(Datasets, GMG_Dataset("Plomerova2022_Vp","Volume","https://seafile.rlp.net/f/abccb8d3302b4ef5af17/?dl=1", false))
+push!(Datasets, GMG_Dataset("Zhao2016_Vp","Volume","https://seafile.rlp.net/f/e81a6d075f6746609973/?dl=1", false))
+push!(Datasets, GMG_Dataset("Zhu2015_Vp","Volume","https://seafile.rlp.net/f/f062c4b3a235415cbaf0/?dl=1", false))
+
+push!(Datasets, GMG_Dataset("CSEM_Vs","Volume","https://seafile.rlp.net/f/4bde77eb63fe4740b5de/?dl=1", false))
+push!(Datasets, GMG_Dataset("ElSharkawy_Vs","Volume","https://seafile.rlp.net/f/c7eb8d7a24d648b6af3f/?dl=1", false))
+push!(Datasets, GMG_Dataset("Kaestle2018_Vs","Volume","https://seafile.rlp.net/f/36145dfa7dce4d9b8eeb/?dl=1", false))
+push!(Datasets, GMG_Dataset("Koulakov2009_Vs","Volume","https://seafile.rlp.net/f/980e7fc6b9134434bb6a/?dl=1", false))
+
 
 # Topography
 push!(Datasets, GMG_Dataset("AlpsTopo","Topography","src/AlpsTopo.jld2", true))
@@ -37,6 +53,7 @@ push!(Datasets, GMG_Dataset("Handy_etal_SE_Profile18","Screenshot","https://seaf
 push!(Datasets, GMG_Dataset("Mrozek_Moho_Grid_AD","Surface","https://seafile.rlp.net/f/12c120c5724745e2b27b/?dl=1", false))
 push!(Datasets, GMG_Dataset("Mrozek_Moho_Grid_EU","Surface","https://seafile.rlp.net/f/483d9c7c808a4087ba9e/?dl=1", false))
 push!(Datasets, GMG_Dataset("Mrozek_Moho_Grid_PA","Surface","https://seafile.rlp.net/f/217eaf5c87d14adcb9c9/?dl=1", false))
+
 
 # Seismicity
 push!(Datasets, GMG_Dataset("AlpArraySeis","Point","https://seafile.rlp.net/f/87d565882eda40689666/?dl=1", false))
