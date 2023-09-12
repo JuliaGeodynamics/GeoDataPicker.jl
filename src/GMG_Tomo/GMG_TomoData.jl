@@ -13,7 +13,7 @@ global AppData
 AppData = NamedTuple()
 
 # Define the main layout
-function main_layout(Datasets)
+function main_layout(Datasets, max_num_users)
     dbc_container(className = "mxy-auto", fluid=true, [
         dbc_col(dbc_row([
                 dbc_dropdownmenu(

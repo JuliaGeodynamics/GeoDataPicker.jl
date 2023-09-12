@@ -10,7 +10,7 @@ callback!(app,  Output("session-id", "data"),
     str = "id=$(session_id), v=$(GUI_version)"
     
     # Save default Datasets to global struct
-    global AppData
+    global AppData, max_num_users
     AppData = add_AppData(AppData, "$session_id", (Datasets=Datasets, GUI_version=GUI_version))
 
     return String("$(session_id)"), str

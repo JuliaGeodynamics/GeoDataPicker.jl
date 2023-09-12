@@ -7,7 +7,7 @@ using UUIDs
 using JLD2
 using Base64
 
-export GMG_TomoData, AppData
+export GMG_TomoData, AppData, max_num_users
 using GeophysicalModelGenerator
 
 # Load all files
@@ -24,26 +24,28 @@ include("GMG_Tomo/Tab_Setup_Callbacks.jl")
 include("GMG_Tomo/Tab_CrossSections_Callback.jl")
 include("GMG_Tomo/Tab_3Dview_Callbacks.jl")
 
-global AppData
+global AppData, max_num_users
+max_num_users = 10
 #AppData = NamedTuple()
 
 # Ultimately, we plan to have different GUI's to create geodynamic models
 # GMG_Tomo is to interpret tomographic data; other tools could focus on 
 # creating geodynamic model setups from mapview drawings
 """
-    GMG_TomoData(;datasets="Default_datasets.jl") 
+    GMG_TomoData(; Datasets = Default_datasets(dir = pkgdir(GMG_DataPicker)), max_num_user=10) 
 
 Starts a GUI to interpret tomographic data; you can change the default dataset file
 """ 
 function GMG_TomoData(; Datasets = Default_datasets(dir = pkgdir(GMG_DataPicker)))
     GUI_version = "0.1.2"
+    global max_num_users
 
     # Setup main app
     #app = dash(external_stylesheets=[dbc_themes.CYBORG])
     app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=false)
 
     app.title = "GMG Data Picker"
-    app.layout = main_layout(Datasets)
+    app.layout = main_layout(Datasets, max_num_users)
         
     # Specify different callbacks for the different tabs:
     app = Tab_Setup_Callbacks(app, Datasets, GUI_version)

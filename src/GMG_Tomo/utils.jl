@@ -250,15 +250,21 @@ end
 This adds data to the global AppData structure
 """
 function add_AppData(AppData::NamedTuple, session_id::String, new_data::NamedTuple)
-  
+  global max_num_users
   # Store it within the AppData
   data_local  = NamedTuple{(Symbol(session_id),)}((new_data,))
 
   # Update local data - note that this will overwrite data if a data set with session_id already exist
   AppData     = merge(AppData, data_local)
 
-  if length(AppData)>10
-        println("More than 10 datasets stored in AppData dataset- we may want to limit this automatically")
+  if length(AppData)>max_num_users
+    delete_dataset = keys(AppData)[1]
+    println("More than $max_num_users datasets stored in AppData dataset - Deleting the first one: $delete_dataset")
+    
+    # remove first dataset
+    inter = [p for p in pairs(AppData) if p[1] != delete_dataset];
+    AppData = (; inter...)
+
   end
 
   return AppData
