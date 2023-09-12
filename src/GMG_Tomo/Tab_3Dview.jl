@@ -10,7 +10,7 @@ function Tab_3Dview()
             style = attr(width="95vw", height="60vh",padding_left="1vw")
         ),
         dbc_row([dbc_col([dbc_button("Plot 3D",id="id-plot-3D"),
-                        dbc_card([  dbc_checkbox(id="id-3D-topo",     label="topography",             value=true),
+                          dbc_card([  dbc_checkbox(id="id-3D-topo",     label="topography",             value=true),
                                     dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=0.7, id = "opacity-topography-3D", tooltip=attr(placement="bottom")),    
                                 ]),
 
@@ -47,11 +47,41 @@ function Tab_3Dview()
 
                                     ]
                                     , width=3),
+                            dbc_col([
+                            dbc_button("Export Curves",id="button-export-curves"),
+                            dbc_collapse(
+                                    dbc_card(dbc_cardbody([
+                                    dbc_col([
+                                       dbc_row(dbc_label("Curves to be exported:"),justify="center"),
+                                       dcc_dropdown(id="curves-to-be-exported",options=[("",)],multi=true),
+                                       dbc_button("Export",id="export-curves"),
+                                       dcc_download(id="download-curves", base64=true),
+                                        ]),
 
-                        
+                                   ])),
+                                   id="collapse-export-curves",
+                                   is_open=false,
+                                   )
+                            ], width=3)
 
+                            #=
+                            dbc_button("Tomographic data",id="button-Tomography"),
+                            dbc_collapse(
+                                dbc_card(dbc_cardbody([
+                                    dbc_col([
+                                             dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=0.9, id = "tomography-opacity", tooltip=attr(placement="bottom")),    
+                                             dcc_dropdown(id="colormaps_cross", options = [String.(keys(colormaps))...], value = "roma",clearable=false, placeholder="Colormap")
+                                            ]),
+                                    ])),
+                                    id="collapse-Tomography",
+                                    is_open=false,
+                                    ),
+                            =#
 
-                ])
+                ]),
+
+              
+
 
     ])
 

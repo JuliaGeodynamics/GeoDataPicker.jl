@@ -226,3 +226,24 @@ function get_curve_names(Profiles)
     end
     return unique(names)
 end
+
+"""
+    data = retrieve_curves(Profiles, curve_name::String)
+This retrieves curves with name `curve_name` from `Profiles` and collects them in a NamedTuple
+"""
+function retrieve_curves(Profiles, curve_name::String)
+
+     # loop over all curves & collect curves with the given name
+     curve_data = []
+     for prof in Profiles
+       for poly in prof.Polygons
+         if poly.name == curve_name
+           @show poly.name, prof.name
+           push!(curve_data, poly)
+         end
+       end
+     end
+     data_NT = NamedTuple{(Symbol(curve_name),)}( (curve_data,) )
+
+     return data_NT
+end

@@ -295,6 +295,7 @@ end
 
 callback!(app,  Output("cross_section", "figure"), 
                 Output("3D-selected_curves","options"),
+                Output("curves-to-be-exported","options"),
                 Input("button-plot-cross_section","n_clicks"),
                 State("dropdown_field","value"),
                 State("colorbar-slider", "value"),
@@ -337,7 +338,7 @@ callback!(app,  Output("cross_section", "figure"),
         curve_names = []
     end
 
-    return fig_cross, curve_names
+    return fig_cross, curve_names, curve_names
 end
 
 
