@@ -7,7 +7,7 @@ dir_colormaps = "assets/colormaps/"
 """
 This reads colormaps and transfers them into plotly format. The colormaps are supposed to be provided in ascii text format 
 """
-function read_colormaps(; dir_colormaps = "src/GMG_Tomo/assets/colormaps/", scaling=256)
+function read_colormaps(; dir_colormaps = joinpath(pkgdir(GMG_DataPicker),"src/GMG_Tomo/assets/colormaps/") , scaling=256)
     # Read all colormaps
     colormaps = NamedTuple();
     for map in readdir(dir_colormaps)

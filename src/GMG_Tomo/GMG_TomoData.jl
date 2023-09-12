@@ -1,24 +1,28 @@
 # This is the main file with the GUI to interpret tomographic data
 # Note that it calls other files with GUI components for each of the tabs.
+
+#=
 using Dash  
 using DashBootstrapComponents
 using PlotlyJS, JSON3, Printf, Statistics
 using UUIDs
 using JLD2
 using Base64
+=#
 
 # The version of this GUI (to be saved in statefiles)
 GUI_version = "0.1.2"
 
 # include helper functions
+#=
 include("GMG_colormaps.jl")
 include("utils.jl")            
 include("utils_curves.jl")
 include("GMG_TomoData_Plots.jl")
 include("Tab_CrossSections.jl")
-include("Tab_3Dview.jl")
+#include("Tab_3Dview.jl")
 include("Tab_Setup.jl")
-
+=#
 # Specify datasets (will later be read in from ascii file)
 
 #include("Default_datasets.jl")
@@ -44,7 +48,7 @@ AppData = NamedTuple()
 # Create the layout of the main GUI. Note that the layout of the different tabs is specified in separate routines
 #app.layout = dbc_container(className = "mxy-auto") do
     
-function main_layout()
+function main_layout(Datasets)
     dbc_container(className = "mxy-auto", fluid=true, [
         dbc_col(dbc_row([
                 dbc_dropdownmenu(
@@ -64,7 +68,7 @@ function main_layout()
 
             dbc_tabs(
                 [
-                    dbc_tab(tab_id="tab-setup",label="Setup",             children = [Tab_Data()]),
+                    dbc_tab(tab_id="tab-setup",label="Setup",             children = [Tab_Data(Datasets)]),
                     dbc_tab(tab_id="tab-cross", label="Cross-sections",    children = [Tab_CrossSection()]),
                     dbc_tab(tab_id="tab-3D", label="3D view",           children = [Tab_3Dview()])
                 ],
@@ -77,12 +81,13 @@ function main_layout()
 
 end
 
+#=
 #app = dash(external_stylesheets=[dbc_themes.CYBORG])
 app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=false)
 
 app.title = "GMG Data Picker"
 
-app.layout = main_layout()
+app.layout = main_layout(Datasets)
     
 
 # Specify different callbacks for the different tabs:
@@ -91,4 +96,4 @@ include("Tab_CrossSections_Callback.jl")
 include("Tab_3Dview_Callbacks.jl")    
 
 run_server(app, debug=false)
-
+=#

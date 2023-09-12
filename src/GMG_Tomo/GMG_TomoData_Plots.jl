@@ -438,8 +438,6 @@ function cross_section_plot()
         responsive=false,
         config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["toimage","toImage","lasso","drawopenpath","eraseshape","drawclosedpath"],displaylogo=false),
         style = attr(width="70vw", height="50vh"))
-
-        
 end
 
 

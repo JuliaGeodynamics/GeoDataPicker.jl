@@ -1,4 +1,5 @@
 # Callbacks for this tab
+function  Tab_3Dview_Callbacks(app)
 
 # Update the 3D plot
 callback!(app,  Output("3D-image","figure"),
@@ -44,4 +45,9 @@ callback!(app,  Output("3D-image","figure"),
                       )
 
     return pl
+end
+
+
+return app
+
 end

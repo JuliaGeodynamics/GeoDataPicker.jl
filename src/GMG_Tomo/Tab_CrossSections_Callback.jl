@@ -1,5 +1,5 @@
 # callbacks for the cross-sections tab
-
+function Tab_CrossSections_Callback(app)
 
 # this is the callback that is invoked if the line on the topography map is changed
 callback!(app,  Output("start_val", "value"),
@@ -438,4 +438,9 @@ callback!(app,  Output("button-add-curve","n_clicks"),
     curve_names = polygon_names(profile)
    
     return n_add, curve_names 
+end
+
+
+return app
+
 end

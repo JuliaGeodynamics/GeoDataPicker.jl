@@ -1,3 +1,4 @@
+function Tab_Setup_Callbacks(app, Datasets, GUI_version)
 
 # This creates an initial session id that is unique for this session
 callback!(app,  Output("session-id", "data"),
@@ -222,3 +223,6 @@ callback!(app,
                 options_topo,       values_topo
 end
 
+    return app
+
+end
