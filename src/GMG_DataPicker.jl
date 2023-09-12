@@ -35,7 +35,7 @@ global AppData
 
 Starts a GUI to interpret tomographic data; you can change the default dataset file
 """ 
-function GMG_TomoData(; Datasets = Default_datasets())
+function GMG_TomoData(; Datasets = Default_datasets(dir = pkgdir(GMG_DataPicker)))
     GUI_version = "0.1.2"
 
     # Setup main app

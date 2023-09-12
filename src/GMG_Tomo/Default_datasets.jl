@@ -7,12 +7,12 @@
     
 Set of datasets to start the GUI
 """
-function Default_datasets()
+function Default_datasets(;dir="")
 
     Datasets = Vector{GMG_Dataset}()
 
     # Volumetric (tomographic) data
-    push!(Datasets, GMG_Dataset("DataTomo","Volume","src/AlpsModels.jld2", true))
+    push!(Datasets, GMG_Dataset("DataTomo","Volume",joinpath(dir,"src/AlpsModels.jld2"), true))
     push!(Datasets, GMG_Dataset("Paffrath2021_Vp","Volume","https://seafile.rlp.net/f/5c8c851af6764b5db20d/?dl=1", false))
     push!(Datasets, GMG_Dataset("Hua2017_Vp","Volume","https://seafile.rlp.net/f/1fb68b74e5d742d39e62/?dl=1", false))
     push!(Datasets, GMG_Dataset("Koulakov2015_Vp","Volume","https://seafile.rlp.net/f/b45733b14b6d45c18035/?dl=1", false))
@@ -32,7 +32,7 @@ function Default_datasets()
 
 
     # Topography
-    push!(Datasets, GMG_Dataset("AlpsTopo","Topography","src/AlpsTopo.jld2", true))
+    push!(Datasets, GMG_Dataset("AlpsTopo","Topography",joinpath(dir,"src/AlpsTopo.jld2"), true))
 
     # Screenshots
     push!(Datasets, GMG_Dataset("Handy_etal_SE_ProfileA","Screenshot","https://seafile.rlp.net/f/516015cb6d6442bdb96c/?dl=1", false))
