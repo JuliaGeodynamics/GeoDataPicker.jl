@@ -25,9 +25,15 @@ function main_layout(Datasets, max_num_users)
                         label="File",
                         id="id-dropdown-file"),
 
-                        html_h1("Data Picker", style = Dict("margin-top" => 0, "textAlign" => "center")),
-                        html_h5("GeophysicalModelGenerator", style = Dict("margin-top" => 0, "textAlign" => "center")),
+                        dbc_col([html_h1("Data Picker", style = Dict("margin-top" => 0, "textAlign" => "center")),
+                        html_h5("GeophysicalModelGenerator", style = Dict("margin-top" => 0, "textAlign" => "center"))]),
                         
+                        dbc_col(html_img(src="assets/GeophysicalModelGenerator-logos_cut.png",height="140vh",),  width=2),
+                       # dbc_col(html_img(src=joinpath(pkgdir(GMG_DataPicker),"src/assets/GeophysicalModelGenerator-logos_cut.png"), height="140vh"), width=2),
+                        
+    #joinpath(pkgdir(GMG_DataPicker),"src","GMG_Tomo/assets/logo/Logo_GMG.png")
+
+                       
                         ]),
                         ),
 
