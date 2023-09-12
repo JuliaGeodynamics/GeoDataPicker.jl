@@ -1,7 +1,7 @@
-# GeophysicalDataPicker.jl
+# GeoDataPicker.jl
 
 Interpreting 3D geological and geophysical data in a consistent manner is non-straightforward. The [GeophysicalModelGenerator](https://github.com/JuliaGeodynamics/GeophysicalModelGenerator.jl) package provides a number of useful tools to combine and visualize datasets. 
-`GMG_DataPicker` is a web-based graphical user interface build on top of GMG, which allows creating interactive interpretations from such data.
+`GeoDataPicker` is a web-based graphical user interface build on top of GMG, which allows creating interactive interpretations from such data.
 
 The main features are:
 - Import volumetric data (e.g., seismic tomography), surfaces (e.g., Moho depth), points (e.g., earthquake), topography or screenshots from published papers from remote or local locations.
@@ -15,13 +15,13 @@ The main features are:
 Start with opening julia (version >1.9)
 ```julia
 julia> using Pkg
-julia> Pkg.add(url="https://github.com/JuliaGeodynamics/GeophysicalkDataPicker.jl")
+julia> Pkg.add(url="https://github.com/JuliaGeodynamics/GeoDataPicker.jl")
 julia> Pkg.instantiate()
 ```
 
 ### Start the GUI
 ```julia
-julia> using GeophysicalDataPicker
+julia> using GeoDataPicker
 julia> GMG_TomoData()
 [ Info: Listening on: 127.0.0.1:8050, thread id: 1
 ```
