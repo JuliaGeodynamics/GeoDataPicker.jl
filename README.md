@@ -15,13 +15,13 @@ The main features are:
 Start with opening julia (version >1.9)
 ```julia
 julia> using Pkg
-julia> Pkg.add(url="https://github.com/JuliaGeodynamics/DataPicker.jl")
+julia> Pkg.add(url="https://github.com/JuliaGeodynamics/GeophysicalkDataPicker.jl")
 julia> Pkg.instantiate()
 ```
 
 ### Start the GUI
 ```julia
-julia> using DataPicker
+julia> using GeophysicalDataPicker
 julia> GMG_TomoData()
 [ Info: Listening on: 127.0.0.1:8050, thread id: 1
 ```
