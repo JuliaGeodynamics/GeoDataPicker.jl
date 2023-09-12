@@ -1,36 +1,9 @@
 # This is the main file with the GUI to interpret tomographic data
 # Note that it calls other files with GUI components for each of the tabs.
 
-#=
-using Dash  
-using DashBootstrapComponents
-using PlotlyJS, JSON3, Printf, Statistics
-using UUIDs
-using JLD2
-using Base64
-=#
-
-# The version of this GUI (to be saved in statefiles)
-GUI_version = "0.1.2"
-
-# include helper functions
-#=
-include("GMG_colormaps.jl")
-include("utils.jl")            
-include("utils_curves.jl")
-include("GMG_TomoData_Plots.jl")
-include("Tab_CrossSections.jl")
-#include("Tab_3Dview.jl")
-include("Tab_Setup.jl")
-=#
-# Specify datasets (will later be read in from ascii file)
-
-#include("Default_datasets.jl")
-
 # set the initial cross-section
 start_val = (5.0,46.0)
 end_val = (12.0,44.0) 
-
 
 # read available colormaps
 colormaps=read_colormaps()  # colormaps
@@ -39,15 +12,7 @@ colormaps=read_colormaps()  # colormaps
 global AppData
 AppData = NamedTuple()
 
-# Sets some defaults for the layout of webpage
-
-#data_fields = keys(DataTomo.fields)
-#options_fields = [(label = String(f), value="$f" ) for f in data_fields]
-
-
-# Create the layout of the main GUI. Note that the layout of the different tabs is specified in separate routines
-#app.layout = dbc_container(className = "mxy-auto") do
-    
+# Define the main layout
 function main_layout(Datasets)
     dbc_container(className = "mxy-auto", fluid=true, [
         dbc_col(dbc_row([
@@ -80,20 +45,3 @@ function main_layout(Datasets)
     ])
 
 end
-
-#=
-#app = dash(external_stylesheets=[dbc_themes.CYBORG])
-app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=false)
-
-app.title = "GMG Data Picker"
-
-app.layout = main_layout(Datasets)
-    
-
-# Specify different callbacks for the different tabs:
-include("Tab_Setup_Callbacks.jl")    
-include("Tab_CrossSections_Callback.jl")    
-include("Tab_3Dview_Callbacks.jl")    
-
-run_server(app, debug=false)
-=#

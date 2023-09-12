@@ -280,21 +280,6 @@ function get_AppData(AppData::NamedTuple, session_id::String)
 end
   
 """
-    data = get_AppDataUser(AppData::NamedTuple, session_id::String)
-
-Retrieves GUI user data from the global data set if it exists; other
-"""
-function get_AppDataUser(AppData::NamedTuple, session_id::String)
-  
-    if haskey(AppData, Symbol(session_id))
-        data = AppData[Symbol(session_id)].AppDataUser
-    else
-        data = nothing
-    end
-    return data
-end
-
-"""
     AppData = set_AppDataUser(AppData::NamedTuple, session_id::String, AppDataUser)
 
 Retrieves GUI user data from the global data set if it exists; other

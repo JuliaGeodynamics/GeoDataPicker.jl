@@ -24,8 +24,8 @@ include("GMG_Tomo/Tab_Setup_Callbacks.jl")
 include("GMG_Tomo/Tab_CrossSections_Callback.jl")
 include("GMG_Tomo/Tab_3Dview_Callbacks.jl")
 
-
 global AppData
+#AppData = NamedTuple()
 
 # Ultimately, we plan to have different GUI's to create geodynamic models
 # GMG_Tomo is to interpret tomographic data; other tools could focus on 
@@ -35,14 +35,8 @@ global AppData
 
 Starts a GUI to interpret tomographic data; you can change the default dataset file
 """ 
-function GMG_TomoData(; Datasets = nothing)
+function GMG_TomoData(; Datasets = Default_datasets())
     GUI_version = "0.1.2"
-
-    # read input datasets
-    Datasets=Default_datasets()
-
-    # include helper functions
-    colormaps=read_colormaps()  # colormaps
 
     # Setup main app
     #app = dash(external_stylesheets=[dbc_themes.CYBORG])
@@ -57,7 +51,6 @@ function GMG_TomoData(; Datasets = nothing)
     app = Tab_3Dview_Callbacks(app)
 
     run_server(app, debug=false)
-
 end
 
 
