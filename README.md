@@ -1,4 +1,4 @@
-# DataPicker.jl
+# GeophysicalDataPicker.jl
 
 Interpreting 3D geological and geophysical data in a consistent manner is non-straightforward. The [GeophysicalModelGenerator](https://github.com/JuliaGeodynamics/GeophysicalModelGenerator.jl) package provides a number of useful tools to combine and visualize datasets. 
 `GMG_DataPicker` is a web-based graphical user interface build on top of GMG, which allows creating interactive interpretations from such data.
