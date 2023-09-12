@@ -1,4 +1,4 @@
-module GMG_DataPicker
+module GeoDataPicker
 
 using Dash  
 using DashBootstrapComponents
