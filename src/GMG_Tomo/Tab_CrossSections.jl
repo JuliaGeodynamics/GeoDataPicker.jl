@@ -143,7 +143,7 @@ function Tab_CrossSection()
                                     dbc_card([  
                                     dbc_button("Export Profiles",id="button-export-profiles"),
                                     dcc_download(id="download-profiles", base64=true),
-                                    dcc_upload(id="upload-profiles", children=dbc_button("Import Profiles")),
+                                    html_div(id="upload-profiles_component", dcc_upload(id="upload-profiles", children=dbc_button("Import Profiles"))),
                                     html_div(id="upload-profiles_n"),  
                                     ])
 

@@ -533,6 +533,7 @@ end
 # Import profiles from disk
 callback!(app,
     Output("upload-profiles_n", "children"),
+    Output("upload-profiles_component","children"),     # this is a bug workaround - see https://github.com/plotly/dash-core-components/issues/816
     Input("upload-profiles", "contents"),
     State("upload-profiles", "filename"),
     State("upload-profiles", "last_modified"),
@@ -584,7 +585,8 @@ callback!(app,
         
         println("Merge new profiles with existing ones (replacing the ones with duplicate names)")
         children = zip(contents, filename, last_modified)
-        return children
+
+        return children, dcc_upload(id="upload-profiles", children=dbc_button("Import Profiles"))
     end
 
     return nothing
