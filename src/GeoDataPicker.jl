@@ -53,7 +53,7 @@ function GMG_TomoData(; Datasets = Default_datasets(dir = pkgdir(GeoDataPicker))
     app = Tab_CrossSections_Callback(app)
     app = Tab_3Dview_Callbacks(app)
 
-    run_server(app, host=host, port=port, debug=false)
+    run_server(app, host, port, debug=false)
 end
 
 
