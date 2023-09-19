@@ -46,7 +46,8 @@ function main_layout(Datasets, max_num_users)
             id = "tabs", active_tab="tab-setup",
 
             ),
-            
+            html_div(id="output-upload_state_n"),     # fake (needed to have an output for uploading state)
+
         dcc_store(id="session-id", data =  "")     # gives a unique number of our session
     ])
 

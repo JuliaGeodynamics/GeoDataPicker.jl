@@ -92,12 +92,10 @@ function plot_cross(AppData, profile;
     colormaps   = AppDataUser.colormaps
     section_width = section_width*km;
     
+    # Compute the cross-section.
     Profile             =  ProfileData(profile);                         # create a GMG structure for the profile 
     Profile, PlotCross  =  ExtractProfileData(Profile, AppData, field; section_width=section_width)   # project data onto the profile
 
-    # Compute the cross-section.
-    # NOTE: this routine will be replaces with the one of marcel
-    #x_cart, z_cart, data, cross = get_cross_section(AppData, profile, field)    
 
     colorscale = colormaps[Symbol(colormap)];
 
@@ -106,7 +104,7 @@ function plot_cross(AppData, profile;
         zmin, zmax = extrema(data)
     end
     curves = profile.Polygons
-
+    
     shapes_data = [];
     if !isempty(curves)
         # a shape was added to the plot; add it again

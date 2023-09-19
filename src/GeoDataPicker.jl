@@ -5,7 +5,7 @@ using DashBootstrapComponents
 using PlotlyJS, JSON3, Printf, Statistics
 using UUIDs
 using JLD2
-using Base64
+using Base64, HTTP
 
 export GMG_TomoData, AppData, max_num_users
 using GeophysicalModelGenerator

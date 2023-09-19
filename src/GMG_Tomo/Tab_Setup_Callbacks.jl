@@ -163,7 +163,7 @@ end
 
 # Upload state
 callback!(app,
-    Output("output-upload_state", "children"),
+    Output("output-upload_state_n", "children"),
     Output("data-tomo", "options"),
     Output("data-tomo", "value"),
     Output("data-EQ", "options"),

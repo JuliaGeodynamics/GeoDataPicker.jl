@@ -52,10 +52,11 @@ callback!(app,  Output("button-add-profile", "n_clicks"),
                 Input("button-delete-profile", "n_clicks"),
                 Input("button-update-profile", "n_clicks"),
                 Input("setup-button", "n_clicks"),
-                Input("output-upload_state", "children"),
+                Input("output-upload_state_n", "children"),      # changes if we upload state
+                Input("upload-profiles_n","children"),           # changes if we upload profiles   
                 State("session-id","data"),
                 State("selected_profile", "value"),
-                ) do n_add, n_del, n_up, n_setup, upload_state, session_id, selected_profile
+                ) do n_add, n_del, n_up, n_setup, upload_state, upload_profiles_n, session_id, selected_profile
     
     global AppData
     AppDataUser = get_AppDataUser(AppData, session_id)
@@ -320,7 +321,7 @@ callback!(app,  Output("cross_section", "figure"),
     AppDataLocal = get_AppData(AppData, session_id)
 
     profile = get_active_profile(AppData, session_id, selected_profile)
-
+    @show profile session_id
     if (n_clicks>0) && !isnothing(profile)
         @show profile
         fig_cross = plot_cross(AppDataLocal, profile, zmin=colorbar_value[1], zmax=colorbar_value[2], field=Symbol(field), colormap=colormap_field,
@@ -332,7 +333,7 @@ callback!(app,  Output("cross_section", "figure"),
                                 ) 
         
         curve_names = get_curve_names(AppDataLocal.AppDataUser.Profiles)
-
+        @show keys(fig_cross)
     else
         fig_cross = []
         curve_names = []
@@ -440,6 +441,157 @@ callback!(app,  Output("button-add-curve","n_clicks"),
    
     return n_add, curve_names 
 end
+
+
+
+# export/import button & field
+callback!(app,
+    Output("collapse-export-import", "is_open"),
+    [Input("button-export-import", "n_clicks")],
+    [State("collapse-export-import", "is_open")], ) do  n, is_open
+    
+    if isnothing(n); n=0 end
+
+    if n>0
+        if is_open==1
+            is_open = 0
+        elseif is_open==0
+            is_open = 1
+        end
+    end
+    return is_open    
+end
+
+
+
+# Export curves to disk
+callback!(app,
+    Output("export-curves", "n_clicks"),
+    Output("download-curves", "data"),
+    Input("export-curves", "n_clicks"),
+    State("curves-to-be-exported", "value"),
+    State("session-id","data"),
+    prevent_initial_call=true
+    ) do  n_clicks, selected_curves, session_id
+
+    global AppData
+    AppDataUser = get_AppDataUser(AppData, session_id)
+    Profiles = AppDataUser.Profiles
+
+    SaveData = NamedTuple()
+    for curve_name in selected_curves
+      data_NT = retrieve_curves(Profiles, curve_name)
+
+      SaveData = merge(SaveData, data_NT)
+    end
+
+    # export this to local disk
+    save("ExportCurves.jld2", "Data",SaveData)
+    file_data = read("ExportCurves.jld2")
+
+    # Save data to file
+    println("Downloading the selected curves to file: ExportCurves.jld2");
+    println("Open this with:");
+    println("julia> using JLD2, GeophysicalModelGenerator");
+    println("julia> curves = load_object(\"ExportCurves.jld2\")");
+    println("curves is a NamedTuple with the selected curves (vectors with different curves) the curves")
+    
+    return n_clicks,  dcc_send_bytes(file_data, "ExportCurves.jld2")    
+end
+
+
+# Export profiles to disk
+callback!(app,
+    Output("button-export-profiles", "n_clicks"),
+    Output("download-profiles", "data"),
+    Input("button-export-profiles", "n_clicks"),
+    State("session-id","data"),
+    prevent_initial_call=true
+    ) do  n_clicks, session_id
+
+    global AppData
+    AppDataUser = get_AppDataUser(AppData, session_id)
+    Profiles    = AppDataUser.Profiles
+
+    # export this to local disk
+    save("ExportProfiles.jld2", "Profiles",Profiles)
+    file_data = read("ExportProfiles.jld2")
+
+    # Save data to file
+    println("Downloading the exported profiles to file: ExportProfiles.jld2");
+    println("Open this with:");
+    println("julia> using JLD2, GeophysicalModelGenerator");
+    println("julia> Profiles = load_object(\"ExportProfiles.jld2\")");
+    println("Profiles is a NamedTuple with the selected profiles and curves")
+    println("You can import it again at a later stage & overwrite the current profiles")
+    
+    
+    return n_clicks,  dcc_send_bytes(file_data, "ExportProfiles.jld2")    
+end
+
+
+# Import profiles from disk
+callback!(app,
+    Output("upload-profiles_n", "children"),
+    Input("upload-profiles", "contents"),
+    State("upload-profiles", "filename"),
+    State("upload-profiles", "last_modified"),
+    State("session-id", "data"),
+    prevent_initial_call=true
+    ) do   contents,filename, last_modified, session_id
+    global AppData 
+    
+    @show filename, contents
+    children = ""
+    if !(contents isa Nothing)
+        println("uploading Profiles with filename $filename")
+
+        # process uploaded binary stream and save it to file
+        filename_dir = parse_uploaded_jld2_file(contents, filename, "uploaded_data_profiles");
+
+        Profiles_uploaded = load_object(filename_dir)
+        
+        # do some basic checking
+        if !isa(Profiles_uploaded, Vector{ProfileUser})
+            error("Profiles_uploaded appears to not have the correct type")
+        else
+            println("Uploading profiles:")
+            for prof in Profiles_uploaded
+                println(" $(prof.name)")
+            end
+        end
+        AppDataUser = get_AppDataUser(AppData, session_id)
+        
+        # Merge the new profiles with the existing ones if the coordinates match
+        Profiles_existing = AppDataUser.Profiles
+        for prof_upload in Profiles_uploaded
+            for (i,prof_exist) in enumerate(Profiles_existing)
+                if prof_exist.start_lonlat == prof_upload.start_lonlat &&
+                     prof_exist.end_lonlat == prof_upload.end_lonlat
+                     Profiles_existing[i] = prof_upload;
+                end
+            end
+        end
+
+        for prof in Profiles_existing
+            Profiles_uploaded = push!(Profiles_uploaded, prof)
+        end
+        Profiles_uploaded = unique(Profiles_uploaded)
+
+        # Save data into global structure
+        AppDataUser = merge(AppDataUser, (Profiles=Profiles_uploaded,))
+        AppData     = set_AppDataUser(AppData, session_id, AppDataUser)
+        
+        println("Merge new profiles with existing ones (replacing the ones with duplicate names)")
+        children = zip(contents, filename, last_modified)
+        return children
+    end
+
+    return nothing
+end
+
+
+
 
 
 return app
