@@ -36,7 +36,7 @@ max_num_users = 10
 
 Starts a GUI to interpret tomographic data; you can change the default dataset file
 """ 
-function GMG_TomoData(; Datasets = Default_datasets(dir = pkgdir(GeoDataPicker)))
+function GMG_TomoData(; Datasets = Default_datasets(dir = pkgdir(GeoDataPicker)),  host = HTTP.Sockets.localhost, port = 8050, max_num_user=10)
     cd(joinpath(pkgdir(GeoDataPicker),"src"))
     GUI_version = "0.1.2"
     global max_num_users
@@ -53,7 +53,7 @@ function GMG_TomoData(; Datasets = Default_datasets(dir = pkgdir(GeoDataPicker))
     app = Tab_CrossSections_Callback(app)
     app = Tab_3Dview_Callbacks(app)
 
-    run_server(app, debug=false)
+    run_server(app, host=host, port=port, debug=false)
 end
 
 
