@@ -130,6 +130,28 @@ function Tab_CrossSection()
                                     id="collapse-Tomography",
                                     is_open=false,
                                     ),
+                                  
+                            dbc_button("Export/Import",id="button-export-import"),
+                            dbc_collapse(
+                                    dbc_card(dbc_cardbody([
+                                    dbc_col([
+                                       dbc_card([dbc_row(dbc_label("Curves to be exported:"),justify="center"),
+                                       dcc_dropdown(id="curves-to-be-exported",options=[("",)],multi=true),
+                                       dbc_button("Export Curves",id="export-curves"),
+                                       dcc_download(id="download-curves", base64=true),
+                                        ])]),
+                                    dbc_card([  
+                                    dbc_button("Export Profiles",id="button-export-profiles"),
+                                    dcc_download(id="download-profiles", base64=true),
+                                    html_div(id="upload-profiles_component", dcc_upload(id="upload-profiles", children=dbc_button("Import Profiles"))),
+                                    html_div(id="upload-profiles_n"),  
+                                    ])
+
+                                   ])),
+                                   id="collapse-export-import",
+                                   is_open=false,
+                                   ),
+                                      
 
                             dbc_button("Plot cross-section",id="button-plot-cross_section")
                                 

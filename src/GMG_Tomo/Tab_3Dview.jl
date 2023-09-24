@@ -47,23 +47,6 @@ function Tab_3Dview()
 
                                     ]
                                     , width=3),
-                            dbc_col([
-                            dbc_button("Export Curves",id="button-export-curves"),
-                            dbc_collapse(
-                                    dbc_card(dbc_cardbody([
-                                    dbc_col([
-                                       dbc_row(dbc_label("Curves to be exported:"),justify="center"),
-                                       dcc_dropdown(id="curves-to-be-exported",options=[("",)],multi=true),
-                                       dbc_button("Export",id="export-curves"),
-                                       dcc_download(id="download-curves", base64=true),
-                                        ]),
-
-                                   ])),
-                                   id="collapse-export-curves",
-                                   is_open=false,
-                                   )
-                            ], width=3)
-
                             #=
                             dbc_button("Tomographic data",id="button-Tomography"),
                             dbc_collapse(
