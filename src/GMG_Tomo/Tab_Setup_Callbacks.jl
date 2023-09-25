@@ -86,7 +86,7 @@ callback!(app,  Output("setup-button", "n_clicks"),
 
         # User data that results from all GUI interactions
         # This should also hold info onm which data sets were loaded
-        AppDataUser = (Profiles=Profiles, copy=[], colormaps=colormaps)
+        AppDataUser = (Profiles=Profiles, copy=[], Surfaces=[], colormaps=colormaps)
 
         # Add the data to a NamedTuple
         data = (DataTomo=DataTomo, DataTopo=DataTopo, DataPoints=DataPoints, DataSurfaces=DataSurfaces,

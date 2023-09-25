@@ -6,6 +6,7 @@ using PlotlyJS, JSON3, Printf, Statistics
 using UUIDs
 using JLD2
 using Base64, HTTP
+using Meshes, Interpolations, LinearAlgebra
 
 export GMG_TomoData, AppData, max_num_users
 using GeophysicalModelGenerator
@@ -23,6 +24,7 @@ include("GMG_Tomo/GMG_TomoData.jl")
 include("GMG_Tomo/Tab_Setup_Callbacks.jl")
 include("GMG_Tomo/Tab_CrossSections_Callback.jl")
 include("GMG_Tomo/Tab_3Dview_Callbacks.jl")
+include("CreateSurfaces.jl")
 
 global AppData, max_num_users
 max_num_users = 10

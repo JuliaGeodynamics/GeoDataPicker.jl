@@ -363,6 +363,27 @@ function plot_3D_data(AppData;
             end
         end
 
+        # triangulated surfaces
+        triangulated_surfaces = true
+        if triangulated_surfaces
+            println("Plotting triangulated surface")
+            for mesh in AppDataUser.Surfaces
+                mesh_plotly = prepare_mesh_plotly(mesh)
+                push!(data_plot, 
+                                mesh3d(
+                                    # 8 vertices of a cube
+                                    x=mesh_plotly.x, y=mesh_plotly.y, z=mesh_plotly.z,
+                                    colorbar_title="z",
+                                    # i, j and k give the vertices of triangles
+                                    i = mesh_plotly.i, j = mesh_plotly.j, k = mesh_plotly.k,
+                                    name="y",
+                                    showscale=true,
+                                )
+                        )
+
+            end
+        end
+
         # create actual figure
         pl = (
             id = "fig_3D",

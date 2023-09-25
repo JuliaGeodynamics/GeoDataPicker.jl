@@ -13,7 +13,7 @@ function Default_datasets(;dir="")
 
     # Volumetric (tomographic) data
     push!(Datasets, GMG_Dataset("DataTomo","Volume",joinpath(dir,"src/AlpsModels.jld2"), true))
-    push!(Datasets, GMG_Dataset("Paffrath2021_Vp","Volume","https://seafile.rlp.net/f/5c8c851af6764b5db20d/?dl=1", true))
+    push!(Datasets, GMG_Dataset("Paffrath2021_Vp","Volume","https://seafile.rlp.net/f/5c8c851af6764b5db20d/?dl=1", false))
     push!(Datasets, GMG_Dataset("Hua2017_Vp","Volume","https://seafile.rlp.net/f/1fb68b74e5d742d39e62/?dl=1", false))
     push!(Datasets, GMG_Dataset("Koulakov2015_Vp","Volume","https://seafile.rlp.net/f/997e7efeb4c54fb693eb/?dl=1", false)) 
     push!(Datasets, GMG_Dataset("Lippitsch2003_Vp","Volume","https://seafile.rlp.net/f/30232fd6aceb452485c3/?dl=1", false))

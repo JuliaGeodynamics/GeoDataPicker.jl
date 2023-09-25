@@ -61,6 +61,13 @@ function Tab_3Dview()
                                     ),
                             =#
 
+                             dbc_col(dbc_card([dbc_label("create triangulated surface from curves:"),
+                                    dcc_dropdown(id="3D-selected_curves_surf",options=[("",)],multi=true),
+                                    dbc_label("profiles in the correct order:"),
+                                    dcc_dropdown(id="3D-selected_profiles",options=[("",)],multi=true),
+                                    dbc_row(dbc_col(dbc_button("Create surface", id="create-surface-curves"), width=6))
+                                ]), width=3)
+
                 ]),
 
               

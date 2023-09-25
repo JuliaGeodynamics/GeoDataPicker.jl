@@ -50,5 +50,57 @@ end
 
 
 
+
+# Update the 3D plot
+callback!(app,  Output("create-surface-curves","n_clicks"),
+                Input("create-surface-curves","n_clicks"),
+                State("3D-selected_profiles","value"),
+                State("3D-selected_profiles","options"),
+                State("3D-selected_curves_surf","value"),
+                State("session-id","data"),
+                prevent_initial_call=true
+                ) do n_clicks, selected_profiles, selected_profile_options, selected_curves_surf, session_id 
+    
+    global AppData
+    AppDataUser = GeoDataPicker.get_AppDataUser(AppData,session_id)
+    @show n_clicks, selected_profiles, selected_curves_surf
+
+    
+    # retrieve curves that were selected
+    CurvesSelected = []
+    for id in selected_profiles
+        for Profile in AppDataUser.Profiles
+            if Profile.number==id
+                Polygons = Profile.Polygons
+                for poly in Polygons
+                    if poly.name == selected_curves_surf[1]
+                        CurvesSelected = push!(CurvesSelected, poly)
+                    end
+                end
+            end
+        end
+    end
+
+    @show length(CurvesSelected)
+    
+    mesh = triangulate_polygons(CurvesSelected[1],CurvesSelected[2], allowcircshift=true)
+    @show mesh
+
+    push!(AppDataUser.Surfaces, (mesh,))               # add to data structure 
+    
+    AppData = set_AppDataUser(AppData, session_id, AppDataUser)
+
+
+
+
+    
+    
+
+
+    return n_clicks
+end
+
+
     return app
+
 end
