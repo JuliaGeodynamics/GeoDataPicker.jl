@@ -368,7 +368,7 @@ function plot_3D_data(AppData;
         if triangulated_surfaces
             println("Plotting triangulated surface")
             for mesh in AppDataUser.Surfaces
-                mesh_plotly = prepare_mesh_plotly(mesh)
+                mesh_plotly = prepare_mesh_plotly(mesh[1])
                 push!(data_plot, 
                                 mesh3d(
                                     # 8 vertices of a cube

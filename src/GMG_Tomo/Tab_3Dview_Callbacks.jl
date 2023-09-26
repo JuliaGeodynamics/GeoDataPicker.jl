@@ -82,15 +82,17 @@ callback!(app,  Output("create-surface-curves","n_clicks"),
     end
 
     @show length(CurvesSelected)
-    
+
+    # Create the triangulated surface from all selected curves
     mesh = triangulate_polygons(CurvesSelected[1],CurvesSelected[2], allowcircshift=true)
     @show mesh
-
+    for i = 2:length(CurvesSelected)-1
+        mesh1 = triangulate_polygons(CurvesSelected[i],CurvesSelected[i+1], allowcircshift=true)
+        mesh = merge(mesh,mesh1)
+    end
     push!(AppDataUser.Surfaces, (mesh,))               # add to data structure 
     
     AppData = set_AppDataUser(AppData, session_id, AppDataUser)
-
-
 
 
     
