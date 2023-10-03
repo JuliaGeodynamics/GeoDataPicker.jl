@@ -14,9 +14,9 @@ The main features are:
 #### Install
 Start with opening julia (version >1.9)
 ```julia
-julia> using Pkg
-julia> Pkg.add(url="https://github.com/JuliaGeodynamics/GeoDataPicker.jl")
-julia> Pkg.instantiate()
+julia> ]
+pkg> add GeoDataPicker
+pkg> instantiate
 ```
 
 ### Start the GUI
