@@ -161,7 +161,7 @@ function plot_cross(AppData, profile;
         for (i,Surf) in enumerate(Profile.SurfData)
             if any(selected_surf_data .== Names[i])
                 x_surf = Surf.fields.x_profile
-                z_surf = ustrip.(Surf.fields.MohoDepth)
+                z_surf = ustrip.(Surf.depth.val)
                 push!(data_plots, scatter(x = x_surf, y = z_surf, mode="lines",  name=Names[i]))
             end
         end

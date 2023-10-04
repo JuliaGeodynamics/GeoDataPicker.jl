@@ -57,7 +57,9 @@ function Tab_CrossSection()
                 #])
 
                 dbc_col([
-                    dbc_row([dbc_button("Curve Interpretation",id="button-curve-interpretation"),
+                
+                    dbc_row([dbc_button("Plot cross-section",id="button-plot-cross_section"),
+                             dbc_button("Curve Interpretation",id="button-curve-interpretation"),
                              dbc_collapse(
                                  dbc_card(dbc_cardbody([
                                     dbc_row([
@@ -152,9 +154,6 @@ function Tab_CrossSection()
                                    is_open=false,
                                    ),
                                       
-
-                            dbc_button("Plot cross-section",id="button-plot-cross_section")
-                                
                     ])
 
             
