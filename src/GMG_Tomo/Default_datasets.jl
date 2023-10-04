@@ -23,6 +23,7 @@ function Default_datasets(;dir="")
     push!(Datasets, GMG_Dataset("Plomerova2022_Vp","Volume","https://seafile.rlp.net/f/abccb8d3302b4ef5af17/?dl=1", false))
     push!(Datasets, GMG_Dataset("Zhao2016_Vp","Volume","https://seafile.rlp.net/f/e81a6d075f6746609973/?dl=1", false))
     push!(Datasets, GMG_Dataset("Zhu2015_Vp","Volume","https://seafile.rlp.net/f/f062c4b3a235415cbaf0/?dl=1", false))
+    push!(Datasets, GMG_Dataset("NEWTON21_anisotropic_Vp","Volume","https://seafile.rlp.net/f/7862a29a1f44405bbebd/?dl=1", false))
 
     push!(Datasets, GMG_Dataset("CSEM_Vs","Volume","https://seafile.rlp.net/f/4bde77eb63fe4740b5de/?dl=1", false))
     push!(Datasets, GMG_Dataset("ElSharkawy_Vs","Volume","https://seafile.rlp.net/f/c7eb8d7a24d648b6af3f/?dl=1", false))
@@ -30,6 +31,7 @@ function Default_datasets(;dir="")
     push!(Datasets, GMG_Dataset("Koulakov2009_Vs","Volume","https://seafile.rlp.net/f/980e7fc6b9134434bb6a/?dl=1", false))
     push!(Datasets, GMG_Dataset("Kind_ReceiverFunctions","Volume","https://seafile.rlp.net/f/2c34b58b03bc4259aecb/?dl=1", false))
 
+    
 
     # Topography
     push!(Datasets, GMG_Dataset("AlpsTopo","Topography",joinpath(dir,"src/AlpsTopo.jld2"), true))
@@ -65,6 +67,13 @@ function Default_datasets(;dir="")
     push!(Datasets, GMG_Dataset("Spada2013_Moho_Adria","Surface","https://seafile.rlp.net/f/f4fd12f8bcf2460099d4/?dl=1",     false))
     push!(Datasets, GMG_Dataset("Spada2013_Moho_Europe","Surface","https://seafile.rlp.net/f/10c06397c23a4611bf5e/?dl=1",    false))
     push!(Datasets, GMG_Dataset("Spada2013_Moho_Tyrrhenia","Surface","https://seafile.rlp.net/f/f3833ae6d0474b34b88c/?dl=1", false))
+
+    # Other surfaces
+    #push!(Datasets, GMG_Dataset("Spooner2020_Consolidated_Sediments","Surface", "https://seafile.rlp.net/f/96ab5fd48a464ee8a45b/?dl=1", false))
+    #push!(Datasets, GMG_Dataset("Spooner2020_UpperCrust","Surface", "https://seafile.rlp.net/f/17b497c66dde47289abf/?dl=1", false))
+    #push!(Datasets, GMG_Dataset("Spooner2020_LowerCrust","Surface", "https://seafile.rlp.net/f/d6b45186de94418b8ec3/?dl=1", false))
+    #push!(Datasets, GMG_Dataset("Spooner2020_LithosphericMantle","Surface", "https://seafile.rlp.net/f/ec96eceba19a41e8bd56/?dl=1", false))
+   # push!(Datasets, GMG_Dataset("Spooner2020_LithosphericMantle_bottom","Surface",     "https://seafile.rlp.net/f/d38c7d7d3a16411c9717/?dl=1", false))
 
     # Seismicity
     push!(Datasets, GMG_Dataset("AlpArraySeis","Point","https://seafile.rlp.net/f/87d565882eda40689666/?dl=1", false))
