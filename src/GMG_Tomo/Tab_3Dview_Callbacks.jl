@@ -58,8 +58,10 @@ callback!(app,  Output("create-surface-curves","n_clicks"),
                 State("3D-selected_profiles","options"),
                 State("3D-selected_curves_surf","value"),
                 State("session-id","data"),
+                State("mesh-name","value"),
+                State("mesh-color","value"),
                 prevent_initial_call=true
-                ) do n_clicks, selected_profiles, selected_profile_options, selected_curves_surf, session_id 
+                ) do n_clicks, selected_profiles, selected_profile_options, selected_curves_surf, session_id, mesh_name, mesh_color
     
     global AppData
     AppDataUser = GeoDataPicker.get_AppDataUser(AppData,session_id)
@@ -90,8 +92,16 @@ callback!(app,  Output("create-surface-curves","n_clicks"),
         mesh1 = triangulate_polygons(CurvesSelected[i],CurvesSelected[i+1], allowcircshift=true)
         mesh = merge(mesh,mesh1)
     end
-    push!(AppDataUser.Surfaces, (mesh,))               # add to data structure 
-    
+    mesh_surf = mesh_surface(mesh_color, mesh_name, mesh)
+    @show mesh_name mesh_color
+    # Add to plot or update if needed 
+    if isempty(AppDataUser.Surfaces)
+        # the new mesh will always be the first one
+        push!(AppDataUser.Surfaces, mesh_surf)  
+    else
+        AppDataUser.Surfaces[1] = mesh_surf
+    end
+
     AppData = set_AppDataUser(AppData, session_id, AppDataUser)
 
 

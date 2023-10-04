@@ -12,6 +12,12 @@
 #i = 1
 
 
+struct mesh_surface
+    color
+    name
+    mesh
+end
+
 """
     poly = create_polygon(lon::Vector,lat::Vector,depth::Vector)
 

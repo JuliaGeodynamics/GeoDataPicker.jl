@@ -34,7 +34,7 @@ max_num_users = 10
 # GMG_Tomo is to interpret tomographic data; other tools could focus on 
 # creating geodynamic model setups from mapview drawings
 """
-    GMG_TomoData(; Datasets = Default_datasets(dir = pkgdir(GeoDataPicker)), max_num_user=10) 
+    GMG_TomoData(; Datasets = Default_datasets(dir = pkgdir(GeoDataPicker)),  host = HTTP.Sockets.localhost, port = 8050, max_num_user=10)
 
 Starts a GUI to interpret tomographic data; you can change the default dataset file
 """ 

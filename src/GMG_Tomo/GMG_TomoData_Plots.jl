@@ -367,8 +367,8 @@ function plot_3D_data(AppData;
         triangulated_surfaces = true
         if triangulated_surfaces
             println("Plotting triangulated surface")
-            for mesh in AppDataUser.Surfaces
-                mesh_plotly = prepare_mesh_plotly(mesh[1])
+            for surfmesh in AppDataUser.Surfaces
+                mesh_plotly = prepare_mesh_plotly(surfmesh.mesh)
                 push!(data_plot, 
                                 mesh3d(
                                     # 8 vertices of a cube
@@ -376,6 +376,7 @@ function plot_3D_data(AppData;
                                     colorbar_title="z",
                                     # i, j and k give the vertices of triangles
                                     i = mesh_plotly.i, j = mesh_plotly.j, k = mesh_plotly.k,
+                                    color=surfmesh.color,
                                     name="y",
                                     showscale=true,
                                 )

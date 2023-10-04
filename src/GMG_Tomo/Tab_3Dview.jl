@@ -65,7 +65,19 @@ function Tab_3Dview()
                                     dcc_dropdown(id="3D-selected_curves_surf",options=[("",)],multi=true),
                                     dbc_label("profiles in the correct order:"),
                                     dcc_dropdown(id="3D-selected_profiles",options=[("",)],multi=true),
-                                    dbc_row(dbc_col(dbc_button("Create surface", id="create-surface-curves"), width=6))
+                                    dbc_row([dbc_col(dbc_button("Create surface", id="create-surface-curves"), width=6), 
+                                             dbc_col(dbc_input(placeholder="Name",   id="mesh-name"), width=4),
+                                             dbc_col(dbc_input(id="mesh-color",     type="color"), width=2)
+                                                  ]),
+
+
+
+                                    dbc_col(dbc_radioitems(id="selected_meshes",options=[(label="",)])),
+
+                                    dbc_row(dbc_buttongroup([   dbc_button(" - ",id="button-clear-mesh"),
+                                                                dbc_button("update",id="button-update-mesh"),
+                                                                dbc_button(" + ",id="button-add-mesh")]), justify="center"),
+
                                 ]), width=3)
 
                 ]),
