@@ -84,12 +84,13 @@ callback!(app,  Output("create-surface-curves","n_clicks"),
     end
 
     @show length(CurvesSelected)
+    allowcircshift = CurvesSelected[1].closed
 
     # Create the triangulated surface from all selected curves
-    mesh = triangulate_polygons(CurvesSelected[1],CurvesSelected[2], allowcircshift=true)
+    mesh = triangulate_polygons(CurvesSelected[1],CurvesSelected[2], allowcircshift=allowcircshift)
     @show mesh
     for i = 2:length(CurvesSelected)-1
-        mesh1 = triangulate_polygons(CurvesSelected[i],CurvesSelected[i+1], allowcircshift=true)
+        mesh1 = triangulate_polygons(CurvesSelected[i],CurvesSelected[i+1], allowcircshift=allowcircshift)
         mesh = merge(mesh,mesh1)
     end
     mesh_surf = mesh_surface(mesh_color, mesh_name, mesh)

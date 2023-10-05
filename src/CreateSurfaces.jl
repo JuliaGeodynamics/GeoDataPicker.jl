@@ -98,12 +98,18 @@ end
 This creates a triangulated surfaces by connecting two polygons. They are first interpolated to the same number of points after which they are connected
 
 """
-function triangulate_polygons(p1::Vector{Point3},p2::Vector{Point3}; n=100)
+function triangulate_polygons(p1::Vector{Point3},p2::Vector{Point3}; n=100,  closed=true)
     p1  = reinterpolate_polygon(p1; n=n)
     p2  = reinterpolate_polygon(p2; n=n)
     p3  = merge_polygons(p1,p2)
 
-    C   = Vector{Connectivity{Triangle, 3}}(undef,2*n)
+    if closed==true
+        shift = 0
+    else
+        shift = 2
+    end
+
+    C   = Vector{Connectivity{Triangle, 3}}(undef,(2*n)-shift)
     num = 0;
     for i=1:n-1
         num += 1
@@ -111,11 +117,15 @@ function triangulate_polygons(p1::Vector{Point3},p2::Vector{Point3}; n=100)
         num += 1
         C[num] = connect((i+1,n+i+1,n+i))
     end
-    num += 1
-    C[num] = connect((n,n+1,1))
 
-    num += 1
-    C[num] = connect((n+1,2,1))
+        
+    if closed==true
+        num += 1
+        C[num] = connect((n,n+1,1))
+        
+        num += 1
+        C[num] = connect((n+1,2,1))
+    end
 
     return SimpleMesh(p3, C)
 end
@@ -149,7 +159,7 @@ function triangulate_polygons(c1::GeoDataPicker.Curve,c2::GeoDataPicker.Curve; n
 
         for i=1:length(shift_vec)
             p2a     = shift_close(p2, i)    # shift and close curve
-            ar[i]   = triangle_area(triangulate_polygons(p1,p2a))   # triangulate & compute areas
+            ar[i]   = triangle_area(triangulate_polygons(p1,p2a, closed=allowcircshift))   # triangulate & compute areas
         end
         
         optimal_shift = argmin(ar);
@@ -157,7 +167,7 @@ function triangulate_polygons(c1::GeoDataPicker.Curve,c2::GeoDataPicker.Curve; n
 
     end
 
-    mesh  = triangulate_polygons(p1,p2, n=n)
+    mesh  = triangulate_polygons(p1,p2, n=n,  closed=allowcircshift)
 
     return mesh
 end
