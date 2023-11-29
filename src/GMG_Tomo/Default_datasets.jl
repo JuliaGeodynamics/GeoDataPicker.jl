@@ -24,12 +24,15 @@ function Default_datasets(;dir="")
     push!(Datasets, GMG_Dataset("Zhao2016_Vp","Volume","https://seafile.rlp.net/f/e81a6d075f6746609973/?dl=1", false))
     push!(Datasets, GMG_Dataset("Zhu2015_Vp","Volume","https://seafile.rlp.net/f/f062c4b3a235415cbaf0/?dl=1", false))
     push!(Datasets, GMG_Dataset("NEWTON21_anisotropic_Vp","Volume","https://seafile.rlp.net/f/7862a29a1f44405bbebd/?dl=1", false))
+    push!(Datasets, GMG_Dataset("Menichelli2023_Vp","Volume","https://seafile.rlp.net/f/84a5b5e5eec04c2b98e3/?dl=1", false))
+
 
     push!(Datasets, GMG_Dataset("CSEM_Vs","Volume","https://seafile.rlp.net/f/4bde77eb63fe4740b5de/?dl=1", false))
     push!(Datasets, GMG_Dataset("ElSharkawy_Vs","Volume","https://seafile.rlp.net/f/c7eb8d7a24d648b6af3f/?dl=1", false))
     push!(Datasets, GMG_Dataset("Kaestle2018_Vs","Volume","https://seafile.rlp.net/f/36145dfa7dce4d9b8eeb/?dl=1", false))
     push!(Datasets, GMG_Dataset("Koulakov2009_Vs","Volume","https://seafile.rlp.net/f/980e7fc6b9134434bb6a/?dl=1", false))
     push!(Datasets, GMG_Dataset("Kind_ReceiverFunctions","Volume","https://seafile.rlp.net/f/2c34b58b03bc4259aecb/?dl=1", false))
+
 
     
 

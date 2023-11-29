@@ -105,15 +105,106 @@ callback!(app,  Output("create-surface-curves","n_clicks"),
 
     AppData = set_AppDataUser(AppData, session_id, AppDataUser)
 
-
-    
-    
-
-
     return n_clicks
 end
 
 
+
+
+
+#=
+callback!(app,  Output("button-add-mesh","n_clicks"), 
+                Output("selected_meshes","options"),
+                Input("button-add-mesh","n_clicks"),
+                Input("button-clear-mesh","n_clicks"),
+                Input("button-update-mesh","n_clicks"),
+                State("session-id","data"),
+                State("selected_meshes","options"), 
+                State("mesh-name", "value"), 
+                State("mesh-color","value"),
+                State("selected_meshes","value")
+                ) do n_add, n_del, n_update, fig_selected_data, session_id, mesh_names, name, 
+                    color, selected_meshes
+    global AppData
+    AppDataLocal = get_AppData(AppData, session_id)
+    
+    trigger = get_trigger()
+    
+    # update options
+    mesh_names = polygon_names(profile)
+
+    if profile != []
+        if trigger == "button-add-mesh.n_clicks"
+        
+            # create a curve struct from the latest shape
+            if !isempty(shapes)
+                curve = set_curve(shapes[end], profile; name=name, color=color, linewidth=1)
+
+                # ensure that a curve with this name does not yet exist
+                if !any(curve_names .== curve.name)
+                    push!(profile.Polygons, curve)
+                end
+            end
+        
+        elseif trigger == "button-clear-mesh.n_clicks"
+            id = findall(mesh_names .== selected_meshes)
+            if !isempty(id)
+                deleteat!(profile.Polygons, id)
+                println("deleted mesh")
+            end
+            
+        elseif trigger == "button-update-mesh.n_clicks"
+            id = findall(curve_names .== selected_curves)
+            if !isempty(id)
+                curve_names_selected = String.(keys(fig_selected_data))
+                curve = profile.Polygons[id[1]]
+                if any(contains.(curve_names_selected,"shapes["))
+                   # Update data & color
+                   shape = fig_selected_data[Symbol(curve_names_selected[1])]
+                   curve.data = shape
+                   curve.shape = merge(curve.shape, (data_curve=shape, ))
+                   update_curve!(curve, profile)   # update lon/lat/depth
+                   println("updated data on curve")
+                end
+                curve.color = color
+                
+                profile.Polygons[id[1]] = curve
+                println("updated curve: $selected_curves")
+            end
+
+        elseif trigger == "button-copy-curve.n_clicks"
+                println("button-copy-curve.n_clicks")
+                id = findall(curve_names .== selected_curves)
+                if !isempty(id)
+                    curve = deepcopy(profile.Polygons[id[1]])
+                    AppDataUser = get_AppDataUser(AppData, session_id)
+                    AppDataUser = merge(AppDataUser, (copy=curve,))
+                    AppData     = set_AppDataUser(AppData, session_id, AppDataUser)
+
+                    println("copied curve: $selected_curves")
+                end
+        elseif trigger == "button-paste-curve.n_clicks"
+            
+            # ensure that a curve with this name does not yet exist
+            AppDataUser = get_AppDataUser(AppData, session_id)
+            profile = get_active_profile(AppData, session_id, selected_profile)
+            if AppDataUser.copy != []
+                curve = AppDataUser.copy
+                update_curve!(curve, profile)   # update lon/lat/depth
+
+                push!(profile.Polygons, curve)
+                println("pasted curve: $selected_curves")
+            end
+
+        end
+
+    end
+
+    curve_names = polygon_names(profile)
+   
+    return n_add, curve_names 
+end
+=#
     return app
 
 end

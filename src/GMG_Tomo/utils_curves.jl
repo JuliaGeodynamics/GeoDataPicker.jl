@@ -177,6 +177,22 @@ polygon_names(profile::Nothing) = []
 
 
 """
+helper function to retrieve the polygon names 
+"""
+function mesh_names(profile::ProfileUser)
+
+    poly_names = []
+    for p in profile.Polygons
+        push!(poly_names, "$(p.name)")
+    end
+
+    return poly_names
+end
+
+polygon_names(mesh::Nothing) = []
+
+
+"""
     profile = get_active_profile(AppData, session_id, selected_profile)
 returns the currently active profile (or an empty vector if none is selected)
 """
