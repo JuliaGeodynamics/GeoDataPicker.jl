@@ -1,9 +1,9 @@
 # functions to create the various plots shown in the GUI
 
 """
-Creates a topo plot & line that shows the cross-section
+updates the topo plot & line that shows the cross-section
 """
-function plot_topo(AppData)    
+function plot_topo(AppData,session_id)    
     xdata =  AppData.DataTopo.lon.val[:,1]
     ydata =  AppData.DataTopo.lat.val[1,:]
     zdata =  AppData.DataTopo.depth.val[:,:,1]'
@@ -44,30 +44,31 @@ function plot_topo(AppData)
                         colorscale = colorscale_topo,
                         zmin = -4, 
                         zmax = 4,
-                        colorbar=attr(thickness=5, title="topography [km]", titleside="right"),
+                        colorbar=attr(thickness=20, title="topography [km]", titleside="right"),
                         )
                 ],
-        colorbar=Dict("orientation"=>"v", "len"=>0.5, "thickness"=>10),
+        colorbar=Dict("orientation"=>"v", "len"=>0.5, "thickness"=>20),
         layout = (  #title = "topography [km]",
                     yaxis=attr(
                         title="Latitude",
-                        tickfont_size= 14,
+                        tickfont_size= 16,
                         tickfont_color="rgb(100, 100, 100)"
                     ),
                     xaxis=attr(
                         title="Longitude",
-                        tickfont_size= 14,
+                        tickfont_size= 16,
                         tickfont_color="rgb(10, 10, 10)"
                     ),
-
+                    aspectmode="manual", 
+                    aspectratio=attr(x=0.8, y=1, z=1),
                     # once we save additional cross-sections, add them here
                     shapes = shapes,
                     ),
 
                        
-        scene = attr( aspectmode="manual", 
-                      aspectratio=attr(x=1, y=1, z=1)
-                    ),
+        #scene = attr( aspectmode="manual", 
+        #              aspectratio=attr(x=1, y=1, z=1) # change the aspect ratio so that we have an approximately orthogonal 
+        #            ),
         
         config = (edits    = (shapePosition =  true,)),                              
     )
@@ -136,7 +137,7 @@ function plot_cross(AppData, profile;
                               y = PlotCross.z_cart, 
                               z = collect(eachcol(PlotCross.data)),
                               colorscale   = colorscale,
-                              colorbar=attr(thickness=5, title=String(field), titleside="right"),
+                              colorbar=attr(thickness=20, title=String(field), titleside="right"),
                               zmin=zmin, zmax=zmax, 
                               opacity = cross_section_opacity
                               ))
@@ -431,7 +432,35 @@ end
 
 # This creates the topography (mapview) plot (lower left)
 function create_topo_plot(AppData)
+
+   # first we have to see how large the map is to determine how we plot it
+   # the idea is to have an image that fills the availiable screen
    
+   #lonmin =  minimum(AppData.DataTopo.lon.val[:,1]);
+   #lonmax =  maximum(AppData.DataTopo.lon.val[:,1]);
+   #latmin =  minimum(AppData.DataTopo.lat.val[1,:]);
+   #latmax =  maximum(AppData.DataTopo.lat.val[1,:]);
+
+   #lon_extent = lonmax-lonmin;
+   #lat_extent = latmat-latmin;
+
+   # until plotting in map projection works here, we simply rescale the longitude axis with a factor that 
+   # makes the plot look not too distorted
+   # if we want to fill the available visible  space, we now have to determine the width and height on screen
+   #width_lon = lon_extent*0.8;
+   #height_lat = lat_extent;
+
+   #if width_lon>height_lat
+   #     plotwidth = "80vw";
+   #     plotheight = string(100/0.8)*"vw";
+   #else
+        plotheight = "80vh";
+        plotwidth  = "80vw"
+   #end
+
+   #println("AppData")
+   println(keys(AppData))
+
     html_div(
         dcc_graph(
             id = "mapview",
@@ -439,10 +468,13 @@ function create_topo_plot(AppData)
             #animate   = true,
             #clickData = true,
             animate   = false,
-            responsive=false,
+            responsive=true,
             #clickData = true,
             config = PlotConfig(displayModeBar=false, scrollZoom = false),
-            style = attr(width="35vw", height="50vh",padding_left="0vw",)
+            # here we plot the map so that the angles look about right
+            # a quick and simple way to do this is to set the aspect ratio to something smaller. Here we used a factor derived by trial and error
+            # the issue is that we somehow have to make this dependent on the map itself
+            style = attr(width=plotwidth, height=plotheight,padding_left=string(0.5*(100-(80/1.65)))*"vh") 
         ),
         style = attr(textalign="center")
     )
@@ -455,9 +487,9 @@ function cross_section_plot()
         id = "cross_section",
         figure = [], #plot_cross(), 
         animate = false,
-        responsive=false,
+        responsive=true,
         config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["toimage","toImage","lasso","drawopenpath","eraseshape","drawclosedpath"],displaylogo=false),
-        style = attr(width="70vw", height="50vh"))
+        style = attr(width="80vw", height="50vh"))
 end
 
 

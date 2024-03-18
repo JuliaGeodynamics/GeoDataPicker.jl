@@ -25,14 +25,8 @@ function main_layout(Datasets, max_num_users)
                         label="File",
                         id="id-dropdown-file"),
 
-                        dbc_col([html_h1("Geo Data Picker", style = Dict("margin-top" => 0, "textAlign" => "center")),
-                        html_h5("GeophysicalModelGenerator", style = Dict("margin-top" => 0, "textAlign" => "center"))]),
-                        
-                        dbc_col(html_img(src="assets/GeophysicalModelGenerator-logos_cut.png",height="140vh",),  width=2),
-                       # dbc_col(html_img(src=joinpath(pkgdir(GeoDataPicker),"src/assets/GeophysicalModelGenerator-logos_cut.png"), height="140vh"), width=2),
-                        
-    #joinpath(pkgdir(GeoDataPicker),"src","GMG_Tomo/assets/logo/Logo_GMG.png")
-
+                        dbc_col(html_img(src="assets/LogoPicker.png",height="120vh",)),
+                        dbc_col(html_img(src="assets/GMG_Logo_new.png",height="120vh",),  width=2),
                        
                         ]),
                         ),
@@ -40,6 +34,7 @@ function main_layout(Datasets, max_num_users)
             dbc_tabs(
                 [
                     dbc_tab(tab_id="tab-setup",label="Setup",             children = [Tab_Data(Datasets)]),
+                    dbc_tab(tab_id="tab-map", label="Map",    children = [Tab_Map()]),
                     dbc_tab(tab_id="tab-cross", label="Cross-sections",    children = [Tab_CrossSection()]),
                     dbc_tab(tab_id="tab-3D", label="3D view",           children = [Tab_3Dview()])
                 ],

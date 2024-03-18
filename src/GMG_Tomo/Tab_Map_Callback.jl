@@ -1,5 +1,5 @@
 # callbacks for the cross-sections tab
-function Tab_CrossSections_Callback(app)
+function Tab_Map_Callback(app)
 
 # this is the callback that is invoked if the line on the topography map is changed
 callback!(app,  Output("start_val", "value"),
@@ -173,7 +173,7 @@ callback!(app,  Output("mapview", "figure"),
         AppDataLocal = update_profile(AppDataLocal, profile, num=0)
         AppData = add_AppData(AppData, session_id, AppDataLocal)
 
-        fig_topo       = plot_topo(AppDataLocal,session_id)
+        fig_topo       = plot_topo(AppDataLocal)
         but_add_prof_disabled=false
         but_up_prof_disabled=false
         but_del_prof_disabled=false
