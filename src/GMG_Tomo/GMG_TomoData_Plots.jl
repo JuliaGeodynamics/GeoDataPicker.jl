@@ -57,7 +57,8 @@ function plot_topo(AppData,session_id)
                     xaxis=attr(
                         title="Longitude",
                         tickfont_size= 16,
-                        tickfont_color="rgb(10, 10, 10)"
+                        tickfont_color="rgb(10, 10, 10)",
+                        scaleanchor="y", scaleratio=1/1.65,
                     ),
                     aspectmode="manual", 
                     aspectratio=attr(x=0.8, y=1, z=1),
@@ -96,7 +97,6 @@ function plot_cross(AppData, profile;
     # Compute the cross-section.
     Profile             =  ProfileData(profile);                         # create a GMG structure for the profile 
     Profile, PlotCross  =  ExtractProfileData(Profile, AppData, field; section_width=section_width)   # project data onto the profile
-
 
     colorscale = colormaps[Symbol(colormap)];
 
@@ -209,7 +209,9 @@ function plot_cross(AppData, profile;
                         xaxis=attr(
                             title=xlab,
                             tickfont_size= 14,
-                            tickfont_color="rgb(100, 100, 100)"
+                            tickfont_color="rgb(100, 100, 100)",
+                            scaleanchor="y", scaleratio=1,
+                            autorange=true,
                         ),
                         yaxis=attr(
                             title=ylab,
@@ -218,9 +220,8 @@ function plot_cross(AppData, profile;
                             autorange=true
                         ),
                         shapes = shapes_data,
-                        aspectmode="manual", 
-                        aspectratio=attr(x=1, y=1, z=1)
-
+                        #aspectmode="manual", 
+                        #aspectratio=attr(x=1, y=1, z=1)
                         ),
             config = (edits    = (shapePosition =  true,)),  
         )
@@ -489,7 +490,7 @@ function cross_section_plot()
         animate = false,
         responsive=true,
         config = PlotConfig(displayModeBar=true, modeBarButtonsToAdd=["toimage","toImage","lasso","drawopenpath","eraseshape","drawclosedpath"],displaylogo=false),
-        style = attr(width="80vw", height="50vh"))
+        style = attr(width="80vw", height="80vh"))
 end
 
 

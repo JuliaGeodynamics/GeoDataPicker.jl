@@ -9,7 +9,8 @@ function Tab_Map()
             # various menus for profile selection @ lower right
             dbc_col(
                 dbc_card([
-                    dcc_markdown("Profile options"),
+                    dcc_markdown("### Profile options"),
+                    dcc_markdown(" **Vertical profile:** Select 'vertical' and then insert the starting and ending point. After that, click on the '+' to add this profile to the list."),
                     dbc_radioitems(id="checklist_orientation",options=[(label="vertical", value=true),(label="horizontal", value=false)], inline=true, value=true),
                     dbc_row([
                     dbc_col([dcc_input(id="start_val", name="start_val", type="text", value="start: 5,46",style = Dict(:width => "100%"), debounce=true)]),
