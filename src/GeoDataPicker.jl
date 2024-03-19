@@ -18,6 +18,7 @@ include("GMG_Tomo/utils.jl")
 include("GMG_Tomo/utils_curves.jl")
 include("GMG_Tomo/GMG_TomoData_Plots.jl")
 include("GMG_Tomo/Tab_CrossSections.jl")
+include("GMG_Tomo/Tab_Map.jl")
 include("GMG_Tomo/Tab_3Dview.jl")
 include("GMG_Tomo/Tab_Setup.jl")
 include("GMG_Tomo/GMG_TomoData.jl")
@@ -45,7 +46,9 @@ function GMG_TomoData(; Datasets = Default_datasets(dir = pkgdir(GeoDataPicker))
 
     # Setup main app
     #app = dash(external_stylesheets=[dbc_themes.CYBORG])
-    app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=false)
+    app = dash(external_stylesheets = [dbc_themes.SANDSTONE], prevent_initial_callbacks=false)
+
+    # full list of themes: CERULEAN, COSMO, CYBORG, DARKLY, FLATLY, JOURNAL, LITERA, LUMEN, LUX, MATERIA, MINTY, MORPH, PULSE, QUARTZ, SANDSTONE, SIMPLEX, SKETCHY, SLATE, SOLAR, SPACELAB, SUPERHERO, UNITED, VAPOR, YETI, ZEPHYR
 
     app.title = "GMG Data Picker"
     app.layout = main_layout(Datasets, max_num_users)

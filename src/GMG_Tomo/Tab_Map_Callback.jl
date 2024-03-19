@@ -1,9 +1,5 @@
 # callbacks for the cross-sections tab
-function Tab_CrossSections_Callback(app)
-
-
-################### CALLBACKS RELATED TO TOPOGRAPHY PLOT ################
-################## WILL POTENTIALLY BE MOVED TO A DIFFERENT FILE
+function Tab_Map_Callback(app)
 
 # this is the callback that is invoked if the line on the topography map is changed
 callback!(app,  Output("start_val", "value"),
@@ -177,7 +173,7 @@ callback!(app,  Output("mapview", "figure"),
         AppDataLocal = update_profile(AppDataLocal, profile, num=0)
         AppData = add_AppData(AppData, session_id, AppDataLocal)
 
-        fig_topo       = plot_topo(AppDataLocal,session_id)
+        fig_topo       = plot_topo(AppDataLocal)
         but_add_prof_disabled=false
         but_up_prof_disabled=false
         but_del_prof_disabled=false
@@ -199,10 +195,6 @@ callback!(app,  Output("mapview", "figure"),
 end
 
 
-############ THIS SHOULD BE THE END OF ALL THE CALLBACKS FOR THE TOPOGRAPHY PLOT ###################
-
-
-############ CALLBACKS FOR CROSS SECTION PLOT ###############
 
 # open/close Curve interpretation box
 callback!(app,
@@ -277,29 +269,11 @@ callback!(app,
     return is_open    
 end
 
-# open/close tomography I box
+# open/close tomography box
 callback!(app,
     Output("collapse-Tomography", "is_open"),
     [Input("button-Tomography", "n_clicks")],
     [State("collapse-Tomography", "is_open")], ) do  n, is_open
-    
-    if isnothing(n); n=0 end
-
-    if n>0
-        if is_open==1
-            is_open = 0
-        elseif is_open==0
-            is_open = 1
-        end
-    end
-    return is_open    
-end
-
-# open/close tomography II box
-callback!(app,
-    Output("collapse-TomographyII", "is_open"),
-    [Input("button-TomographyII", "n_clicks")],
-    [State("collapse-TomographyII", "is_open")], ) do  n, is_open
     
     if isnothing(n); n=0 end
 
@@ -323,16 +297,12 @@ callback!(app,
     return vertical 
 end
 
-
-# CALLBACK FOR THE PLOT CROSS-SECTION BUTTON
 callback!(app,  Output("cross_section", "figure"), 
                 Output("3D-selected_curves","options"),
                 Output("curves-to-be-exported","options"),
                 Output("3D-selected_curves_surf","options"),
                 Input("button-plot-cross_section","n_clicks"),
-                #Input("dropdown_field","n_clicks"), # test if this triggers correctly
                 State("dropdown_field","value"),
-                State("dropdown_fieldII","value"),
                 State("colorbar-slider", "value"),
                 State("session-id","data"),
                 State("selected_profile","value"),
@@ -340,8 +310,6 @@ callback!(app,  Output("cross_section", "figure"),
                 State("screenshot-display","value"),
                 State("screenshot-opacity","value"),
                 State("tomography-opacity","value"),
-                State("tomography-display","value"),
-                State("tomography-displayII","value"),
                 State("EQ-display","value"),
                 State("Surfaces-display","value"),
                 State("selected_Surface-data","value"),
@@ -350,27 +318,19 @@ callback!(app,  Output("cross_section", "figure"),
                 State("EQ-minMag","value"),
                 State("EQ-maxMag","value"),
                 
-                ) do n_clicks,
-                    field, fieldII, colorbar_value, session_id, selected_profile, colormap_field, screenshot_display, screenshot_opacity, cross_section_opacity,
-                    plot_tomography, plot_tomographyII, plot_earthquakes, plot_surfaces, selected_surf_data, selected_EQ_data, section_width,
+                ) do n_clicks, field, colorbar_value, session_id, selected_profile, colormap_field, screenshot_display, screenshot_opacity, cross_section_opacity,
+                    plot_earthquakes, plot_surfaces, selected_surf_data, selected_EQ_data, section_width,
                     EQ_minMag, EQ_maxMag
 
     AppDataLocal = get_AppData(AppData, session_id)
+
     profile = get_active_profile(AppData, session_id, selected_profile)
-
-    # now update the cross section plot
-    # here we simply aggregate the different n_clicks values
-    N_CLICKS = n_clicks + n_clicks_dropdown
-
     @show profile session_id
-    if (N_CLICKS>0) && !isnothing(profile)
+    if (n_clicks>0) && !isnothing(profile)
         @show profile
-        fig_cross = plot_cross(AppDataLocal, profile, 
-                                zmin=colorbar_value[1], zmax=colorbar_value[2], field=Symbol(field), colormap=colormap_field,
+        fig_cross = plot_cross(AppDataLocal, profile, zmin=colorbar_value[1], zmax=colorbar_value[2], field=Symbol(field), colormap=colormap_field,
                                 screenshot_display=screenshot_display, screenshot_opacity=screenshot_opacity, 
                                 cross_section_opacity=cross_section_opacity,
-                                plot_tomography = plot_tomography,
-                                plot_tomographyII = plot_tomographyII,
                                 plot_surfaces = plot_surfaces, selected_surf_data= selected_surf_data,
                                 plot_earthquakes=plot_earthquakes,selected_EQ_data=selected_EQ_data,
                                 section_width=section_width, EQmag = (EQ_minMag,EQ_maxMag),
@@ -386,7 +346,7 @@ callback!(app,  Output("cross_section", "figure"),
     return fig_cross, curve_names, curve_names, curve_names
 end
 
-# ???
+
 callback!(app,  Output("button-add-curve","n_clicks"), 
                 Output("selected_curves","options"),
                 Input("button-add-curve","n_clicks"),
@@ -505,6 +465,7 @@ callback!(app,
     end
     return is_open    
 end
+
 
 
 # Export curves to disk
