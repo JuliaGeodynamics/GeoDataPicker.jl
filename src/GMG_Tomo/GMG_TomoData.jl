@@ -33,10 +33,10 @@ function main_layout(Datasets, max_num_users)
 
             dbc_tabs(
                 [
-                    dbc_tab(tab_id="tab-setup",label="Setup",             children = [Tab_Data(Datasets)]),
-                    dbc_tab(tab_id="tab-map", label="Map",    children = [Tab_Map()]),
-                    dbc_tab(tab_id="tab-cross", label="Cross-sections",    children = [Tab_CrossSection()]),
-                    dbc_tab(tab_id="tab-3D", label="3D view",           children = [Tab_3Dview()])
+                    dbc_tab(tab_id="tab-setup",label="Setup",             children = [tab_data(Datasets)]),
+                    dbc_tab(tab_id="tab-map", label="Map",    children = [tab_map()]),
+                    dbc_tab(tab_id="tab-cross", label="Cross-sections",    children = [tab_cross_section()]),
+                    dbc_tab(tab_id="tab-3D", label="3D view",           children = [tab_3Dview()])
                 ],
             id = "tabs", active_tab="tab-setup",
 

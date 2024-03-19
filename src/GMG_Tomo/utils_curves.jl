@@ -173,6 +173,7 @@ function polygon_names(profile::ProfileUser)
     return poly_names
 end
 
+### WHAT IS HAPPENING BELOW?
 polygon_names(profile::Nothing) = []
 
 
@@ -189,6 +190,7 @@ function mesh_names(profile::ProfileUser)
     return poly_names
 end
 
+### WHAT IS HAPPENING BELOW?
 polygon_names(mesh::Nothing) = []
 
 

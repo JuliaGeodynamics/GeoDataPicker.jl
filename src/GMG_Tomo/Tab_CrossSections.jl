@@ -1,5 +1,5 @@
 
-function Tab_CrossSection()
+function tab_cross_section()
     dbc_row([
         dbc_col([
             dbc_row([dbc_button("Plot cross-section",id="button-plot-cross_section",color="danger"),

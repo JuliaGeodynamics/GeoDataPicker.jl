@@ -1,6 +1,6 @@
 
 
-function Tab_Map()
+function tab_map()
     dbc_row([
 
             # plot topography

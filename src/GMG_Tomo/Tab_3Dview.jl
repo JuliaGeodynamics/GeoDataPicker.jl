@@ -1,5 +1,5 @@
 # Tab 2
-function Tab_3Dview()
+function tab_3Dview()
     dbc_col([
         dcc_graph(
             id = "3D-image",

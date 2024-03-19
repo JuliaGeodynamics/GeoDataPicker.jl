@@ -1,5 +1,5 @@
 # Tab 2
-function Tab_Data(Datasets)
+function tab_data(Datasets)
 
     dbc_col([
         dbc_row([dbc_label("id=",id="label-id")]),
