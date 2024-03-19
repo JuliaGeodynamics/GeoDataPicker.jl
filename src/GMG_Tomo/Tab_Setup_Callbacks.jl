@@ -21,7 +21,8 @@ callback!(app,  Output("setup-button", "n_clicks"),
                 Output("button-plot-topography", "n_clicks"),
                 Output("button-plot-topography", "disabled"),
                 Output("tabs","activ_tab"),
-                Output("dropdown_field", "options"), 
+                Output("dropdown_field", "options"),
+                Output("dropdown_fieldII", "options"),
                 Output("loading-output-1","children"),
                 Output("selected_EQ-data", "options"), 
                 Output("selected_Surface-data", "options"), 
@@ -133,7 +134,7 @@ callback!(app,  Output("setup-button", "n_clicks"),
 
     end
 
-    return n+1, n_topo, plot_button_topo_disabled, active_tab, options_fields, "", 
+    return n+1, n_topo, plot_button_topo_disabled, active_tab, options_fields, options_fields, "", 
            options_EQ_fields, options_Surf_fields,options_EQ_fields, options_Surf_fields
 end
 

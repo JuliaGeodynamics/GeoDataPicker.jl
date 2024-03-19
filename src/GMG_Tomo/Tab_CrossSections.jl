@@ -69,8 +69,8 @@ function Tab_CrossSection()
                     dbc_collapse(
                         dbc_card(dbc_cardbody([
                             dbc_col([
-                                dbc_row(dbc_switch(label="Display", id="tomo-display", value=false),justify="center"),
-                                dbc_row(dbc_switch(label="Contour", id="tomo-contour", value=false),justify="center"),
+                                dbc_row(dbc_switch(label="Display", id="tomography-display", value=true),justify="center"),
+                                dbc_row(dbc_switch(label="Contour", id="tomography-contour", value=false),justify="center"),
                                 dcc_dropdown(id="dropdown_field",options = [],value = "DataTomo_dVp_paf21",clearable=false, placeholder="Select Dataset"),
                                 dcc_rangeslider(id = "colorbar-slider",min = -5.,max = 5.,value=[-3, 3],allowCross=false),
                                 dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=0.9, id = "tomography-opacity", tooltip=attr(placement="bottom")),    
@@ -85,8 +85,8 @@ function Tab_CrossSection()
                     dbc_collapse(
                         dbc_card(dbc_cardbody([
                             dbc_col([
-                                dbc_row(dbc_switch(label="Display", id="tomo-displayII", value=false),justify="center"),
-                                dbc_row(dbc_switch(label="Contour", id="tomo-contourII", value=false),justify="center"),
+                                dbc_row(dbc_switch(label="Display", id="tomography-displayII", value=false),justify="center"),
+                                dbc_row(dbc_switch(label="Contour", id="tomography-contourII", value=false),justify="center"),
                                 dcc_dropdown(id="dropdown_fieldII",options = [],value = "DataTomo_dVp_paf21",clearable=false, placeholder="Select Dataset"),
                                 dcc_rangeslider(id = "colorbar-sliderII",min = -5.,max = 5.,value=[-3, 3],allowCross=false),
                                 dcc_slider(min=0.0,max=1.0,marks=Dict(0=>"0",0.5=>"opacity",1=>"1"),value=0.9, id = "tomography-opacityII", tooltip=attr(placement="bottom")),    

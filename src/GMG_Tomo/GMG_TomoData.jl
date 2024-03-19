@@ -25,8 +25,8 @@ function main_layout(Datasets, max_num_users)
                         label="File",
                         id="id-dropdown-file"),
 
-                        dbc_col(html_img(src="assets/LogoPicker.png",height="120vh",)),
-                        dbc_col(html_img(src="assets/GMG_Logo_new.png",height="120vh",),  width=2),
+                        dbc_col(html_img(src="assets/LogoPicker.png",height="100vh",)),
+                        dbc_col(html_img(src="assets/GMG_Logo_new.png",height="100vh",),  width=2),
                        
                         ]),
                         ),

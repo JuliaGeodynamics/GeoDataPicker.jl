@@ -80,6 +80,9 @@ end
 """
 Creates a plot of the cross-section with all requested options
 """
+# WE HERE HAVE TO UPDATE EVERYTHING WITH 
+# - THE NEW TOMOGRAPHIC CROSS-SECTION --> adds a new field, colormap, opacity, color z_limits
+# - the switches for tomographies --> adds plot_tomographyI and plot_tomographyII
 function plot_cross(AppData, profile; 
                     zmax=nothing, zmin=nothing,
                     field=:dVp_paf21, 
@@ -87,6 +90,8 @@ function plot_cross(AppData, profile;
                     screenshot_opacity=0.5, 
                     screenshot_display=true, 
                     cross_section_opacity=1.0,
+                    plot_tomography = true,
+                    plot_tomographyII = false,
                     plot_surfaces   =   false, selected_surf_data= [],EQmag=(0.1,9),
                     plot_earthquakes=   false, selected_EQ_data= [], section_width=50,
                     )
@@ -133,14 +138,27 @@ function plot_cross(AppData, profile;
     data_plots = []
     
     # add tomographic cross-section
-    push!(data_plots, heatmap(x = PlotCross.x_cart, 
-                              y = PlotCross.z_cart, 
-                              z = collect(eachcol(PlotCross.data)),
-                              colorscale   = colorscale,
-                              colorbar=attr(thickness=20, title=String(field), titleside="right"),
-                              zmin=zmin, zmax=zmax, 
-                              opacity = cross_section_opacity
-                              ))
+    if plot_tomography
+        push!(data_plots, heatmap(x = PlotCross.x_cart, 
+                                  y = PlotCross.z_cart, 
+                                  z = collect(eachcol(PlotCross.data)),
+                                  colorscale   = colorscale,
+                                  colorbar=attr(thickness=20, title=String(field), titleside="right"),
+                                  zmin=zmin, zmax=zmax, 
+                                  opacity = cross_section_opacity
+                                ))
+    end
+    # add second tomographic cross-section  WORK IN PROGRESS!!!  
+    if plot_tomographyII 
+        push!(data_plots, heatmap(x = PlotCross.x_cart, 
+                                  y = PlotCross.z_cart, 
+                                  z = collect(eachcol(PlotCross.data)),
+                                  colorscale   = colorscale,
+                                  colorbar=attr(thickness=20, title=String(field), titleside="right"),
+                                  zmin=zmin, zmax=zmax, 
+                                  opacity = cross_section_opacity
+                                  ))
+    end
 
     if screenshot_display==true
       # Note: the name of the profile should be listed in the profuile struct
@@ -205,19 +223,20 @@ function plot_cross(AppData, profile;
     pl = (  id = "fig_cross",
             data = data_plots,                            
             colorbar=Dict("orientation"=>"v", "len"=>0.5, "thickness"=>10,"title"=>"elevat"),
-            layout = (  title = "Cross-section",
-                        xaxis=attr(
+            layout = (  xaxis=attr(
                             title=xlab,
                             tickfont_size= 14,
                             tickfont_color="rgb(100, 100, 100)",
                             scaleanchor="y", scaleratio=1,
-                            autorange=true,
+                            autorange=false, range=[PlotCross.x_cart[1],PlotCross.x_cart[end]],
+                            
                         ),
                         yaxis=attr(
                             title=ylab,
                             tickfont_size= 14,
                             tickfont_color="rgb(10, 10, 10)",
-                            autorange=true
+                            autorange=false,
+                            range=[minimum(PlotCross.z_cart),0],
                         ),
                         shapes = shapes_data,
                         #aspectmode="manual", 
