@@ -153,7 +153,7 @@ end
 """
     Curves = parse_SVG(fname::String; is_inkscape=true, verbose=true)
 
-This parses an SVG file; reads all thr curves on the file and transforms them to real coordinates and finally puts the results (with 3D curves) into a NamedTuple
+This parses an SVG file; reads all the curves on the file and transforms them to real coordinates and finally puts the results (with 3D curves) into a NamedTuple
 """
 function parse_SVG(fname::String; is_inkscape=true, verbose=true)
 

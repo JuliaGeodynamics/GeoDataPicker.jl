@@ -63,7 +63,7 @@ callback!(app,  Output("setup-button", "n_clicks"),
         lat     =  extrema(DataTopo.lat.val)
         lon     =  extrema(DataTopo.lon.val)
         depth   =  (-500,0)
-        DataTomo = combine_VolData(DataVol; lat=lat, lon=lon, depth=depth, dims=(100,100,100))
+        DataTomo = combine_vol_data(DataVol; lat=lat, lon=lon, depth=depth, dims=(100,100,100))
         
         # Initial cross-section
         start_val, end_val = extract_start_end_values(start_value, end_value)

@@ -21,7 +21,7 @@ function PrepCrossSection(lonvec, latvec, depths,liftlons,liftlone,liftlats,lift
 
     # create crosssection
     n      = 100
-    X,Y,Z  = XYZGrid(LinRange(lons, lone, n), LinRange(lats, late, n), LinRange(ze, zs, n));
+    X,Y,Z  = xyz_grid(LinRange(lons, lone, n), LinRange(lats, late, n), LinRange(ze, zs, n));
     cross  = GeoData(X, Y, Z, (ran = zeros(size(Z)),));
 
     STup   = @lift ($liftlons,$liftlats)

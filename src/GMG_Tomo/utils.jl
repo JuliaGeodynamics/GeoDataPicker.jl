@@ -75,7 +75,7 @@ function ProfileUser(;  number=0,
         lon = sort([start_lonlat[1], end_lonlat[1]])
         lat = sort([start_lonlat[2], end_lonlat[2]])
         
-        Lon,Lat,Depth = XYZGrid(range(lon...,10), range(lat...,10), range(-100,0,10))
+        Lon,Lat,Depth = xyz_grid(range(lon...,10), range(lat...,10), range(-100,0,10))
         FakeData  = GeoData(Lon,Lat,Depth, (Data=Depth,))
         
         CrossFake = CrossSection(FakeData, Start=start_lonlat, End=end_lonlat, dims=(10,10))  
