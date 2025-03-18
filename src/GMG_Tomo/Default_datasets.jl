@@ -65,11 +65,17 @@ function Default_datasets(;dir="")
     push!(Datasets, GMG_Dataset("Mroczek2022_Moho_Grid_AD","Surface","https://seafile.rlp.net/f/12c120c5724745e2b27b/?dl=1", false))
     push!(Datasets, GMG_Dataset("Mroczek2022_Moho_Grid_EU","Surface","https://seafile.rlp.net/f/483d9c7c808a4087ba9e/?dl=1", false))
     push!(Datasets, GMG_Dataset("Mroczek2022_Moho_Grid_PA","Surface","https://seafile.rlp.net/f/217eaf5c87d14adcb9c9/?dl=1", false))
-    push!(Datasets, GMG_Dataset("EUCrust_07","Surface","https://seafile.rlp.net/f/10f867e410bb4d95b3fe/?dl=1",               false))
+    push!(Datasets, GMG_Dataset("EUCrust_07_old","Surface","https://seafile.rlp.net/f/10f867e410bb4d95b3fe/?dl=1",               false))
     push!(Datasets, GMG_Dataset("Spada2013_Moho_Adria","Surface","https://seafile.rlp.net/f/f4fd12f8bcf2460099d4/?dl=1",     false))
     push!(Datasets, GMG_Dataset("Spada2013_Moho_Europe","Surface","https://seafile.rlp.net/f/10c06397c23a4611bf5e/?dl=1",    false))
     push!(Datasets, GMG_Dataset("Spada2013_Moho_Tyrrhenia","Surface","https://seafile.rlp.net/f/f3833ae6d0474b34b88c/?dl=1", false))
-
+    
+    push!(Datasets, GMG_Dataset("EUCrust_07",  "Surface","https://seafile.rlp.net/f/a0cd969dab184f34ac07/?dl=1",               false))
+    push!(Datasets, GMG_Dataset("MohoEUCrust", "Surface","https://seafile.rlp.net/f/61c3bce2b0f949fdb7bc/?dl=1",              false))
+    push!(Datasets, GMG_Dataset("EUCrust_08",  "Surface","https://seafile.rlp.net/f/45d5fd297eba4e9d9849/?dl=1",              false))
+    push!(Datasets, GMG_Dataset("Grad09_EU",  "Surface","https://seafile.rlp.net/f/d42b694387f0458b840e/?dl=1",              false))
+    push!(Datasets, GMG_Dataset("Grad07_EU",  "Surface","https://seafile.rlp.net/f/8ca2a3b40b2a41a5858d/?dl=1",              false))
+    
     # Other surfaces
     push!(Datasets, GMG_Dataset("Spooner2020_Consolidated_Sediments","Surface", "https://seafile.rlp.net/f/26253974062243e0b115/?dl=1", false))
     push!(Datasets, GMG_Dataset("Spooner2020_UpperCrust","Surface", "https://seafile.rlp.net/f/17b497c66dde47289abf/?dl=1", false))
