@@ -67,7 +67,7 @@ WidthPointProfile   = 20km
 
 # 2. process the profiles
 include("ProfileProcessing.jl")
-ExtractedData = ExtractProfileData(ProfileCoordFile,ProfileNumber,DataSetName,DataSetFile,DataSetType,DimsVolCross,DimsSurfCross,WidthPointProfile)
+ExtractedData = extract_ProfileData(ProfileCoordFile,ProfileNumber,DataSetName,DataSetFile,DataSetType,DimsVolCross,DimsSurfCross,WidthPointProfile)
 
 # 3. save data as MATLAB
 fn = "Profile"*string(ProfileNumber)

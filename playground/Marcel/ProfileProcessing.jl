@@ -2,7 +2,7 @@
 # this is ProfileProcessing.jl
 # It contains functions and type definitions to gather selected data for given profiles
 
-export ProfileData, ExtractProfileData
+export ProfileData, extract_ProfileData
 
 # load packages
 using GeophysicalModelGenerator
@@ -60,7 +60,7 @@ function CreateProfileVolume!(Profile,DataSetName,DataSetFile,DimsVolCross)
         tmp_load = load(DataSetFile[idata])  # this gives us a dict with a key that is the name if the data set and the values as the GeoData structure
         tmp_load = collect(values(tmp_load))      # this gives us a vector with a single GeoData entry
         data_tmp = tmp_load[1]               # and now we extract that entry...
-        cross_tmp = CrossSection(data_tmp,dims=DimsVolCross,Start=Profile.start_point,End=Profile.end_point)        # create the cross section
+        cross_tmp = cross_section(data_tmp,dims=DimsVolCross,Start=Profile.start_point,End=Profile.end_point)        # create the cross section
 
         # store profile coordinates and field data on first go
         if idata==1
@@ -100,7 +100,7 @@ function CreateProfileVolume!(Profile,DataSetName,DataSetFile,DimsVolCross)
 
     tmp = GeoData(lon_vol,lat_vol,depth_vol,fields_vol)
     # flatten cross section and add this data to the structure
-    x_profile = FlattenCrossSection(tmp,Start=Profile.start_point)
+    x_profile = flatten_cross_section(tmp,Start=Profile.start_point)
     tmp = AddField(tmp,"x_profile",x_profile)
 
     Profile.VolData = tmp # assign to Profile data structure
@@ -117,9 +117,9 @@ function CreateProfileSurface!(Profile,DataSetName,DataSetFile,DimsSurfCross)
         tmp_load = load(DataSetFile[idata])  # this gives us a dict with a key that is the name if the data set and the values as the GeoData structure
         tmp_load = collect(values(tmp_load))      # this gives us a vector with a single GeoData entry
         data_tmp = tmp_load[1]               # and now we extract that entry...
-        tmp[idata] = CrossSection(data_tmp, dims=DimsSurfCross,Start=Profile.start_point,End=Profile.end_point)        # create the cross section
+        tmp[idata] = cross_section(data_tmp, dims=DimsSurfCross,Start=Profile.start_point,End=Profile.end_point)        # create the cross section
         # flatten cross section and add this data to the structure
-        x_profile = FlattenCrossSection(tmp[idata],Start=Profile.start_point)
+        x_profile = flatten_cross_section(tmp[idata],Start=Profile.start_point)
         tmp[idata]      = AddField(tmp[idata],"x_profile",x_profile)
         # add the data set name as an attribute (not required if there is proper metadata, but odds are that there is not)
         tmp[idata].atts["dataset"] = DataSetName[idata]
@@ -141,9 +141,9 @@ function CreateProfilePoint!(Profile,DataSetName,DataSetFile,WidthPointProfile)
         tmp_load = load(DataSetFile[idata])  # this gives us a dict with a key that is the name if the data set and the values as the GeoData structure
         tmp_load = collect(values(tmp_load))      # this gives us a vector with a single GeoData entry
         data_tmp = tmp_load[1]               # and now we extract that entry...
-        tmp[idata] = CrossSection(data_tmp,Start=Profile.start_point,End=Profile.end_point,section_width = WidthPointProfile)        # create the cross section
+        tmp[idata] = cross_section(data_tmp,Start=Profile.start_point,End=Profile.end_point,section_width = WidthPointProfile)        # create the cross section
         # flatten cross section and add this data to the structure
-        x_profile = FlattenCrossSection(tmp[idata],Start=Profile.start_point)
+        x_profile = flatten_cross_section(tmp[idata],Start=Profile.start_point)
         tmp[idata]       = AddField(tmp[idata],"x_profile",x_profile)
         # add the data set name as an attribute (not required if there is proper metadata, but odds are that there is not)
         tmp[idata].atts["dataset"] = DataSetName[idata]
@@ -155,7 +155,7 @@ function CreateProfilePoint!(Profile,DataSetName,DataSetFile,WidthPointProfile)
 end
 
 ### wrapper function to process everything
-function ExtractProfileData(ProfileCoordFile,ProfileNumber,DataSetName,DataSetFile,DataSetType,DimsVolCross,DimsSurfCross,WidthPointProfile)
+function extract_ProfileData(ProfileCoordFile,ProfileNumber,DataSetName,DataSetFile,DataSetType,DimsVolCross,DimsSurfCross,WidthPointProfile)
 
     # start and end points are saved in a text file
     profile_data = readdlm(ProfileCoordFile,skipstart=1,',')

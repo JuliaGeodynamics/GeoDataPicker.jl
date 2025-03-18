@@ -94,7 +94,7 @@ function plot_cross(AppData, profile;
     
     # Compute the cross-section.
     Profile             =  ProfileData(profile);                         # create a GMG structure for the profile 
-    Profile, PlotCross  =  ExtractProfileData(Profile, AppData, field; section_width=section_width)   # project data onto the profile
+    Profile, PlotCross  =  extract_ProfileData(Profile, AppData, field; section_width=section_width)   # project data onto the profile
 
 
     colorscale = colormaps[Symbol(colormap)];
@@ -284,7 +284,7 @@ function plot_3D_data(AppData;
             for i in selected_cross
                 profile     = AppData.AppDataUser.Profiles[i+1]
                 Profile     = ProfileData(profile);                                                      # create a GMG structure for the profile 
-                Profile, _  = ExtractProfileData(Profile, AppData, field; section_width=section_width)   # project data onto the profile
+                Profile, _  = extract_ProfileData(Profile, AppData, field; section_width=section_width)   # project data onto the profile
                 
                 vol   = Profile.VolData.fields[field]
                 x = Profile.VolData.lon.val[:,:]
