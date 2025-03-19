@@ -53,11 +53,13 @@ function Default_datasets(;dir="")
     push!(Datasets, GMG_Dataset("GyPSuMS_Global_Vs","Volume","https://seafile.rlp.net/f/db7dbdf8131a4253957a/?dl=1", false))
     push!(Datasets, GMG_Dataset("CAM2022_Vs","Volume","https://seafile.rlp.net/f/3ba88f5359af47bca42a/?dl=1", false))
     push!(Datasets, GMG_Dataset("CSEM_Europe_Vs","Volume","https://seafile.rlp.net/f/6e05832d0b454fb4941d/?dl=1", false))
+    #push!(Datasets, GMG_Dataset("CSEM_Europe_Vs","Volume","https://seafile.rlp.net/f/fdc6204b200d42689395/?dl=1", false))
     push!(Datasets, GMG_Dataset("LSP_Eucrust1_0_Vs","Volume","https://seafile.rlp.net/f/f8a7abd3e54f470895d4/?dl=1", false))
     push!(Datasets, GMG_Dataset("Fichtner_CSEM_Vs","Volume","https://seafile.rlp.net/f/0016408107f14046aebe/?dl=1", false))
-    push!(Datasets, GMG_Dataset("CSEM_Europe_Vs","Volume","https://seafile.rlp.net/f/fdc6204b200d42689395/?dl=1", false))
     push!(Datasets, GMG_Dataset("3DLGL-TPESv_Global_Vs","Volume","https://seafile.rlp.net/f/8bb33587aaa840c98d2a/?dl=1", false))
     push!(Datasets, GMG_Dataset("SAVANI_US_Global_Vs","Volume","https://seafile.rlp.net/f/2e503d2a917e439cb141/?dl=1", false))
+    push!(Datasets, GMG_Dataset("SAVANI_Medit_Vs","Volume","https://seafile.rlp.net/f/fb08038c8f524231a389/?dl=1", false))
+    
 
     # Topography
     push!(Datasets, GMG_Dataset("AlpsTopo","Topography",joinpath(dir,"src/AlpsTopo.jld2"), true))
