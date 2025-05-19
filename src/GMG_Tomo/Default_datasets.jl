@@ -60,6 +60,7 @@ function Default_datasets(;dir="")
     push!(Datasets, GMG_Dataset("SAVANI_US_Global_Vs","Volume","https://seafile.rlp.net/f/2e503d2a917e439cb141/?dl=1", false))
     push!(Datasets, GMG_Dataset("SAVANI_Medit_Vs","Volume","https://seafile.rlp.net/f/fb08038c8f524231a389/?dl=1", false))
     push!(Datasets, GMG_Dataset("SAVANI_Alps_Vs","Volume","https://seafile.rlp.net/f/808bb834e0f04be1bf17/?dl=1", false))
+    push!(Datasets, GMG_Dataset("Schuler25_Med_SynVs","Volume","https://seafile.rlp.net/f/a22a9f7433344878a3f2/?dl=1", false))
 
     # Topography
     push!(Datasets, GMG_Dataset("AlpsTopo","Topography",joinpath(dir,"src/AlpsTopo.jld2"), true))
