@@ -26,18 +26,45 @@ function Default_datasets(;dir="")
     push!(Datasets, GMG_Dataset("NEWTON21_anisotropic_Vp","Volume","https://seafile.rlp.net/f/7862a29a1f44405bbebd/?dl=1", false))
     push!(Datasets, GMG_Dataset("Menichelli2023_Vp","Volume","https://seafile.rlp.net/f/84a5b5e5eec04c2b98e3/?dl=1", false))
 
+    push!(Datasets, GMG_Dataset("GyPSuMS_Global_Vp","Volume","https://seafile.rlp.net/f/10721a3c4fbe4a81bcae/?dl=1", false))
+    push!(Datasets, GMG_Dataset("Rappisi2022_iso_Vp","Volume","https://seafile.rlp.net/f/e787e08216384d2683f4/?dl=1", false))
+    push!(Datasets, GMG_Dataset("Rappisi2022_slabs_Vp","Volume","https://seafile.rlp.net/f/607765fcd47c46ce8ed5/?dl=1", false))
+    push!(Datasets, GMG_Dataset("Rappisi2022_Vp","Volume","https://seafile.rlp.net/f/5b89d5e1289f492b8a28/?dl=1", false))
+    push!(Datasets, GMG_Dataset("Lippitsch2003_2_Vp","Volume","https://seafile.rlp.net/f/266fb30910c048119f4f/?dl=1", false))
+    push!(Datasets, GMG_Dataset("MIT08_Pwave","Volume","https://seafile.rlp.net/f/bda0cb39537641e9a1e5/?dl=1", false))
+    push!(Datasets, GMG_Dataset("Koulakov_Europe_Vp","Volume","https://seafile.rlp.net/f/e8f9e8c6506a4304bc1d/?dl=1", false))
+    push!(Datasets, GMG_Dataset("HMSL-P06_percent_Vp","Volume","https://seafile.rlp.net/f/fdd495e109b34d14a768/?dl=1", false))
+    push!(Datasets, GMG_Dataset("Giacomuzzi_2023_Vp","Volume","https://seafile.rlp.net/f/ca8eb5385bd24fc8ad5c/?dl=1", false))
+    push!(Datasets, GMG_Dataset("Diehl2009_Vp","Volume","https://seafile.rlp.net/f/b9f1ed56565f4d02ab09/?dl=1", false))
+    push!(Datasets, GMG_Dataset("Amaru2007_Vp","Volume","https://seafile.rlp.net/f/70052f317315479bb4ce/?dl=1", false))
+    
 
+    # Vs:
     push!(Datasets, GMG_Dataset("CSEM_Vs","Volume","https://seafile.rlp.net/f/4bde77eb63fe4740b5de/?dl=1", false))
     push!(Datasets, GMG_Dataset("ElSharkawy_Vs","Volume","https://seafile.rlp.net/f/c7eb8d7a24d648b6af3f/?dl=1", false))
     push!(Datasets, GMG_Dataset("Kaestle2018_Vs","Volume","https://seafile.rlp.net/f/36145dfa7dce4d9b8eeb/?dl=1", false))
     push!(Datasets, GMG_Dataset("Koulakov2009_Vs","Volume","https://seafile.rlp.net/f/980e7fc6b9134434bb6a/?dl=1", false))
     push!(Datasets, GMG_Dataset("Kind_ReceiverFunctions","Volume","https://seafile.rlp.net/f/2c34b58b03bc4259aecb/?dl=1", false))
-
-
     
+    push!(Datasets, GMG_Dataset("CaPaREA2023_Crust_Timko_Vs","Volume","https://seafile.rlp.net/f/89d1f97f1c574701b0ac/?dl=1", false))
+    push!(Datasets, GMG_Dataset("CaPaREA2023_Mantle_Timko_Vs","Volume","https://seafile.rlp.net/f/a0bc30b88446437199ed/?dl=1", false))
+    push!(Datasets, GMG_Dataset("CaPaREA2023_abs_Timko_Vs","Volume","https://seafile.rlp.net/f/fab7ce65d89d4826bfa3/?dl=1", false))
+    push!(Datasets, GMG_Dataset("REVEAL_rel_avg_AK135_Vs","Volume","https://seafile.rlp.net/f/52ff0b02f689412c973d/?dl=1", false))
+    push!(Datasets, GMG_Dataset("GyPSuMS_Global_Vs","Volume","https://seafile.rlp.net/f/db7dbdf8131a4253957a/?dl=1", false))
+    push!(Datasets, GMG_Dataset("CAM2022_Vs","Volume","https://seafile.rlp.net/f/3ba88f5359af47bca42a/?dl=1", false))
+    push!(Datasets, GMG_Dataset("CSEM_Europe_Vs","Volume","https://seafile.rlp.net/f/6e05832d0b454fb4941d/?dl=1", false))
+    #push!(Datasets, GMG_Dataset("CSEM_Europe_Vs","Volume","https://seafile.rlp.net/f/fdc6204b200d42689395/?dl=1", false))
+    push!(Datasets, GMG_Dataset("LSP_Eucrust1_0_Vs","Volume","https://seafile.rlp.net/f/f8a7abd3e54f470895d4/?dl=1", false))
+    push!(Datasets, GMG_Dataset("Fichtner_CSEM_Vs","Volume","https://seafile.rlp.net/f/0016408107f14046aebe/?dl=1", false))
+    push!(Datasets, GMG_Dataset("3DLGL-TPESv_Global_Vs","Volume","https://seafile.rlp.net/f/8bb33587aaa840c98d2a/?dl=1", false))
+    push!(Datasets, GMG_Dataset("SAVANI_US_Global_Vs","Volume","https://seafile.rlp.net/f/2e503d2a917e439cb141/?dl=1", false))
+    push!(Datasets, GMG_Dataset("SAVANI_Medit_Vs","Volume","https://seafile.rlp.net/f/fb08038c8f524231a389/?dl=1", false))
+    push!(Datasets, GMG_Dataset("SAVANI_Alps_Vs","Volume","https://seafile.rlp.net/f/808bb834e0f04be1bf17/?dl=1", false))
+    push!(Datasets, GMG_Dataset("Schuler25_Med_SynVs","Volume","https://seafile.rlp.net/f/daee5b214a3d418fb258/?dl=1", false))
 
     # Topography
     push!(Datasets, GMG_Dataset("AlpsTopo","Topography",joinpath(dir,"src/AlpsTopo.jld2"), true))
+    push!(Datasets, GMG_Dataset("topography","Topography","https://seafile.rlp.net/f/3edb4a0531c14dc687ef/?dl=1", false))
 
     # Screenshots
     push!(Datasets, GMG_Dataset("Handy_etal_SE_ProfileA","Screenshot","https://seafile.rlp.net/f/516015cb6d6442bdb96c/?dl=1", false))
@@ -65,11 +92,17 @@ function Default_datasets(;dir="")
     push!(Datasets, GMG_Dataset("Mroczek2022_Moho_Grid_AD","Surface","https://seafile.rlp.net/f/12c120c5724745e2b27b/?dl=1", false))
     push!(Datasets, GMG_Dataset("Mroczek2022_Moho_Grid_EU","Surface","https://seafile.rlp.net/f/483d9c7c808a4087ba9e/?dl=1", false))
     push!(Datasets, GMG_Dataset("Mroczek2022_Moho_Grid_PA","Surface","https://seafile.rlp.net/f/217eaf5c87d14adcb9c9/?dl=1", false))
-    push!(Datasets, GMG_Dataset("EUCrust_07","Surface","https://seafile.rlp.net/f/10f867e410bb4d95b3fe/?dl=1",               false))
+    push!(Datasets, GMG_Dataset("EUCrust_07_old","Surface","https://seafile.rlp.net/f/10f867e410bb4d95b3fe/?dl=1",               false))
     push!(Datasets, GMG_Dataset("Spada2013_Moho_Adria","Surface","https://seafile.rlp.net/f/f4fd12f8bcf2460099d4/?dl=1",     false))
     push!(Datasets, GMG_Dataset("Spada2013_Moho_Europe","Surface","https://seafile.rlp.net/f/10c06397c23a4611bf5e/?dl=1",    false))
     push!(Datasets, GMG_Dataset("Spada2013_Moho_Tyrrhenia","Surface","https://seafile.rlp.net/f/f3833ae6d0474b34b88c/?dl=1", false))
-
+    
+    push!(Datasets, GMG_Dataset("EUCrust_07",  "Surface","https://seafile.rlp.net/f/a0cd969dab184f34ac07/?dl=1",               false))
+    push!(Datasets, GMG_Dataset("MohoEUCrust", "Surface","https://seafile.rlp.net/f/61c3bce2b0f949fdb7bc/?dl=1",              false))
+    push!(Datasets, GMG_Dataset("EUCrust_08",  "Surface","https://seafile.rlp.net/f/45d5fd297eba4e9d9849/?dl=1",              false))
+    push!(Datasets, GMG_Dataset("Grad09_EU",  "Surface","https://seafile.rlp.net/f/d42b694387f0458b840e/?dl=1",              false))
+    push!(Datasets, GMG_Dataset("Grad07_EU",  "Surface","https://seafile.rlp.net/f/8ca2a3b40b2a41a5858d/?dl=1",              false))
+    
     # Other surfaces
     push!(Datasets, GMG_Dataset("Spooner2020_Consolidated_Sediments","Surface", "https://seafile.rlp.net/f/26253974062243e0b115/?dl=1", false))
     push!(Datasets, GMG_Dataset("Spooner2020_UpperCrust","Surface", "https://seafile.rlp.net/f/17b497c66dde47289abf/?dl=1", false))
@@ -81,7 +114,9 @@ function Default_datasets(;dir="")
     push!(Datasets, GMG_Dataset("AlpArraySeis","Point","https://seafile.rlp.net/f/87d565882eda40689666/?dl=1", false))
     push!(Datasets, GMG_Dataset("ISC","Point","https://seafile.rlp.net/f/fed98ad058df4f2c8d28/?dl=1", false))
     push!(Datasets, GMG_Dataset("CLASS","Point","https://seafile.rlp.net/f/4c574d9610b34b34ad9a/?dl=1", false))
-   
+    push!(Datasets, GMG_Dataset("isc24_MedS","Point","https://seafile.rlp.net/f/d800de0823b142a099b5/?dl=1", false))
+    push!(Datasets, GMG_Dataset("Najafabadi2021","Point","https://seafile.rlp.net/f/a57aeed44d23443f9bf3/?dl=1", false))
+
 
     return Datasets
 

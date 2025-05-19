@@ -57,12 +57,12 @@ Extracts a cross-section from a tomographic dataset and returns this as cartesia
 function get_cross_section(DataAlps::GeoData, start_value=(10,41), end_value=(10,49), field=:dVp_paf21)
 
     # retrieve the cross-section in GeoData format
-    cross   =   CrossSection(DataAlps, Start=start_value, End=end_value, Interpolate=true)
+    cross   =   cross_section(DataAlps, Start=start_value, End=end_value, Interpolate=true)
 
     # transfer it to cartesian data
     p           = ProjectionPoint(Lon=minimum(cross.lon.val),Lat=minimum(cross.lat.val));
-    cross_cart  = Convert2CartData(cross,p)
-    x_cross     = FlattenCrossSection(cross_cart);
+    cross_cart  = convert2CartData(cross,p)
+    x_cross     = flatten_cross_section(cross_cart);
     x_cart      = x_cross[:,1];
     z_cart      = cross_cart.z.val[1,:,1]
 

@@ -2,7 +2,7 @@
 using GeophysicalModelGenerator, JLD2
 #using GMT
 import Base:show 
-import GeophysicalModelGenerator: load_GMG, ProfileData, ExtractProfileData
+import GeophysicalModelGenerator: load_GMG, ProfileData, extract_ProfileData
 
 
 """
@@ -75,12 +75,12 @@ function ProfileUser(;  number=0,
         lon = sort([start_lonlat[1], end_lonlat[1]])
         lat = sort([start_lonlat[2], end_lonlat[2]])
         
-        Lon,Lat,Depth = XYZGrid(range(lon...,10), range(lat...,10), range(-100,0,10))
+        Lon,Lat,Depth = xyz_grid(range(lon...,10), range(lat...,10), range(-100,0,10))
         FakeData  = GeoData(Lon,Lat,Depth, (Data=Depth,))
         
-        CrossFake = CrossSection(FakeData, Start=start_lonlat, End=end_lonlat, dims=(10,10))  
+        CrossFake = cross_section(FakeData, Start=start_lonlat, End=end_lonlat, dims=(10,10))  
         
-        x_cart    = FlattenCrossSection(CrossFake)
+        x_cart    = flatten_cross_section(CrossFake)
         end_cart  = x_cart[end]
     else
         end_cart = nothing
@@ -121,13 +121,13 @@ function  ProfileData(prof::ProfileUser)
 end
 
 """
-    Prof, PlotData = ExtractProfileData(Prof::ProfileData, AppData::NamedTuple, field; section_width=50km)
+    Prof, PlotData = extract_ProfileData(Prof::ProfileData, AppData::NamedTuple, field; section_width=50km)
 
 Helper function to project data onto the profile `Prof`. Also returns the data to plot this cross-section
 """
-function  ExtractProfileData(Profile::ProfileData, AppData::NamedTuple, field::Symbol; section_width=50km)
+function  extract_ProfileData(Profile::ProfileData, AppData::NamedTuple, field::Symbol; section_width=50km)
 
-    ExtractProfileData!(Profile, AppData.DataTomo, AppData.DataSurfaces, AppData.DataPoints, section_width=section_width)
+    extract_ProfileData!(Profile, AppData.DataTomo, AppData.DataSurfaces, AppData.DataPoints, section_width=section_width)
     if Profile.vertical
         PlotData = (x_cart = Profile.VolData.fields.x_profile[:,1], z_cart=Profile.VolData.depth.val[1,:])
     else
@@ -148,12 +148,12 @@ function get_cross_section(AppData::NamedTuple, profile::ProfileUser, field=:Dat
     # retrieve the cross-section in GeoData format
     if profile.vertical == true
         # extract vertical profile
-        cross   =   CrossSection(AppData.DataTomo, Start=profile.start_lonlat, End=profile.end_lonlat, Interpolate=true)
+        cross   =   cross_section(AppData.DataTomo, Start=profile.start_lonlat, End=profile.end_lonlat, Interpolate=true)
 
         # transfer it to cartesian data
         p           = ProjectionPoint(Lon=minimum(cross.lon.val),Lat=minimum(cross.lat.val));
-        cross_cart  = Convert2CartData(cross,p)
-        x_cross     = FlattenCrossSection(cross_cart);
+        cross_cart  = convert2CartData(cross,p)
+        x_cross     = flatten_cross_section(cross_cart);
         x_cart      = x_cross[:,1,1];
         z_cart      = cross_cart.z.val[1,:,1]
         profile.start_cart = x_cart[1]
@@ -165,7 +165,7 @@ function get_cross_section(AppData::NamedTuple, profile::ProfileUser, field=:Dat
     
         data = cross_cart.fields[field][:,:,1]'
     else
-        cross       = CrossSection(AppData.DataTomo,  Depth_level=-profile.depth, Interpolate=true)
+        cross       = cross_section(AppData.DataTomo,  Depth_level=-profile.depth, Interpolate=true)
         cross_cart  = cross;
         x_cart      = cross_cart.lon.val[:,1]
         z_cart      = cross_cart.lat.val[1,:]
@@ -420,8 +420,8 @@ function image_from_screenshot(screenshot::GeoData)
 
     # Transfer 2 cartesian data
     p           = ProjectionPoint(Lon=minimum(screenshot.lon.val),Lat=minimum(screenshot.lat.val));
-    ss_cart     = Convert2CartData(screenshot,p)
-    x_ss        = FlattenCrossSection(ss_cart);
+    ss_cart     = convert2CartData(screenshot,p)
+    x_ss        = flatten_cross_section(ss_cart);
     x_cart      = x_ss[1,:];
     z_cart      = ss_cart.z.val[:,1]
 

@@ -6,10 +6,10 @@ using GLMakie, ColorSchemes, JLD2, GeophysicalModelGenerator, Interpolations, Li
 # a toggle selectes either vertical or horizontal crossection
 # the postion of the vertical crossection can be selected in the Topograpgy plot in the upper right corner 
 # --> press "v" and then left mouseclick to select the startpoint of the cross section and "b" + left mouseclick for the End point (first press the key, then to the mouseclick while the key is still pressed!)
-# the depth of the horizontal crosssection is changed by pressing "h" and "up arrow" key or "down arrow" key,respectively
+# the depth of the horizontal cross_section is changed by pressing "h" and "up arrow" key or "down arrow" key,respectively
 
 
-# this functions ouptuts all the information needed to plot a crosssection (LonLat values of Crossection, interpolated data, Topography)
+# this functions ouptuts all the information needed to plot a cross_section (LonLat values of Crossection, interpolated data, Topography)
 function PrepCrossSection(lonvec, latvec, depths,liftlons,liftlone,liftlats,liftlate,data,lonT,latT,dataTopo)
 
     lons     = lonvec[1]
@@ -19,15 +19,15 @@ function PrepCrossSection(lonvec, latvec, depths,liftlons,liftlone,liftlats,lift
     zs       = depths[1]
     ze       = depths[end]
 
-    # create crosssection
+    # create cross_section
     n      = 100
-    X,Y,Z  = XYZGrid(LinRange(lons, lone, n), LinRange(lats, late, n), LinRange(ze, zs, n));
+    X,Y,Z  = xyz_grid(LinRange(lons, lone, n), LinRange(lats, late, n), LinRange(ze, zs, n));
     cross  = GeoData(X, Y, Z, (ran = zeros(size(Z)),));
 
     STup   = @lift ($liftlons,$liftlats)
     ETup   = @lift ($liftlone,$liftlate)
 
-    surf   = @lift CrossSection(cross, Start = $STup, End = $ETup,Interpolate=true)
+    surf   = @lift cross_section(cross, Start = $STup, End = $ETup,Interpolate=true)
     t1     = @lift NumValue($surf.lon);   t1 = @lift $t1[:,:,1];
     t2     = @lift NumValue($surf.lat);   t2 = @lift $t2[:,:,1];
     t3     = @lift NumValue($surf.depth); t3 = @lift $t3[:,:,1];
@@ -169,12 +169,12 @@ function make_plot()
     length_sli = @lift length($depthr)
 
     #################################
-    #### horizontal crosssection ####
+    #### horizontal cross_section ####
     #################################
 
     # toggle
     toggle1   = Toggle(fig, active = false)
-    lab1      = Label(fig, lift(xtog -> xtog ? "Horizontal Crosssection visible" : "Vertical Crosssection invisible", toggle1.active))
+    lab1      = Label(fig, lift(xtog -> xtog ? "Horizontal cross_section visible" : "Vertical cross_section invisible", toggle1.active))
 
     # update location of point
     Hup   = (Keyboard.h, Keyboard.up)
